@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>個人の選び方 — とわなにか</title>
+<meta name="description" content="世界の金利、需要と供給、為替から、個人にとって有利なお金の置き場所と借り方を順番に考える。">
+<style>
+  :root {
+    --bg: #f5f1e9;
+    --surface: #fbf9f4;
+    --border: #e2dac8;
+    --text: #2b2924;
+    --muted: #8a8271;
+    --wood: #93704b;
+    --wood-soft: #ece1d0;
+    --sage: #74886d;
+    --sage-soft: #e2e8dd;
+    --red: #a8553f;
+    --shadow: 0 1px 2px rgba(43,41,36,.05), 0 16px 40px rgba(43,41,36,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1a16;
+      --surface: #242119;
+      --border: #38332a;
+      --text: #ede8dd;
+      --muted: #a89e8a;
+      --wood: #c99f74;
+      --wood-soft: #382d20;
+      --sage: #9db394;
+      --sage-soft: #26301f;
+      --red: #d98a72;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Apple SD Gothic Neo", sans-serif;
+    line-height: 1.75; font-size: 16px;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
+  header p.kicker { color: var(--wood); font-size: 13px; letter-spacing: .08em; margin: 0; }
+  h1 { font-size: 28px; line-height: 1.35; margin: 4px 0 12px; }
+  h2 { font-size: 20px; margin: 0 0 8px; }
+  h3 { font-size: 16px; margin: 20px 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 24px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  nav.toc a {
+    font-size: 14px; color: var(--wood); background: var(--wood-soft);
+    padding: 4px 12px; border-radius: 999px; text-decoration: none;
+  }
+  section.card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  .src { font-size: 13px; color: var(--muted); }
+  .src a { color: var(--wood); }
+  ul.points { padding-left: 20px; margin: 8px 0; }
+  ul.points li { margin-bottom: 6px; }
+  .note {
+    background: var(--sage-soft); border-radius: 12px; padding: 12px 14px; margin: 12px 0 0; font-size: 15px;
+  }
+  label.field { display: block; margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+  .row { display: flex; align-items: center; gap: 12px; }
+  .row input[type=range] { flex: 1; accent-color: var(--wood); }
+  .row output, .row input[type=number] {
+    min-width: 88px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); font-size: 16px;
+  }
+  input[type=number] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; width: 120px;
+  }
+  .seg { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .seg button {
+    font: inherit; font-size: 14px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .seg button[aria-pressed=true] { background: var(--wood); border-color: var(--wood); color: var(--surface); }
+  .result { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 16px; }
+  .stat { background: var(--bg); border-radius: 12px; padding: 10px 12px; }
+  .stat .k { font-size: 12px; color: var(--muted); }
+  .stat .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .up { color: var(--red); }
+  .good { color: var(--sage); }
+  footer { color: var(--muted); font-size: 13px; margin-top: 32px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 8px; }
+  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  th { color: var(--muted); font-weight: 500; }
+  ol.steps { padding-left: 22px; } ol.steps li { margin-bottom: 10px; }
+  .back { font-size: 14px; color: var(--wood); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="kicker">とわなにか ・ 経済ノート</p>
+    <h1>世界の金利から考える、<br>個人のお金の置き場所</h1>
+    <p class="lead">世界の金利、お金の需要と供給、為替を見て、韓国でウォンで暮らす人にとって有利な順番を考えます。2026年10月9日時点の数字です。</p>
+    <p><a class="back" href="./">← ホーム</a></p>
+  </header>
+
+  <nav class="toc">
+    <a href="#now">いまの世界の金利</a>
+    <a href="#macro">マクロの見方</a>
+    <a href="#fx">為替と通貨</a>
+    <a href="#micro">ミクロの見方</a>
+    <a href="#order">選ぶ順番</a>
+    <a href="report.html">週間レポート →</a>
+  </nav>
+
+  <section class="card" id="now">
+    <h2>いまの世界の金利</h2>
+    <p>日米韓欧、どこも金利を<b>上げる側</b>に回っています。物価が下がりきらず、AIと半導体で景気が強いからです。</p>
+    <table>
+      <tr><th>国・地域</th><th>政策金利</th><th>最近の動き</th></tr>
+      <tr><td>米国</td><td>3.88%（実効）</td><td>9月に利上げ。10年債 5.28%、30年債 5.67%</td></tr>
+      <tr><td>韓国</td><td>3.00%</td><td>7月、8月と2回続けて利上げ</td></tr>
+      <tr><td>ユーロ圏</td><td>2.50%（預金金利）</td><td>9月に利上げ</td></tr>
+      <tr><td>日本</td><td>1.25%</td><td>9月に利上げ、1995年以来の高さ</td></tr>
+    </table>
+    <table>
+      <tr><th>為替（ウォン建て）</th><th>10月9日</th></tr>
+      <tr><td>1ドル</td><td>1,342ウォン</td></tr>
+      <tr><td>100円</td><td>849ウォン</td></tr>
+      <tr><td>1ユーロ</td><td>1,504ウォン</td></tr>
+    </table>
+    <p class="src">出典：<a href="https://www.federalreserve.gov/releases/h15/" target="_blank" rel="noopener">FRB H.15（10月7日）</a>、<a href="https://weekly.khan.co.kr/article/202608271209001" target="_blank" rel="noopener">週刊京郷（韓銀、8月27日）</a>、<a href="https://www.nationthailand.com/news/40071184" target="_blank" rel="noopener">Nation Thailand（日銀、9月18日）</a>、<a href="https://www.nationthailand.com/news/world/40070896" target="_blank" rel="noopener">Nation Thailand（ECB）</a>、為替は open.er-api.com の基準レート。</p>
+  </section>
+
+  <section class="card" id="macro">
+    <h2>マクロの見方：お金の需要と供給</h2>
+    <h3>お金を欲しがる人が増えている</h3>
+    <p>AI企業と大手IT企業がデータセンターのために巨額の社債を出し、国も借金を続けています。お金の<b>需要</b>が強いので、金利（お金の値段）は下がりにくい状態です。</p>
+    <h3>貸す側は「長く貸すならもっと利息を」と言っている</h3>
+    <p>米国の10年債（5.28%）が政策金利（3.88%）よりかなり高いのは、先の物価と借金の増え方を心配して、長く貸す人が上乗せを求めているからです。</p>
+    <h3>韓国は輸出が強く、ウォンを買う人がいる</h3>
+    <p>半導体の輸出で大きな貿易黒字があり、ドルがウォンに替えられる流れがあります。ただ、韓国の金利は米国より低いので、お金は利息の高いドルにも流れます。この2つの綱引きで為替が決まります。</p>
+    <p class="note">まとめると「金利は高めのまま、長く続くかもしれない」が今の前提です。下がる前提で動くより、高い前提で動く方が安全です。</p>
+  </section>
+
+  <section class="card" id="fx">
+    <h2>為替と通貨：利息の高い通貨は得か？</h2>
+    <p>ドルの利息はウォンより高いですが、両替の手数料と為替の動きで差は簡単に消えます。何ウォン以上なら得になるかを計算できます。</p>
+
+    <label class="field">持つ通貨</label>
+    <div class="seg" id="fC">
+      <button type="button" data-c="USD" aria-pressed="true">ドル</button>
+      <button type="button" data-c="JPY" aria-pressed="false">円</button>
+      <button type="button" data-c="EUR" aria-pressed="false">ユーロ</button>
+    </div>
+
+    <label class="field">ウォンで預けた時の金利（%）</label>
+    <div class="row"><input type="range" id="fK" min="0" max="6" step="0.05" value="3"><output id="fKo"></output></div>
+
+    <label class="field">外貨で預けた時の金利（%）</label>
+    <div class="row"><input type="range" id="fF" min="0" max="7" step="0.05" value="4.2"><output id="fFo"></output></div>
+
+    <label class="field">両替の手数料（行きと帰りの合計 %）</label>
+    <div class="row"><input type="range" id="fS" min="0" max="4" step="0.1" value="1"><output id="fSo"></output></div>
+
+    <label class="field">持つ期間（年）</label>
+    <div class="row"><input type="range" id="fY" min="1" max="10" step="1" value="1"><output id="fYo"></output></div>
+
+    <div class="result">
+      <div class="stat"><div class="k">いまの為替</div><div class="v" id="fNow"></div></div>
+      <div class="stat"><div class="k">これより高ければ外貨が得</div><div class="v" id="fBe"></div></div>
+    </div>
+    <p class="note" id="fNote"></p>
+
+    <h3>通貨は「使う予定」に合わせる</h3>
+    <p>得をするための外貨は賭けになりがちです。いちばん確実なのは、<b>将来使うお金を、使う通貨で持つ</b>ことです。韓国で暮らすならウォン、日本に戻る予定や日本での支払いがあるなら、その分だけ円を少しずつ持つ。こうすれば為替が動いても困りません。</p>
+  </section>
+
+  <section class="card" id="micro">
+    <h2>ミクロの見方：自分の数字で比べる</h2>
+    <p>個人にとっては、世界の予想より<b>確実にもらえる利回り</b>と<b>確実に払う利息</b>の方が大事です。</p>
+    <h3>借りているお金の金利がいちばん大事</h3>
+    <p>青年バチモクの2.5%は、韓国の政策金利3.00%より低い借金です。預金で3%もらえるなら、急いで返すより、預けたまま持っておく方が得になります。逆に、カードの分割払いや信用貸付（5〜10%台）は、返すことがそのまま確実な5〜10%の利回りです。</p>
+    <h3>国が上乗せしてくれる制度は利回りが高い</h3>
+    <p>年金貯蓄やIRPは、払った額の13.2〜16.5%が税金から戻ります（年の上限あり）。青年向けの積立は政府が上乗せします。どれも市場の予想に関係なく、入れた瞬間に決まる利回りです。ただし途中で引き出すと損をするので、すぐ使うお金は入れません。</p>
+    <h3>高い金利は、預ける側には追い風</h3>
+    <p>金利が高い時期は、預金や短い債券で、リスクを取らずにそこそこの利息がもらえます。逆に長い債券は、金利がさらに上がると値下がりします（<a href="video.html#bond">前のページの計算</a>）。</p>
+    <h3>株は「長く、少しずつ、広く」</h3>
+    <p>AIの期待で株は高値にあり、上がるか下がるかは誰にもわかりません。当てにいくより、世界や米国の株全体に、毎月同じ額を、10年以上入れ続ける方が結果が安定します。</p>
+  </section>
+
+  <section class="card" id="order">
+    <h2>選ぶ順番</h2>
+    <ol class="steps">
+      <li><b>高い金利の借金を先に返す。</b>カードの分割払いや信用貸付は、返すのが一番の投資です。</li>
+      <li><b>生活費3〜6か月分をウォンの預金に。</b>すぐ引き出せる口座で、金利が高い今は利息もそこそこ付きます。</li>
+      <li><b>安い借金はそのまま持つ。</b>青年バチモク2.5%は預金金利より安いので、早く返すより手元に残します。条件の変更や延長の時は金利を確かめます。</li>
+      <li><b>国の上乗せと税金の戻りを先に取る。</b>年金貯蓄、IRP、青年向け積立、ISA。長く置けるお金から入れます。</li>
+      <li><b>残りを世界の株と債券に少しずつ。</b>その口座の中で、株の投資信託（ETF）を毎月同じ額。債券や預金を混ぜて、下がった時に売らずにすむ割合にします。</li>
+      <li><b>外貨は使う予定の分だけ。</b>日本での支払いやドルの支払いがあるなら、その分を何回かに分けて替えます。</li>
+    </ol>
+    <p class="note">大事なのは順番です。上の段ほど確実で、下の段ほど不確実です。上が埋まる前に下へ行かないのが、どんな景気でも崩れにくい選び方です。</p>
+  </section>
+
+  <footer>
+    このページは考え方の整理で、特定の商品の勧めではありません。税制と制度の条件は年ごとに変わるので、加入前に銀行や国税庁（홈택스）で確かめてください。<br>
+    更新：2026-10-09
+  </footer>
+</main>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var FX = { USD: { now: 1342.28, unit: 1, name: "1ドル", rate: 4.2 }, JPY: { now: 848.97, unit: 100, name: "100円", rate: 0.5 }, EUR: { now: 1503.76, unit: 1, name: "1ユーロ", rate: 2.3 } };
+  var cur = "USD";
+  function fx() {
+    var k = +$("fK").value / 100, f = +$("fF").value / 100, s = +$("fS").value / 100, y = +$("fY").value;
+    var c = FX[cur];
+    $("fKo").textContent = (k * 100).toFixed(2) + "%";
+    $("fFo").textContent = (f * 100).toFixed(2) + "%";
+    $("fSo").textContent = (s * 100).toFixed(1) + "%";
+    $("fYo").textContent = y + "年";
+    var be = c.now * Math.pow(1 + k, y) / Math.pow(1 + f, y) / (1 - s);
+    var pct = (be / c.now - 1) * 100;
+    $("fNow").textContent = c.name + " " + c.now.toLocaleString("ja-JP", { maximumFractionDigits: 0 }) + "ウォン";
+    $("fBe").textContent = c.name + " " + be.toLocaleString("ja-JP", { maximumFractionDigits: 0 }) + "ウォン";
+    $("fNote").textContent = y + "年後に" + c.name + "が" + Math.round(be).toLocaleString("ja-JP") + "ウォン以上なら外貨の方が得、下ならウォンのままの方が得です。" +
+      (pct > 0 ? "今より " + pct.toFixed(1) + "% 外貨が高くなる必要があります。利息の差では手数料や金利の低さを埋めきれていません。"
+               : "今より " + Math.abs(pct).toFixed(1) + "% 外貨が安くなっても損はしません。ただ、為替は1年で5〜10%動くこともあるので、この差は小さな余裕です。");
+  }
+  $("fC").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    cur = b.dataset.c;
+    [].forEach.call($("fC").children, function (x) { x.setAttribute("aria-pressed", x === b); });
+    $("fF").value = FX[cur].rate;
+    fx();
+  });
+  ["fK", "fF", "fS", "fY"].forEach(function (id) { $(id).addEventListener("input", fx); });
+  fx();
+})();
+</script>
+</body>
+</html>
