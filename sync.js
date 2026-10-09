@@ -15,6 +15,22 @@
     if (exp && exp < Date.now()) { ls.removeItem(IDK); ls.removeItem(EXK); ls.removeItem(PK); ls.removeItem(PUBK); }
     else rawSet(EXK, String(Date.now() + DAYS * DAY));
   }
+  // ── ログインしていない人には中身を見せない（2026-10-09 ひびき：まずは全部非表示、出していいものは後で少しずつ）
+  // ページで window.HB_PUBLIC = true にすると、そのページは誰でも見られる
+  if (!ls.getItem(IDK) && !window.HB_PUBLIC) {
+    var st = document.createElement("style");
+    st.textContent = "body>*{display:none!important}body>#hb-gate{display:grid!important}" +
+      "#hb-gate{min-height:100vh;place-items:center;padding:24px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;color:#8a8271}" +
+      "#hb-gate b{display:block;font-size:22px;color:#2b2924;margin-bottom:6px}#hb-gate a{display:inline-block;margin-top:18px;padding:12px 28px;border-radius:14px;background:#74886d;color:#fff;text-decoration:none;font-weight:600}" +
+      "@media (prefers-color-scheme: dark){#hb-gate b{color:#ede8dd}}";
+    document.head.appendChild(st);
+    document.addEventListener("DOMContentLoaded", function () {
+      var g = document.createElement("div"); g.id = "hb-gate";
+      g.innerHTML = '<div><b>とわなにか</b>ひびきの個人ページです<br><a href="' + BASE + 'sync/">ログイン</a></div>';
+      document.body.appendChild(g);
+    });
+  }
+
   function getT() { try { return JSON.parse(ls.getItem(TK)) || {}; } catch (e) { return {}; } }
   function setT(t) { try { rawSet(TK, JSON.stringify(t)); } catch (e) {} }
   function id() { return ls.getItem(IDK); }
