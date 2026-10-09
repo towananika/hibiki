@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>とわなにか</title>
+<meta name="description" content="お金・体・つながり。人生の3つの資産を一目で。">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-title" content="とわなにか">
+<meta name="theme-color" content="#93704b">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#b5583f; --red-soft:#f3e2db; --blue:#5b7a99; --blue-soft:#e0e7ee; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#e08b70; --red-soft:#3a2520; --blue:#8fb0cf; --blue-soft:#1f2a35; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:40px 16px 32px; }
+  h1 { font-size:28px; margin:0; letter-spacing:.06em; }
+  .sub { color:var(--muted); font-size:14px; margin:6px 0 28px; }
+  .core { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:12px 16px 16px; margin-bottom:14px; }
+  .core svg { width:100%; height:auto; display:block; }
+  .c { fill-opacity:.35; stroke-width:2; }
+  .money-c { fill:var(--wood); stroke:var(--wood); } .health-c { fill:var(--sage); stroke:var(--sage); } .people-c { fill:var(--red); stroke:var(--red); }
+  .cn { font-size:17px; font-weight:700; fill:var(--text); text-anchor:middle; }
+  .cs { font-size:12px; fill:var(--muted); text-anchor:middle; }
+  .me { font-size:14px; font-weight:800; fill:var(--text); text-anchor:middle; }
+  .why { font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0; line-height:1.7; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .tile { display:flex; flex-direction:column; justify-content:space-between; min-height:150px; padding:16px; border-radius:20px;
+          text-decoration:none; color:var(--text); background:var(--surface); border:1px solid var(--border); }
+  .tile svg { width:40px; height:40px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .tile b { font-size:20px; }
+  .tile span { font-size:12px; color:var(--muted); }
+  .tile.soon { opacity:.55; pointer-events:none; }
+  .money { background:var(--wood-soft); } .money svg { stroke:var(--wood); }
+  .health { background:var(--sage-soft); } .health svg { stroke:var(--sage); }
+  .people { background:var(--red-soft); } .people svg { stroke:var(--red); }
+  .more { background:var(--blue-soft); } .more svg { stroke:var(--blue); }
+  footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <h1>とわなにか</h1>
+  <p class="sub">人生は3つの資産でできている。</p>
+  <section class="core">
+    <svg viewBox="0 0 300 250" role="img" aria-label="お金・体・つながりの3つの輪が重なり、真ん中にあなた">
+      <circle cx="150" cy="88" r="72" class="c money-c"/>
+      <circle cx="102" cy="170" r="72" class="c health-c"/>
+      <circle cx="198" cy="170" r="72" class="c people-c"/>
+      <text x="150" y="58" class="cn">お金</text><text x="150" y="80" class="cs" id="s-money"></text>
+      <text x="74" y="196" class="cn">体</text><text x="74" y="218" class="cs" id="s-health"></text>
+      <text x="226" y="196" class="cn">つながり</text><text x="226" y="218" class="cs" id="s-people"></text>
+      <text x="150" y="150" class="me">あなた</text>
+    </svg>
+    <p class="why">どれか1つだけ増やしても、暮らしは楽になりません。<br>3つを少しずつ育てるためのページです。</p>
+  </section>
+  <div class="grid" id="grid"></div>
+  <footer>ページは順番に増えていきます</footer>
+</main>
+<script>
+// ▼ ページを足すときはここに1行足す（soon: true は準備中で押せない）
+var PAGES = [
+  { key: "money",  name: "お金",   note: "金利・配分・週間レポート", href: "../economy/money/", icon: '<circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M9 13h6M9 16h6M12 13v5"/>' },
+  { key: "health", name: "体",   note: "準備中", href: "health/", soon: true, icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' },
+  { key: "people", name: "つながり",   note: "準備中", href: "relations/", soon: true, icon: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 14.5c3 0 6 2 6 5.5"/>' },
+  { key: "more",   name: "道具箱", note: "間合い：計算ツール", href: "../tool/", icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>' }
+];
+// 3つの資産の今の状態（ひとこと）
+var STATE = { money: "金利は高め", health: "準備中", people: "準備中" };
+// ▲
+document.getElementById("grid").innerHTML = PAGES.map(function (p) {
+  return '<a class="tile ' + p.key + (p.soon ? ' soon' : '') + '" href="' + p.href + '"><svg viewBox="0 0 24 24">' + p.icon + '</svg><div><b>' + p.name + '</b><br><span>' + p.note + '</span></div></a>';
+}).join("");
+["money", "health", "people"].forEach(function (k) { document.getElementById("s-" + k).textContent = STATE[k]; });
+</script>
+</body>
+</html>
