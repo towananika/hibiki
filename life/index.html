@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>とわなにか — 人生のバー</title>
+<meta name="description" content="人生を1本のバーにして、好きな瞬間を見る。近い未来ははっきり、遠い未来は霧。でも、いま積み上げていることは遠くても確か。">
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-title" content="とわなにか">
+<meta name="theme-color" content="#93704b">
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --red:#b5583f; --blue:#5b7a99; --fog:#9fb2c4; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --red:#e08b70; --blue:#8fb0cf; --fog:#5d7086; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; }
+  .brand { color:var(--wood); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
+  .date { color:var(--muted); font-size:13px; }
+  h1 { font-size:24px; margin:14px 0 0; letter-spacing:.04em; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:18px; margin-top:14px; }
+  .label { color:var(--muted); font-size:13px; margin:0 0 10px; }
+  .lock { display:flex; align-items:center; gap:10px; color:var(--muted); font-size:14px; text-decoration:none; }
+  .lock svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2; }
+
+  /* その瞬間 */
+  .m-head { display:flex; align-items:baseline; gap:10px; }
+  .m-age { font-size:40px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
+  .m-year { color:var(--muted); font-size:14px; }
+  .m-see { margin-left:auto; text-align:right; font-size:12px; color:var(--muted); }
+  .m-see b { display:block; font-size:20px; color:var(--text); font-variant-numeric:tabular-nums; }
+  .m-title { font-size:20px; font-weight:700; margin:16px 0 4px; }
+  .m-sub { font-size:14px; color:var(--muted); line-height:1.6; margin:0; }
+  .m-do { display:grid; gap:6px; margin-top:12px; }
+  .m-do span { font-size:13px; padding:6px 10px; border-radius:10px; background:var(--wood-soft); }
+
+  /* バー */
+  .bar svg { width:100%; height:auto; display:block; touch-action:none; cursor:ew-resize; user-select:none; -webkit-user-select:none; }
+  .ax { font-size:10px; fill:var(--muted); text-anchor:middle; }
+  .tag { font-size:11px; font-weight:700; fill:var(--text); text-anchor:middle; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .chips button { border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:999px; padding:7px 12px; font:inherit; font-size:13px; cursor:pointer; }
+  .chips button.on { background:var(--wood); border-color:var(--wood); color:#fff; }
+  .legend { display:grid; gap:8px; margin-top:14px; font-size:13px; }
+  .legend div { display:flex; align-items:center; gap:10px; }
+  .legend i { flex:none; width:22px; height:12px; border-radius:6px; }
+  .note { font-size:12px; color:var(--muted); margin:14px 0 0; line-height:1.6; }
+  .note button { border:0; background:none; color:var(--wood); font:inherit; padding:0; text-decoration:underline; cursor:pointer; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="brand" href="../">← とわなにか</a><span class="date" id="date"></span></div>
+  <h1>人生のバー</h1>
+
+  <div id="body">
+    <section class="card"><a class="lock" href="../sync/"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>ログインすると、ひびきの人生で見えます</a></section>
+  </div>
+</main>
+<script>
+// 人生のバー（2026-10-09 ひびき）
+// 近い未来は台風予報のようにはっきり、遠いほど霧。ただし、いま積み上げていること（自由の日）は遠くても確か。
+// 数字は private/money.json と private/life.json（ログインした端末だけで読める）。年齢が分からなければ30歳（仮）。
+(function () {
+  var now = new Date(), YEAR = now.getFullYear() + now.getMonth() / 12;
+  document.getElementById("date").textContent = (now.getMonth() + 1) + "月" + now.getDate() + "日";
+  if (!window.HibikiSync) return;
+  Promise.all([HibikiSync.open("money"), HibikiSync.open("life")]).then(function (r) {
+    var M = r[0], L = r[1] || {};
+    if (!M) return;
+    var AK = "hibiki-life-age", saved = null;
+    try { saved = +localStorage.getItem(AK) || null; } catch (e) {}
+    var AGE = saved || L.age || M.age || 30, guess = !(saved || L.age || M.age);
+    var END = 90, R = 0.05, spend = M.spend || 100;
+    var net0 = M.stocks + M.crypto - M.debt, save = (M.income - spend) * 12, need = spend * 12 * 25;
+
+    // 資産の予想（年 g で育つ）。d 年後
+    function grow(d, g) { var a = net0; for (var i = 0; i < Math.floor(d); i++) a = a * (1 + g) + save; var f = d - Math.floor(d); return a * (1 + g * f) + save * f; }
+    var fy = 0; while (grow(fy, R) < need && fy < 60) fy++;
+    var anchors = [{ age: AGE + fy, s: .92, w: 2.6, t: "自由の日", key: "free" }];
+    (L.events || []).forEach(function (e) { anchors.push({ age: AGE + (e.y - YEAR), s: .8, w: .7, t: e.t, sub: e.s }); });
+
+    // 見え方（0〜1）。すぎた時間といまは1。未来は遠いほど下がり、積み上げているところで戻る
+    function see(a) {
+      if (a <= AGE) return 1;
+      var c = Math.exp(-(a - AGE) / 3.5);
+      anchors.forEach(function (k) { if (k.age > AGE + .2) c = Math.max(c, k.s * Math.exp(-Math.abs(a - k.age) / k.w)); });
+      return Math.max(c, .04);
+    }
+
+    // ── 画面
+    var W = 340, X0 = 14, X1 = 326, CY = 96, H = 64;
+    function x(a) { return X0 + (X1 - X0) * a / END; }
+    function ageAt(px) { return Math.max(0, Math.min(END, (px - X0) / (X1 - X0) * END)); }
+    document.getElementById("body").innerHTML =
+      '<section class="card" id="moment"></section>' +
+      '<section class="card bar"><p class="label">指でなぞると、その瞬間が見えます</p>' +
+      '<svg viewBox="0 0 ' + W + ' 196" id="svg" role="img" aria-label="0歳から90歳までの人生のバー。いまより先は霧が広がり、自由の日のところで細くなる"></svg>' +
+      '<div class="chips" id="chips"></div>' +
+      '<div class="legend">' +
+        '<div><i style="background:var(--wood)"></i>すぎた道。もう変わらない</div>' +
+        '<div><i style="background:var(--fog);opacity:.6"></i>霧。まだ決まっていない＝選べる余白</div>' +
+        '<div><i style="background:var(--sage)"></i>いま積み上げていること。遠くても確か</div>' +
+      '</div>' +
+      '<p class="note" id="agenote"></p></section>';
+    var svg = document.getElementById("svg");
+
+    function draw(sel) {
+      var top = [], bot = [], s = "";
+      for (var a = AGE; a <= END + .01; a += .25) { var hw = 5 + (1 - see(a)) * H; top.push(x(a).toFixed(1) + "," + (CY - hw).toFixed(1)); bot.unshift(x(a).toFixed(1) + "," + (CY + hw).toFixed(1)); }
+      s += '<defs><linearGradient id="fg" x1="0" x2="1"><stop offset="0" style="stop-color:var(--fog)" stop-opacity=".25"/><stop offset="1" style="stop-color:var(--fog)" stop-opacity=".6"/></linearGradient></defs>';
+      s += '<polygon points="' + top.concat(bot).join(" ") + '" fill="url(#fg)"/>';
+      s += '<line x1="' + x(AGE) + '" y1="' + CY + '" x2="' + X1 + '" y2="' + CY + '" style="stroke:var(--muted)" stroke-width="1.5" stroke-dasharray="3 4"/>';
+      s += '<rect x="' + X0 + '" y="' + (CY - 6) + '" width="' + (x(AGE) - X0) + '" height="12" rx="6" style="fill:var(--wood)"/>';
+      (L.past || []).forEach(function (p) { s += '<rect x="' + x(p.from) + '" y="' + (CY - 6) + '" width="' + (x(p.to) - x(p.from)) + '" height="12" style="fill:var(--wood-soft)" opacity=".45"/>'; });
+      anchors.forEach(function (k) {
+        if (k.age <= AGE || k.age > END) return;
+        var big = k.key === "free";
+        s += '<circle cx="' + x(k.age) + '" cy="' + CY + '" r="' + (big ? 7 : 4.5) + '" style="fill:var(--sage)"/>';
+        if (big) s += '<text x="' + x(k.age) + '" y="' + (CY + 30) + '" class="tag">' + k.t + '</text>';
+      });
+      s += '<circle cx="' + x(AGE) + '" cy="' + CY + '" r="7" style="fill:var(--surface);stroke:var(--text)" stroke-width="3"/>';
+      s += '<text x="' + x(AGE) + '" y="' + (CY - 18) + '" class="tag">いま</text>';
+      [0, 10, 20, 30, 40, 50, 60, 70, 80, 90].forEach(function (a) { s += '<text x="' + x(a) + '" y="190" class="ax">' + a + '</text>'; });
+      var c = see(sel);
+      s += '<line x1="' + x(sel) + '" y1="18" x2="' + x(sel) + '" y2="174" style="stroke:var(--red)" stroke-width="2"/>';
+      s += '<circle cx="' + x(sel) + '" cy="18" r="8" style="fill:var(--red)"/>';
+      svg.innerHTML = s;
+      moment(sel, c);
+      Array.prototype.forEach.call(document.querySelectorAll("#chips button"), function (b) { b.classList.toggle("on", Math.abs(+b.dataset.a - sel) < .01); });
+    }
+
+    function f(v) { return Math.round(v / 10) * 10; }
+    function man(v) { v = f(v); return v >= 10000 ? (v / 10000).toFixed(1) + "億" : v.toLocaleString() + "万"; }
+    function moment(a, c) {
+      var y = Math.floor(YEAR + (a - AGE)), title, sub, extra = "";
+      var near = null; anchors.forEach(function (k) { if (k.age > AGE + .2 && Math.abs(a - k.age) < (k.key === "free" ? .8 : .4)) near = k; });
+      var past = null; (L.past || []).forEach(function (p) { if (a >= p.from && a <= p.to) past = p; });
+      if (Math.abs(a - AGE) < .3) {
+        title = "いま"; sub = "純資産 約" + man(net0) + "。" + ((L.events || [])[0] ? (L.events[0].t + "。") : "") + "ここから先は霧の中";
+      } else if (a < AGE) {
+        title = past ? past.t : "すぎた道"; sub = past ? past.s : "もう起きたこと。変わらないから、確か";
+      } else if (near && near.key === "free") {
+        title = "自由の日"; sub = "運用益が生活費（月" + spend + "万）を上回る。働くかどうかを選べる日";
+        extra = '<p class="m-sub" style="margin-top:14px">そのために、いま：</p><div class="m-do">' + (L.doing || []).map(function (d) { return "<span>" + d + "</span>"; }).join("") + "</div>";
+      } else if (near) {
+        title = near.t; sub = near.sub || "";
+      } else if (a < AGE + fy) {
+        var d = a - AGE;
+        title = "資産 約" + man(grow(d, .01)) + "〜" + man(grow(d, .08));
+        sub = "予想。台風予報と同じで、遠いほど幅が広がる";
+      } else {
+        title = "自由に選べる時間"; sub = "何をするかは、まだ霧の中。霧は、選べる余白";
+      }
+      document.getElementById("moment").innerHTML =
+        '<div class="m-head"><span class="m-age">' + Math.floor(a) + '歳</span><span class="m-year">' + y + '年ごろ</span>' +
+        '<span class="m-see">見え方<b>' + Math.round(c * 100) + '%</b></span></div>' +
+        '<p class="m-title">' + title + '</p><p class="m-sub">' + sub + '</p>' + extra;
+    }
+
+    var chips = [["こども", 8], ["いま", AGE], ["2年後", AGE + 2], ["自由の日", AGE + fy], ["60歳", 60], ["80歳", 80]];
+    document.getElementById("chips").innerHTML = chips.filter(function (c) { return c[1] <= END; }).map(function (c) { return '<button data-a="' + c[1] + '">' + c[0] + '</button>'; }).join("");
+    document.getElementById("chips").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { sel = +b.dataset.a; draw(sel); } });
+
+    var sel = AGE, drag = false;
+    function at(e) { var r = svg.getBoundingClientRect(); sel = ageAt((e.clientX - r.left) / r.width * W); draw(sel); }
+    svg.addEventListener("pointerdown", function (e) { drag = true; svg.setPointerCapture(e.pointerId); at(e); });
+    svg.addEventListener("pointermove", function (e) { if (drag) at(e); });
+    svg.addEventListener("pointerup", function () { drag = false; });
+    svg.addEventListener("pointercancel", function () { drag = false; });
+
+    var an = document.getElementById("agenote");
+    an.innerHTML = (guess ? "年齢はまだ分からないので、30歳と仮においています。" : "いま " + AGE + "歳。") + ' <button id="setage">年齢を' + (guess ? "入れる" : "直す") + '</button>';
+    document.getElementById("setage").addEventListener("click", function () {
+      var v = prompt("いま何歳？", guess ? "" : AGE); v = parseInt(v, 10);
+      if (v > 0 && v < 90) { try { localStorage.setItem(AK, String(v)); } catch (e) {} location.reload(); }
+    });
+
+    draw(sel);
+  });
+})();
+</script>
+</body>
+</html>
