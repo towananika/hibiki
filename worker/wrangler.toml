@@ -1,0 +1,12 @@
+name = "hibiki-sync"
+main = "sync-worker.js"
+compatibility_date = "2026-10-01"
+
+# 合言葉ごとに1つの Durable Object（記録はその中だけに置く）
+[[durable_objects.bindings]]
+name = "BOX"
+class_name = "SyncBox"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SyncBox"]
