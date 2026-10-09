@@ -93,7 +93,7 @@ else {
     say("m1", "ログインしています…");
     S.connect(p).then(function (r) {
       document.getElementById("phrase").value = "";
-      if (!r.ok) { say("m1", "サーバーにつながりませんでした", true); return; }
+      if (!r.ok) { say("m1", r.blocked ? "まちがいが続いたので、1時間ログインを止めています" : "サーバーにつながりませんでした", true); return; }
       view();
       say("m2", r.from === "cloud" ? "ほかの端末の記録を入れました" : "この端末の記録を上げました。ほかの端末でも同じ合言葉を入れてください");
     });
