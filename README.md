@@ -4,6 +4,7 @@
 
 - `index.html` 入口。3つの資産の図とページの一覧。ページを足すときは `PAGES` に1行、状態は `STATE`
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）
+- `life/` 人生のバー（近い未来ははっきり、遠いほど霧。自由の日のところで細くなる）。中身は `private/money.json` と `private/life.json`
 - `health/` 健康、`relations/` 愛と関係、`home/` 住まい（入居チェック）
 
 ## 端末どうしの同期
