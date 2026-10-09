@@ -146,8 +146,9 @@
     // 合言葉でログイン。クラウドに記録があればそれを入れ、なければこの端末の記録を上げる
     connect: function (phrase) {
       return hash(phrase).then(function (h) {
-        return fetch(URL_ + "/pull?id=" + h).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (d) {
+        return fetch(URL_ + "/pull?id=" + h).then(function (r) { return r.status === 429 ? { blocked: true } : r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (d) {
           if (!d) return { ok: false };
+          if (d.blocked) return { ok: false, blocked: true };
           rawSet(IDK, h); rawSet(EXK, String(Date.now() + DAYS * DAY));
           var has = d.keys && Object.keys(d.keys).length;
           var from = has ? "cloud" : "here";
