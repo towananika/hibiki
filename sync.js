@@ -4,7 +4,7 @@
 // ページを開いたとき・戻ってきたときに読み、サーバーのほうが新しければ入れて画面を読み直す。
 (function () {
   var URL_ = "https://hibiki-sync.jaykim-can.workers.dev";
-  var PREFIX = "hibiki-", IDK = "hb-sync-id", TK = "hb-sync-t", EXK = "hb-sync-exp", PK = "hb-key", WRAP = "hibiki-keywrap";
+  var PREFIX = "hibiki-", IDK = "hb-sync-id", TK = "hb-sync-t", EXK = "hb-sync-exp", PK = "hb-key", PUBK = "hb-key-pub", WRAP = "hibiki-keywrap";
   var BASE = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, "");
   var DAYS = 7, DAY = 864e5;   // ログインは7日。開くたびに7日へ延びる（2026-10-09 ひびき）
   var ls; try { ls = window.localStorage; ls.getItem(IDK); } catch (e) { return; }
@@ -12,7 +12,7 @@
   // 期限切れならログアウト。期限内なら今日から7日に延ばす
   if (ls.getItem(IDK)) {
     var exp = +ls.getItem(EXK) || 0;
-    if (exp && exp < Date.now()) { ls.removeItem(IDK); ls.removeItem(EXK); ls.removeItem(PK); }
+    if (exp && exp < Date.now()) { ls.removeItem(IDK); ls.removeItem(EXK); ls.removeItem(PK); ls.removeItem(PUBK); }
     else rawSet(EXK, String(Date.now() + DAYS * DAY));
   }
   function getT() { try { return JSON.parse(ls.getItem(TK)) || {}; } catch (e) { return {}; } }
@@ -105,7 +105,9 @@
   }
   function publish(h, jwk) {
     return fetch(URL_ + "/owner", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: h, pub: { x: jwk.x, y: jwk.y } }) })
-      .then(function (r) { return r.ok; }).catch(function () { return false; });
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { var ok = !!(d && d.pub); if (ok) rawSet(PUBK, "1"); return ok; })
+      .catch(function () { return false; });
   }
   function openBox(name) {
     var jwk; try { jwk = JSON.parse(ls.getItem(PK)); } catch (e) {}
@@ -139,14 +141,17 @@
         });
       });
     },
-    disconnect: function () { try { ls.removeItem(IDK); ls.removeItem(EXK); ls.removeItem(PK); } catch (e) {} },
+    disconnect: function () { try { ls.removeItem(IDK); ls.removeItem(EXK); ls.removeItem(PK); ls.removeItem(PUBK); } catch (e) {} },
     open: openBox,
+    hasKey: function () { return !!ls.getItem(PK); },
     until: function () { return +ls.getItem(EXK) || 0; },
     sync: sync,
     ping: function () { return fetch(URL_ + "/").then(function (r) { return r.ok; }).catch(function () { return false; }); }
   };
 
   if (id()) {
+    // 公開鍵がまだサーバーに届いていなければ、開いたときに届け直す
+    try { var kj = JSON.parse(ls.getItem(PK)); if (kj && !ls.getItem(PUBK)) publish(id(), kj); } catch (e) {}
     sync(true);
     document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") sync(true); });
   }

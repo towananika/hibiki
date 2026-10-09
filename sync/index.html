@@ -84,6 +84,7 @@ if (!S) { say("m0", "この端末では使えません（プライベートモ�
 else {
   view();
   S.ping().then(function (ok) { if (!ok) say("m0", "同期サーバーがまだ準備中です", true); });
+  if (S.on() && !S.hasKey()) say("m2", "個人ページを見るには、一度ログアウトして、もう一度ログインしてください", true);
   document.getElementById("go").onclick = function () {
     var p = document.getElementById("phrase").value;
     if (p.length < 8) { say("m1", "8文字以上にしてください", true); return; }
