@@ -61,6 +61,13 @@
   .ck.on b { text-decoration:line-through; color:var(--muted); }
   .ck b { font-size:15px; display:block; } .ck small { font-size:12px; color:var(--muted); }
   .key { font-size:11px; font-weight:700; color:var(--surface); background:var(--red); border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:2px; }
+  .big { font-size:34px; font-weight:700; font-variant-numeric:tabular-nums; margin:0; }
+  .big small { font-size:15px; color:var(--muted); font-weight:500; margin-left:4px; }
+  .stack { display:flex; height:14px; border-radius:999px; overflow:hidden; background:var(--border); margin:12px 0; }
+  .stack i { display:block; height:100%; }
+  .row { display:flex; justify-content:space-between; align-items:center; font-size:14px; padding:6px 0; }
+  .row span { display:flex; align-items:center; gap:8px; } .row em { width:10px; height:10px; border-radius:3px; display:inline-block; }
+  .row b { font-variant-numeric:tabular-nums; } .row.dim { color:var(--muted); }
 </style>
 </head>
 <body>
@@ -75,13 +82,40 @@
   </section>
 
   <section class="card">
+    <p class="label"><span>毎月の住まい代</span><b>だいたい</b></p>
+    <p class="big" id="hTotal"></p>
+    <div class="stack" id="hStack"></div>
+    <div id="hRows"></div>
+    <p class="note" id="hNote"></p>
+  </section>
+
+  <section class="card">
     <p class="label"><span>ひびきへ</span></p>
     <p style="margin:0;font-size:15px;line-height:1.8">チョンセの保証金は、ひびきのいちばん大きな財産です。<br><b>赤い「大事」</b>の3つだけは、かならず。</p>
   </section>
 
-  <footer>タップで完了。記録はこのスマホの中だけに残ります</footer>
+  <footer>タップで完了。<a href="../sync/" style="color:inherit">端末をつなぐ</a>と、ほかの端末ともそろいます</footer>
 </main>
 <script>
+// ▼ 住まいのお金（単位：万ウォン）。数字が変わったらここだけ直す
+var HOUSE = { deposit: 11400, loanPct: 80, rate: 2.5, rent: 15, fee: null, myRate: 3.0 };
+// ▲
+(function () {
+  var H = HOUSE, loan = H.deposit * H.loanPct / 100, mine = H.deposit - loan;
+  var parts = [
+    { n: "バチモクの利息", s: Math.round(loan).toLocaleString() + "万 × " + H.rate + "%", v: loan * H.rate / 100 / 12, c: "var(--wood)" },
+    { n: "家賃", s: "毎月", v: H.rent, c: "var(--blue)" },
+    { n: "管理費", s: H.fee == null ? "わかったら入れる" : "毎月", v: H.fee || 0, c: "var(--sage)", dim: H.fee == null }
+  ];
+  var total = parts.reduce(function (a, p) { return a + p.v; }, 0);
+  function f(v) { return (Math.round(v * 10) / 10).toLocaleString(); }
+  document.getElementById("hTotal").innerHTML = f(total) + '<small>万ウォン / 月</small>';
+  document.getElementById("hStack").innerHTML = parts.map(function (p) { return p.v ? '<i style="width:' + (p.v / total * 100) + '%;background:' + p.c + '"></i>' : ''; }).join("");
+  document.getElementById("hRows").innerHTML = parts.map(function (p) {
+    return '<div class="row' + (p.dim ? ' dim' : '') + '"><span><em style="background:' + p.c + '"></em>' + p.n + ' <small style="color:var(--muted)">' + p.s + '</small></span><b>' + (p.dim ? '—' : f(p.v) + '万') + '</b></div>';
+  }).join("");
+  document.getElementById("hNote").innerHTML = "保証金 " + H.deposit.toLocaleString() + "万のうち、自分のお金は " + Math.round(mine).toLocaleString() + "万。<br>これを定期（年" + H.myRate + "%）に置いていたら毎月 " + f(mine * H.myRate / 100 / 12) + "万の利息になるので、本当の住まい代はそのぶん少し上です。";
+})();
 var PHASES = [
   { t: "残金を払う前", items: [
     { k: "reg",  b: "등기부등본をもう一度取る", s: "今日以降に근저당（担保）が増えていないか", key: true },
