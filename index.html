@@ -69,11 +69,12 @@
 var PAGES = [
   { key: "money",  name: "お金と自由",   note: "金利・配分・週間レポート", href: "money/", icon: '<circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M9 13h6M9 16h6M12 13v5"/>' },
   { key: "health", name: "健康",   note: "毎日4つをタップ", href: "health/", icon: '<path d="M3 12h4l2-5 4 10 2-5h6"/>' },
-  { key: "people", name: "愛と関係",   note: "準備中", href: "relations/", soon: true, icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' },
+  { key: "people", name: "愛と関係",   note: "連絡・ありがとう・大切な人", href: "relations/", icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' },
+  { key: "money",  name: "住まい", note: "明日の入居チェック", href: "home/", icon: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>' },
   { key: "more",   name: "道具箱", note: "間合い：計算ツール", href: "../tool/", icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>' }
 ];
 // 3つの資産の今の状態（ひとこと）
-var STATE = { money: "金利は高め", health: "毎日記録", people: "準備中" };
+var STATE = { money: "金利は高め", health: "毎日記録", people: "毎日記録" };
 // ▲
 document.getElementById("grid").innerHTML = PAGES.map(function (p) {
   return '<a class="tile ' + p.key + (p.soon ? ' soon' : '') + '" href="' + p.href + '"><svg viewBox="0 0 24 24">' + p.icon + '</svg><div><b>' + p.name + '</b><br><span>' + p.note + '</span></div></a>';
