@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>住まい — とわなにか</title>
+<meta name="description" content="チョンセ入居のチェックリスト。保証金を守るためにやること。">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#74886d">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --red:#b5583f; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --sage:#9db394; --sage-soft:#26301f; --blue:#8fb0cf; --red:#e08b70; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; }
+  .brand { color:var(--sage); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
+  .date { color:var(--muted); font-size:13px; }
+  h1 { font-size:28px; margin:16px 0 0; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:18px; margin-top:14px; }
+  .label { color:var(--muted); font-size:13px; margin:0 0 12px; display:flex; justify-content:space-between; }
+  .label b { color:var(--sage); }
+
+  .today { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .h { position:relative; border:0; font:inherit; color:var(--text); background:var(--bg); border-radius:16px;
+       padding:14px 8px 12px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+  .h svg.ring { width:64px; height:64px; transform:rotate(-90deg); }
+  .h .bg { stroke:var(--border); } .h .fg { stroke:var(--sage); transition:stroke-dashoffset .3s; }
+  .h .ic { position:absolute; top:30px; width:28px; height:28px; stroke:var(--muted); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .h.on { background:var(--sage-soft); } .h.on .ic { stroke:var(--sage); }
+  .today .h.wide { grid-column:1 / -1; }
+  .h b { font-size:15px; } .h small { font-size:12px; color:var(--muted); }
+
+  .week { display:grid; gap:10px; }
+  .wr { display:grid; grid-template-columns:56px repeat(7,1fr); align-items:center; gap:4px; font-size:13px; }
+  .wr.head span { text-align:center; font-size:11px; color:var(--muted); }
+  .dot { width:20px; height:20px; border-radius:50%; margin:0 auto; background:var(--border); }
+  .dot.on { background:var(--sage); }
+
+  .guide { display:grid; gap:10px; }
+  .g { display:flex; justify-content:space-between; align-items:baseline; font-size:14px; }
+  .g b { font-size:17px; font-variant-numeric:tabular-nums; }
+  .note { font-size:12px; color:var(--muted); margin:12px 0 0; }
+  footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
+  .bar { height:10px; border-radius:999px; background:var(--border); overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--sage); width:0; transition:width .3s; }
+  .phase { margin-top:16px; }
+  .phase h3 { font-size:14px; margin:0 0 8px; color:var(--muted); font-weight:600; }
+  .ck { display:flex; gap:12px; align-items:flex-start; width:100%; text-align:left; border:0; background:var(--bg); color:var(--text);
+        font:inherit; padding:12px; border-radius:14px; margin-bottom:8px; cursor:pointer; }
+  .ck .box { flex:none; width:24px; height:24px; border-radius:8px; border:2px solid var(--muted); display:grid; place-items:center; }
+  .ck.on .box { background:var(--sage); border-color:var(--sage); }
+  .ck.on .box::after { content:""; width:10px; height:5px; border:2px solid var(--surface); border-top:0; border-right:0; transform:rotate(-45deg) translate(1px,-1px); }
+  .ck.on b { text-decoration:line-through; color:var(--muted); }
+  .ck b { font-size:15px; display:block; } .ck small { font-size:12px; color:var(--muted); }
+  .key { font-size:11px; font-weight:700; color:var(--surface); background:var(--red); border-radius:999px; padding:1px 7px; margin-left:6px; vertical-align:2px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="brand" href="../">← とわなにか</a><span class="date">2026年10月10日 入居</span></div>
+  <h1>住まい</h1>
+
+  <section class="card">
+    <p class="label"><span>入居チェック</span><b id="count"></b></p>
+    <div class="bar"><i id="bar"></i></div>
+    <div id="list"></div>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>ひびきへ</span></p>
+    <p style="margin:0;font-size:15px;line-height:1.8">チョンセの保証金は、ひびきのいちばん大きな財産です。<br><b>赤い「大事」</b>の3つだけは、かならず。</p>
+  </section>
+
+  <footer>タップで完了。記録はこのスマホの中だけに残ります</footer>
+</main>
+<script>
+var PHASES = [
+  { t: "残金を払う前", items: [
+    { k: "reg",  b: "등기부등본をもう一度取る", s: "今日以降に근저당（担保）が増えていないか", key: true },
+    { k: "acct", b: "振込先が大家さん本人の口座か確かめる", s: "등기부の名義と同じ人" } ]},
+  { t: "入居の当日", items: [
+    { k: "move", b: "전입신고と확정일자をする", s: "住民センターか정부24。守りは翌日0時から", key: true },
+    { k: "photo", b: "部屋の傷と設備を写真に撮る", s: "退去のときの証拠になる" },
+    { k: "fee", b: "管理費の精算を確かめる", s: "前の人の分が残っていないか、管理事務所で" },
+    { k: "meter", b: "電気・ガス・水道のメーターを撮る", s: "入居日の数字を残す" } ]},
+  { t: "1か月以内", items: [
+    { k: "ins", b: "전세보증보험に入ったか確かめる", s: "バチモクの銀行で一緒のことが多い", key: true },
+    { k: "loan", b: "バチモクの返済日と金額を確かめる", s: "毎月の利息の引き落とし日" } ]}
+];
+var KEY = "hibiki-home-v1";
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
+var done = load();
+function render() {
+  var all = 0, n = 0;
+  document.getElementById("list").innerHTML = PHASES.map(function (p) {
+    return '<div class="phase"><h3>' + p.t + '</h3>' + p.items.map(function (it) {
+      all++; if (done[it.k]) n++;
+      return '<button class="ck' + (done[it.k] ? ' on' : '') + '" data-k="' + it.k + '" aria-pressed="' + !!done[it.k] + '"><span class="box"></span><span><b>' + it.b + (it.key ? '<span class="key">大事</span>' : '') + '</b><small>' + it.s + '</small></span></button>';
+    }).join("") + '</div>';
+  }).join("");
+  document.getElementById("count").textContent = n + " / " + all;
+  document.getElementById("bar").style.width = (n / all * 100) + "%";
+}
+document.getElementById("list").addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b) return;
+  done[b.dataset.k] = !done[b.dataset.k]; save(done); render();
+});
+render();
+</script>
+</body>
+</html>
