@@ -98,14 +98,14 @@
 </main>
 <script>
 // ▼ 住まいのお金（単位：万ウォン）。数字が変わったらここだけ直す
-var HOUSE = { deposit: 11400, loanPct: 80, rate: 2.5, rent: 15, fee: null, myRate: 3.0 };
+var HOUSE = { deposit: 11400, loanPct: 80, rate: 2.5, rent: 15, fee: 10, myRate: 3.0 };
 // ▲
 (function () {
   var H = HOUSE, loan = H.deposit * H.loanPct / 100, mine = H.deposit - loan;
   var parts = [
     { n: "バチモクの利息", s: Math.round(loan).toLocaleString() + "万 × " + H.rate + "%", v: loan * H.rate / 100 / 12, c: "var(--wood)" },
     { n: "家賃", s: "毎月", v: H.rent, c: "var(--blue)" },
-    { n: "管理費", s: H.fee == null ? "わかったら入れる" : "毎月", v: H.fee || 0, c: "var(--sage)", dim: H.fee == null }
+    { n: "管理費", s: H.fee == null ? "わかったら入れる" : "予想", v: H.fee || 0, c: "var(--sage)", dim: H.fee == null }
   ];
   var total = parts.reduce(function (a, p) { return a + p.v; }, 0);
   function f(v) { return (Math.round(v * 10) / 10).toLocaleString(); }
