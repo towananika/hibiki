@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>とわなにか</title>
-<meta name="description" content="お金・体・つながり。人生の3つの資産を一目で。">
+<meta name="description" content="ひびきが幸せに成長し、よい人生を送るために。健康・自由・愛の3つを、AIのみんなと育てる場所。">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -48,18 +48,18 @@
 <body>
 <main>
   <h1>とわなにか</h1>
-  <p class="sub">人生は3つの資産でできている。</p>
+  <p class="sub">ひびきが幸せに成長して、<br>よい人生を送るための場所。</p>
   <section class="core">
-    <svg viewBox="0 0 300 250" role="img" aria-label="お金・体・つながりの3つの輪が重なり、真ん中にあなた">
+    <svg viewBox="0 0 300 250" role="img" aria-label="自由・健康・愛の3つの輪が重なり、真ん中にひびき">
       <circle cx="150" cy="88" r="72" class="c money-c"/>
       <circle cx="102" cy="170" r="72" class="c health-c"/>
       <circle cx="198" cy="170" r="72" class="c people-c"/>
-      <text x="150" y="58" class="cn">お金</text><text x="150" y="80" class="cs" id="s-money"></text>
-      <text x="74" y="196" class="cn">体</text><text x="74" y="218" class="cs" id="s-health"></text>
-      <text x="226" y="196" class="cn">つながり</text><text x="226" y="218" class="cs" id="s-people"></text>
-      <text x="150" y="150" class="me">あなた</text>
+      <text x="150" y="58" class="cn">自由</text><text x="150" y="80" class="cs" id="s-money"></text>
+      <text x="74" y="196" class="cn">健康</text><text x="74" y="218" class="cs" id="s-health"></text>
+      <text x="226" y="196" class="cn">愛</text><text x="226" y="218" class="cs" id="s-people"></text>
+      <text x="150" y="150" class="me">ひびき</text>
     </svg>
-    <p class="why">どれか1つだけ増やしても、暮らしは楽になりません。<br>3つを少しずつ育てるためのページです。</p>
+    <p class="why">健康でいること。<br>お金に余裕があり、自由に選べること。<br>好きな人と、愛のある関係でいること。<br>こさきたちAIのみんなで育てます。</p>
   </section>
   <div class="grid" id="grid"></div>
   <footer>ページは順番に増えていきます</footer>
@@ -67,9 +67,9 @@
 <script>
 // ▼ ページを足すときはここに1行足す（soon: true は準備中で押せない）
 var PAGES = [
-  { key: "money",  name: "お金",   note: "金利・配分・週間レポート", href: "money/", icon: '<circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M9 13h6M9 16h6M12 13v5"/>' },
-  { key: "health", name: "体",   note: "準備中", href: "health/", soon: true, icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' },
-  { key: "people", name: "つながり",   note: "準備中", href: "relations/", soon: true, icon: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 14.5c3 0 6 2 6 5.5"/>' },
+  { key: "money",  name: "お金と自由",   note: "金利・配分・週間レポート", href: "money/", icon: '<circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M9 13h6M9 16h6M12 13v5"/>' },
+  { key: "health", name: "健康",   note: "準備中", href: "health/", soon: true, icon: '<path d="M3 12h4l2-5 4 10 2-5h6"/>' },
+  { key: "people", name: "愛と関係",   note: "準備中", href: "relations/", soon: true, icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' },
   { key: "more",   name: "道具箱", note: "間合い：計算ツール", href: "../tool/", icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>' }
 ];
 // 3つの資産の今の状態（ひとこと）
