@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>端末をつなぐ — とわなにか</title>
+<meta name="description" content="記録をほかの端末へ引き継ぐ。">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#74886d">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --red:#b5583f; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --sage:#9db394; --sage-soft:#26301f; --blue:#8fb0cf; --red:#e08b70; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; }
+  .brand { color:var(--sage); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
+  .date { color:var(--muted); font-size:13px; }
+  h1 { font-size:28px; margin:16px 0 0; }
+  .btn { display:block; width:100%; border:0; border-radius:14px; padding:14px; font:inherit; font-weight:600; cursor:pointer;
+         background:var(--sage); color:#fff; margin-top:10px; }
+  .btn.sub { background:var(--bg); color:var(--text); border:1px solid var(--border); }
+  textarea { width:100%; height:96px; border:1px solid var(--border); border-radius:12px; background:var(--bg); color:var(--text);
+             font:12px/1.4 ui-monospace,monospace; padding:10px; resize:vertical; word-break:break-all; }
+  .step { display:flex; gap:10px; align-items:center; font-size:15px; margin:0 0 10px; }
+  .step i { flex:none; width:26px; height:26px; border-radius:50%; background:var(--sage-soft); color:var(--sage); font-style:normal;
+            font-weight:700; display:grid; place-items:center; font-size:13px; }
+  .msg { font-size:13px; color:var(--sage); min-height:18px; margin:10px 0 0; text-align:center; }
+  .msg.err { color:var(--red); }
+  .note { font-size:12px; color:var(--muted); margin:12px 0 0; }
+  footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
+  input { width:100%; border:1px solid var(--border); border-radius:12px; background:var(--bg); color:var(--text); font:inherit; padding:12px; }
+  .state { display:flex; align-items:center; gap:12px; font-size:16px; font-weight:600; }
+  .state i { width:14px; height:14px; border-radius:50%; background:var(--border); flex:none; }
+  .state.on i { background:var(--sage); }
+</style>
+<script src="../sync.js"></script>
+</head>
+<body>
+<main>
+  <div class="top"><a class="brand" href="../">← とわなにか</a></div>
+  <h1>端末をつなぐ</h1>
+
+  <section class="card">
+    <p class="state" id="state"><i></i><span>確認中…</span></p>
+    <p class="msg" id="m0"></p>
+  </section>
+
+  <section class="card" id="join">
+    <p class="step"><i>1</i>合言葉を決めて入れる</p>
+    <input id="phrase" type="password" autocomplete="off" placeholder="8文字以上（どの端末でも同じもの）">
+    <button class="btn" id="go">この端末をつなぐ</button>
+    <p class="msg" id="m1"></p>
+  </section>
+
+  <section class="card" id="joined" hidden>
+    <p class="step"><i>2</i>ほかの端末でも同じ合言葉を入れる</p>
+    <button class="btn sub" id="now">今すぐそろえる</button>
+    <button class="btn sub" id="off">この端末の接続を切る</button>
+    <p class="msg" id="m2"></p>
+  </section>
+
+  <p class="note">健康・愛と関係・大切な人・住まいの記録が、ページを開くたびに自動でそろいます。合言葉は端末にもサーバーにも保存せず、形を変えた番号だけを使います。忘れたら、新しい合言葉でつなぎ直せば大丈夫です。</p>
+</main>
+<script>
+var S = window.HibikiSync;
+function say(id, t, err) { var m = document.getElementById(id); m.textContent = t; m.className = "msg" + (err ? " err" : ""); }
+function view() {
+  var on = S && S.on();
+  var st = document.getElementById("state");
+  st.className = "state" + (on ? " on" : "");
+  st.querySelector("span").textContent = on ? "この端末はつながっています" : "まだつながっていません";
+  document.getElementById("join").hidden = on;
+  document.getElementById("joined").hidden = !on;
+}
+if (!S) { say("m0", "この端末では使えません（プライベートモード？）", true); }
+else {
+  view();
+  S.ping().then(function (ok) { if (!ok) say("m0", "同期サーバーがまだ準備中です", true); });
+  document.getElementById("go").onclick = function () {
+    var p = document.getElementById("phrase").value;
+    if (p.length < 8) { say("m1", "8文字以上にしてください", true); return; }
+    say("m1", "つないでいます…");
+    S.connect(p).then(function (r) {
+      document.getElementById("phrase").value = "";
+      if (!r.ok) { say("m1", "サーバーにつながりませんでした", true); return; }
+      view();
+      say("m2", r.from === "cloud" ? "ほかの端末の記録を入れました" : "この端末の記録を上げました。ほかの端末でも同じ合言葉を入れてください");
+    });
+  };
+  document.getElementById("now").onclick = function () {
+    say("m2", "そろえています…");
+    S.sync(false).then(function (r) { say("m2", r.ok ? (r.changed ? "新しい記録を入れました" : "もうそろっています") : "サーバーにつながりませんでした", !r.ok); });
+  };
+  document.getElementById("off").onclick = function () {
+    if (!confirm("この端末の接続を切りますか？（記録は残ります）")) return;
+    S.disconnect(); view(); say("m1", "切りました");
+  };
+}
+</script>
+</body>
+</html>
