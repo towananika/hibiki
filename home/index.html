@@ -68,6 +68,8 @@
   .row { display:flex; justify-content:space-between; align-items:center; font-size:14px; padding:6px 0; }
   .row span { display:flex; align-items:center; gap:8px; } .row em { width:10px; height:10px; border-radius:3px; display:inline-block; }
   .row b { font-variant-numeric:tabular-nums; } .row.dim { color:var(--muted); }
+  .lock { display:flex; gap:12px; align-items:center; color:var(--muted); font-size:14px; text-decoration:none; }
+  .lock svg { width:22px; height:22px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
 </style>
 </head>
 <body>
@@ -82,11 +84,14 @@
   </section>
 
   <section class="card">
-    <p class="label"><span>毎月の住まい代</span><b>だいたい</b></p>
-    <p class="big" id="hTotal"></p>
-    <div class="stack" id="hStack"></div>
-    <div id="hRows"></div>
-    <p class="note" id="hNote"></p>
+    <p class="label"><span>毎月の住まい代</span><b id="hAddr"></b></p>
+    <a class="lock" id="hLock" href="../sync/"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>ログインすると見えます</a>
+    <div id="hBody" hidden>
+      <p class="big" id="hTotal"></p>
+      <div class="stack" id="hStack"></div>
+      <div id="hRows"></div>
+      <p class="note" id="hNote"></p>
+    </div>
   </section>
 
   <section class="card">
@@ -94,14 +99,13 @@
     <p style="margin:0;font-size:15px;line-height:1.8">チョンセの保証金は、ひびきのいちばん大きな財産です。<br><b>赤い「大事」</b>の3つだけは、かならず。</p>
   </section>
 
-  <footer>タップで完了。<a href="../sync/" style="color:inherit">端末をつなぐ</a>と、ほかの端末ともそろいます</footer>
+  <footer>タップで完了。<a href="../sync/" style="color:inherit">ログイン</a>すると、ほかの端末ともそろいます</footer>
 </main>
 <script>
-// ▼ 住まいのお金（単位：万ウォン）。数字が変わったらここだけ直す
-var HOUSE = { deposit: 11400, loanPct: 80, rate: 2.5, rent: 15, fee: 10, myRate: 3.0 };
-// ▲
-(function () {
-  var H = HOUSE, loan = H.deposit * H.loanPct / 100, mine = H.deposit - loan;
+// 住まいのお金（中身は private/home.json。ログインした端末だけで読める。単位：万ウォン）
+if (window.HibikiSync) HibikiSync.open("home").then(function (H) {
+  if (!H) return;
+  var loan = H.deposit * H.loanPct / 100, mine = H.deposit - loan;
   var parts = [
     { n: "バチモクの利息", s: Math.round(loan).toLocaleString() + "万 × " + H.rate + "%", v: loan * H.rate / 100 / 12, c: "var(--wood)" },
     { n: "家賃", s: "毎月", v: H.rent, c: "var(--blue)" },
@@ -109,13 +113,16 @@ var HOUSE = { deposit: 11400, loanPct: 80, rate: 2.5, rent: 15, fee: 10, myRate:
   ];
   var total = parts.reduce(function (a, p) { return a + p.v; }, 0);
   function f(v) { return (Math.round(v * 10) / 10).toLocaleString(); }
+  document.getElementById("hLock").hidden = true;
+  document.getElementById("hBody").hidden = false;
+  if (H.address) document.getElementById("hAddr").textContent = H.address;
   document.getElementById("hTotal").innerHTML = f(total) + '<small>万ウォン / 月</small>';
   document.getElementById("hStack").innerHTML = parts.map(function (p) { return p.v ? '<i style="width:' + (p.v / total * 100) + '%;background:' + p.c + '"></i>' : ''; }).join("");
   document.getElementById("hRows").innerHTML = parts.map(function (p) {
     return '<div class="row' + (p.dim ? ' dim' : '') + '"><span><em style="background:' + p.c + '"></em>' + p.n + ' <small style="color:var(--muted)">' + p.s + '</small></span><b>' + (p.dim ? '—' : f(p.v) + '万') + '</b></div>';
   }).join("");
   document.getElementById("hNote").innerHTML = "保証金 " + H.deposit.toLocaleString() + "万のうち、自分のお金は " + Math.round(mine).toLocaleString() + "万。<br>これを定期（年" + H.myRate + "%）に置いていたら毎月 " + f(mine * H.myRate / 100 / 12) + "万の利息になるので、本当の住まい代はそのぶん少し上です。";
-})();
+});
 var PHASES = [
   { t: "残金を払う前", items: [
     { k: "reg",  b: "등기부등본をもう一度取る", s: "今日以降に근저당（担保）が増えていないか", key: true },

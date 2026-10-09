@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>端末をつなぐ — とわなにか</title>
+<title>ログイン — とわなにか</title>
 <meta name="description" content="記録をほかの端末へ引き継ぐ。">
 <link rel="apple-touch-icon" href="../icon-180.png">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
@@ -45,7 +45,7 @@
 <body>
 <main>
   <div class="top"><a class="brand" href="../">← とわなにか</a></div>
-  <h1>端末をつなぐ</h1>
+  <h1>ログイン</h1>
 
   <section class="card">
     <p class="state" id="state"><i></i><span>確認中…</span></p>
@@ -53,29 +53,30 @@
   </section>
 
   <section class="card" id="join">
-    <p class="step"><i>1</i>合言葉を決めて入れる</p>
+    <p class="step"><i>1</i>合言葉を入れる</p>
     <input id="phrase" type="password" autocomplete="off" placeholder="8文字以上（どの端末でも同じもの）">
-    <button class="btn" id="go">この端末をつなぐ</button>
+    <button class="btn" id="go">ログイン</button>
     <p class="msg" id="m1"></p>
   </section>
 
   <section class="card" id="joined" hidden>
-    <p class="step"><i>2</i>ほかの端末でも同じ合言葉を入れる</p>
+    <p class="step"><i>2</i>ほかの端末でも同じ合言葉で</p>
     <button class="btn sub" id="now">今すぐそろえる</button>
-    <button class="btn sub" id="off">この端末の接続を切る</button>
+    <button class="btn sub" id="off">ログアウト</button>
     <p class="msg" id="m2"></p>
   </section>
 
-  <p class="note">健康・愛と関係・大切な人・住まいの記録が、ページを開くたびに自動でそろいます。合言葉は端末にもサーバーにも保存せず、形を変えた番号だけを使います。忘れたら、新しい合言葉でつなぎ直せば大丈夫です。</p>
+  <p class="note">ログインすると、記録がどの端末でもそろい、お金や住まいの個人的な数字が見えるようになります。7日間ログインしたままで、開くたびにまた7日に延びます。合言葉は端末にもサーバーにも保存しません。</p>
 </main>
 <script>
 var S = window.HibikiSync;
 function say(id, t, err) { var m = document.getElementById(id); m.textContent = t; m.className = "msg" + (err ? " err" : ""); }
+function until() { var d = new Date(S.until()); return (d.getMonth() + 1) + "/" + d.getDate(); }
 function view() {
   var on = S && S.on();
   var st = document.getElementById("state");
   st.className = "state" + (on ? " on" : "");
-  st.querySelector("span").textContent = on ? "この端末はつながっています" : "まだつながっていません";
+  st.querySelector("span").textContent = on ? "ログイン中（" + until() + "まで）" : "ログインしていません";
   document.getElementById("join").hidden = on;
   document.getElementById("joined").hidden = !on;
 }
@@ -86,7 +87,7 @@ else {
   document.getElementById("go").onclick = function () {
     var p = document.getElementById("phrase").value;
     if (p.length < 8) { say("m1", "8文字以上にしてください", true); return; }
-    say("m1", "つないでいます…");
+    say("m1", "ログインしています…");
     S.connect(p).then(function (r) {
       document.getElementById("phrase").value = "";
       if (!r.ok) { say("m1", "サーバーにつながりませんでした", true); return; }
@@ -99,8 +100,8 @@ else {
     S.sync(false).then(function (r) { say("m2", r.ok ? (r.changed ? "新しい記録を入れました" : "もうそろっています") : "サーバーにつながりませんでした", !r.ok); });
   };
   document.getElementById("off").onclick = function () {
-    if (!confirm("この端末の接続を切りますか？（記録は残ります）")) return;
-    S.disconnect(); view(); say("m1", "切りました");
+    if (!confirm("ログアウトしますか？（記録は残ります）")) return;
+    S.disconnect(); view(); say("m1", "ログアウトしました");
   };
 }
 </script>

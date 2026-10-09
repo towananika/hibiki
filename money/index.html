@@ -10,6 +10,7 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <meta name="apple-mobile-web-app-title" content="とわなにか">
 <meta name="theme-color" content="#93704b">
+<script src="../sync.js"></script>
 <style>
   :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
           --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --red:#b5583f; --blue:#5b7a99; }
@@ -75,11 +76,26 @@
   nav a.main { background:var(--wood); border-color:var(--wood); color:var(--surface); }
   nav a.main svg { stroke:var(--surface); }
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
+  .lock { display:flex; gap:12px; align-items:center; color:var(--muted); font-size:14px; text-decoration:none; }
+  .lock svg { width:22px; height:22px; flex:none; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .fd-big { font-size:30px; font-weight:700; margin:0; font-variant-numeric:tabular-nums; }
+  .fd-big small { font-size:14px; color:var(--muted); font-weight:500; margin-left:4px; }
+  .fd-bar { height:12px; border-radius:999px; background:var(--border); overflow:hidden; margin:12px 0 6px; }
+  .fd-bar i { display:block; height:100%; background:var(--wood); }
+  .fd-ends { display:flex; justify-content:space-between; font-size:12px; color:var(--muted); }
+  .fd-seg { display:flex; gap:6px; margin-top:14px; }
+  .fd-seg button { flex:1; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:10px; padding:8px 0; font:inherit; font-size:13px; cursor:pointer; }
+  .fd-seg button.on { background:var(--wood); border-color:var(--wood); color:#fff; }
 </style>
 </head>
 <body>
 <main>
   <div class="top"><a class="brand" href="../" style="text-decoration:none">← とわなにか</a><span class="date" id="date"></span></div>
+
+  <section class="card" id="fd">
+    <p class="label">自由の日</p>
+    <div id="fdBody"><a class="lock" href="../sync/"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>ログインすると、ひびきの数字で見えます</a></div>
+  </section>
 
   <section class="card">
     <p class="label">いまの金利</p>
@@ -173,6 +189,31 @@ var W = {
       '<div class="when">' + t.when + '</div><div class="what">' + t.what + '</div></div>';
   }).join("");
   $("todo").innerHTML = W.todo.map(function (s, i) { return '<div class="do"><i>' + (i + 1) + '</i>' + s + '</div>'; }).join("");
+})();
+
+// ── 自由の日（中身は private/money.json。ログインした端末だけで読める）
+(function () {
+  if (!window.HibikiSync) return;
+  HibikiSync.open("money").then(function (M) {
+    if (!M) return;
+    var spend = M.spend || 100, R = 0.05;
+    function f(v) { return Math.round(v).toLocaleString(); }
+    function draw() {
+      var net = M.stocks + M.crypto - M.debt, save = (M.income - spend) * 12, need = spend * 12 * 25, a = net, n = 0;
+      while (a < need && n < 60) { a = a * (1 + R) + save; n++; }
+      var age = M.age ? "（" + (M.age + n) + "歳ごろ）" : "";
+      document.getElementById("fdBody").innerHTML =
+        '<p class="fd-big">あと約' + n + '年<small>' + age + '</small></p>' +
+        '<div class="fd-bar"><i style="width:' + Math.min(100, net / need * 100) + '%"></i></div>' +
+        '<div class="fd-ends"><span>いま ' + f(net) + '万</span><span>目標 ' + (need / 10000).toFixed(1) + '億</span></div>' +
+        '<div class="fd-seg">' + [80, 100, 120, 150].map(function (v) { return '<button data-v="' + v + '"' + (v === spend ? ' class="on"' : '') + '>' + v + '万</button>'; }).join("") + '</div>' +
+        '<p class="note">月の生活費（休みと趣味もこみ）。残りは全部積立と投資へ、年5%で育つ計算です。目標は年の生活費の25倍。</p>';
+    }
+    document.getElementById("fdBody").addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-v]"); if (b) { spend = +b.dataset.v; draw(); }
+    });
+    draw();
+  });
 })();
 </script>
 </body>
