@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>金利と経済 — とわなにか</title>
+<meta name="description" content="金利が上がっても株が上がるのはなぜか。動画の要点と、自分の借金・債券・成長率で金利を試せる計算つき。">
+<style>
+  :root {
+    --bg: #f5f1e9;
+    --surface: #fbf9f4;
+    --border: #e2dac8;
+    --text: #2b2924;
+    --muted: #8a8271;
+    --wood: #93704b;
+    --wood-soft: #ece1d0;
+    --sage: #74886d;
+    --sage-soft: #e2e8dd;
+    --red: #a8553f;
+    --shadow: 0 1px 2px rgba(43,41,36,.05), 0 16px 40px rgba(43,41,36,.08);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1a16;
+      --surface: #242119;
+      --border: #38332a;
+      --text: #ede8dd;
+      --muted: #a89e8a;
+      --wood: #c99f74;
+      --wood-soft: #382d20;
+      --sage: #9db394;
+      --sage-soft: #26301f;
+      --red: #d98a72;
+      --shadow: none;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Apple SD Gothic Neo", sans-serif;
+    line-height: 1.75; font-size: 16px;
+  }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 64px; }
+  header p.kicker { color: var(--wood); font-size: 13px; letter-spacing: .08em; margin: 0; }
+  h1 { font-size: 28px; line-height: 1.35; margin: 4px 0 12px; }
+  h2 { font-size: 20px; margin: 0 0 8px; }
+  h3 { font-size: 16px; margin: 20px 0 4px; }
+  .lead { color: var(--muted); margin: 0 0 24px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  nav.toc a {
+    font-size: 14px; color: var(--wood); background: var(--wood-soft);
+    padding: 4px 12px; border-radius: 999px; text-decoration: none;
+  }
+  section.card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+    padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow);
+  }
+  .src { font-size: 13px; color: var(--muted); }
+  .src a { color: var(--wood); }
+  ul.points { padding-left: 20px; margin: 8px 0; }
+  ul.points li { margin-bottom: 6px; }
+  .note {
+    background: var(--sage-soft); border-radius: 12px; padding: 12px 14px; margin: 12px 0 0; font-size: 15px;
+  }
+  label.field { display: block; margin: 14px 0 0; font-size: 14px; color: var(--muted); }
+  .row { display: flex; align-items: center; gap: 12px; }
+  .row input[type=range] { flex: 1; accent-color: var(--wood); }
+  .row output, .row input[type=number] {
+    min-width: 88px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text); font-size: 16px;
+  }
+  input[type=number] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; width: 120px;
+  }
+  .seg { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .seg button {
+    font: inherit; font-size: 14px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .seg button[aria-pressed=true] { background: var(--wood); border-color: var(--wood); color: var(--surface); }
+  .result { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 16px; }
+  .stat { background: var(--bg); border-radius: 12px; padding: 10px 12px; }
+  .stat .k { font-size: 12px; color: var(--muted); }
+  .stat .v { font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .up { color: var(--red); }
+  .good { color: var(--sage); }
+  footer { color: var(--muted); font-size: 13px; margin-top: 32px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="kicker"><a href="./" style="color:inherit">とわなにか</a> ・ 経済ノート</p>
+    <h1>金利が上がっても、<br>株が上がるのはなぜ？</h1>
+    <p class="lead">動画の要点を日本語でまとめ、金利の動きを自分の借金や貯金に当てはめて試せるページです。</p>
+  </header>
+
+  <nav class="toc">
+    <a href="#video">動画の要点</a>
+    <a href="#basics">金利の基本</a>
+    <a href="#loan">借りる側の金利</a>
+    <a href="#bond">債券と金利</a>
+    <a href="#growth">成長率と金利</a>
+    <a href="choices.html">個人の選び方 →</a>
+    <a href="report.html">週間レポート →</a>
+  </nav>
+
+  <section class="card" id="video">
+    <h2>動画の要点</h2>
+    <p class="src">出典：<a href="https://www.youtube.com/watch?v=VhvHTl6MVh8" target="_blank" rel="noopener">「금리 상승마저 성장의 증거라는 시장, AI 기대감은 어디까지 고금리를 이길까?」</a>（PLUS TV、韓国語）。数字は動画内の発言をそのまま載せています。</p>
+    <ul class="points">
+      <li><b>金利は5%台なのに株は最高値。</b>以前は「5%を超えたら危ない」と言われていたが、今は5.2〜5.25%でも米国株と金が最高値を更新している。</li>
+      <li><b>市場は金利上昇を「成長の証拠」と読んでいる。</b>AIへの投資で資金需要が増えれば金利は上がり株は下がるはずだが、実際は株も債券も崩れていない。お金が企業の利益に流れているから、という見方。</li>
+      <li><b>ITバブルとの違い。</b>ドットコム時代は無料で利用者を集めたが、AI企業は最初から課金している（月200ドル、500ドルの上位プランなど）。</li>
+      <li><b>創業者が経営する会社がAI競争を引っ張る。</b>お金のためではないので大胆に投資できる。雇われ社長は任期と株主の目があり、大きな賭けをしにくい。</li>
+      <li><b>韓国は高めの金利にも耐えられそう。</b>名目成長率は7〜8%と高く、9月の輸出は約1200億ドル（10年前の2〜3倍）、貿易黒字は約499億ドル。ただし借金の多い家計や不動産関連は苦しくなる。</li>
+      <li><b>半導体の「池の中の2頭のクジラ」。</b>サムスンとSKハイニックスが巨額の利益を出すと、AI以外の企業がお金を借りにくくなる。電力網、エネルギー、電池などAI関連は資金を集めやすい。</li>
+      <li><b>次に見るもの。</b>サムスンの決算より、来週の米国10年債・20年債の入札で市場がどう反応するかの方が大事。</li>
+      <li><b>結論。</b>出演者の多くは「金利も株も両方上がるかもしれない」で一致した。</li>
+    </ul>
+    <p class="note">この動画は「金利が上がる＝悪いこと」とは限らない、という話です。景気が強いから金利が上がるのか、物価だけが上がって金利が上がるのかで、意味が変わります。</p>
+  </section>
+
+  <section class="card" id="basics">
+    <h2>金利の基本（3つだけ）</h2>
+    <h3>1. 金利はお金の値段</h3>
+    <p>お金を借りたい人が増えると値段（金利）が上がります。AIに大金を投じる会社が社債を出すと、国の借金や住宅ローンとお金を取り合うことになります。</p>
+    <h3>2. 金利が上がると債券の値段は下がる</h3>
+    <p>前に買った債券の利率は固定です。あとから高い利率の債券が出れば、古い債券は安くしないと売れません。<a href="#bond">下の計算</a>で確かめられます。</p>
+    <h3>3. 成長率が金利より高ければ、借金は軽くなっていく</h3>
+    <p>稼ぎが7%増える国で金利が5%なら、借金の重さは毎年少しずつ減ります。動画で「韓国は高い金利にも耐えられる」と言っているのはこの理屈です。<a href="#growth">下の計算</a>で試せます。</p>
+  </section>
+
+  <section class="card" id="loan">
+    <h2>借りる側の金利：0.5%の差はいくら？</h2>
+    <p>初期値は青年バチモク（チョンセ保証金の貸付）の2.5%です。返し方を選んで、金利を動かしてみてください。</p>
+
+    <label class="field">借りる額（万ウォン）</label>
+    <div class="row"><input type="range" id="lP" min="1000" max="40000" step="500" value="10000"><output id="lPo"></output></div>
+
+    <label class="field">年利（%）</label>
+    <div class="row"><input type="range" id="lR" min="0.5" max="9" step="0.05" value="2.5"><output id="lRo"></output></div>
+
+    <label class="field">期間（年）</label>
+    <div class="row"><input type="range" id="lY" min="1" max="30" step="1" value="2"><output id="lYo"></output></div>
+
+    <label class="field">返し方</label>
+    <div class="seg" id="lM">
+      <button type="button" data-m="bullet" aria-pressed="true">利息だけ毎月（チョンセ型）</button>
+      <button type="button" data-m="annuity" aria-pressed="false">毎月同じ額（元利均等）</button>
+    </div>
+
+    <div class="result">
+      <div class="stat"><div class="k">毎月の支払い</div><div class="v" id="lMon"></div></div>
+      <div class="stat"><div class="k">利息の合計</div><div class="v" id="lTot"></div></div>
+      <div class="stat"><div class="k">金利が +1%p なら毎月</div><div class="v up" id="lUp"></div></div>
+    </div>
+    <p class="note" id="lNote"></p>
+  </section>
+
+  <section class="card" id="bond">
+    <h2>債券と金利：シーソーの関係</h2>
+    <p>額面100の債券を持っているとします。市場の金利が変わると、その債券を今売るといくらになるかが変わります。</p>
+
+    <label class="field">持っている債券の利率（%）</label>
+    <div class="row"><input type="range" id="bC" min="0" max="8" step="0.25" value="4"><output id="bCo"></output></div>
+
+    <label class="field">残りの年数</label>
+    <div class="row"><input type="range" id="bN" min="1" max="40" step="1" value="10"><output id="bNo"></output></div>
+
+    <label class="field">今の市場金利（%）</label>
+    <div class="row"><input type="range" id="bY" min="0.5" max="10" step="0.05" value="5.2"><output id="bYo"></output></div>
+
+    <div class="result">
+      <div class="stat"><div class="k">今売るといくら</div><div class="v" id="bPr"></div></div>
+      <div class="stat"><div class="k">買った時との差</div><div class="v" id="bDiff"></div></div>
+    </div>
+    <p class="note" id="bNote"></p>
+  </section>
+
+  <section class="card" id="growth">
+    <h2>成長率と金利：借金は重くなる？軽くなる？</h2>
+    <p>稼ぎ（名目成長率）と借金の利息（金利）のどちらが速く増えるかで、借金の重さが決まります。国にも会社にも家計にも同じ理屈が使えます。</p>
+
+    <label class="field">稼ぎの伸び（名目成長率 %）</label>
+    <div class="row"><input type="range" id="gG" min="-3" max="12" step="0.25" value="7"><output id="gGo"></output></div>
+
+    <label class="field">金利（%）</label>
+    <div class="row"><input type="range" id="gR" min="0" max="12" step="0.25" value="5.25"><output id="gRo"></output></div>
+
+    <div class="result">
+      <div class="stat"><div class="k">10年後の借金の重さ</div><div class="v" id="gW"></div></div>
+      <div class="stat"><div class="k">差（成長率 − 金利）</div><div class="v" id="gD"></div></div>
+    </div>
+    <p class="note" id="gNote"></p>
+  </section>
+
+  <p><a href="choices.html" style="color:var(--wood)">次のページ：世界の金利から考える、個人のお金の置き場所 →</a></p>
+
+  <footer>
+    計算は目安です。実際の貸付は手数料、保証料、優遇金利で変わります。投資の勧めではありません。<br>
+    更新：2026-10-09
+  </footer>
+</main>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var man = function (v) { // 万ウォン → 表示
+    if (Math.abs(v) >= 10000) return (v / 10000).toFixed(2).replace(/\.?0+$/, "") + "億ウォン";
+    return Math.round(v).toLocaleString("ja-JP") + "万ウォン";
+  };
+  var won = function (v) { return Math.round(v * 10000).toLocaleString("ja-JP") + "ウォン"; };
+
+  // 借りる側
+  var mode = "bullet";
+  function monthly(P, r, y) {
+    var i = r / 100 / 12, n = y * 12;
+    if (mode === "bullet") return P * i;
+    if (i === 0) return P / n;
+    return P * i / (1 - Math.pow(1 + i, -n));
+  }
+  function loan() {
+    var P = +$("lP").value, r = +$("lR").value, y = +$("lY").value;
+    $("lPo").textContent = man(P);
+    $("lRo").textContent = r.toFixed(2) + "%";
+    $("lYo").textContent = y + "年";
+    var m = monthly(P, r, y), mUp = monthly(P, r + 1, y);
+    var tot = mode === "bullet" ? m * y * 12 : m * y * 12 - P;
+    $("lMon").textContent = won(m);
+    $("lTot").textContent = won(tot);
+    $("lUp").textContent = won(mUp) + "（+" + won(mUp - m) + "）";
+    var half = monthly(P, r + 0.5, y) - m;
+    $("lNote").textContent = "金利が0.5%p上がると毎月 " + won(half) + " 増え、" + y + "年で約 " + won(half * y * 12) + " の差になります。" +
+      (mode === "bullet" ? "チョンセ型は元金を最後にまとめて返すので、毎月は利息だけです。" : "");
+  }
+  $("lM").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    mode = b.dataset.m;
+    [].forEach.call($("lM").children, function (x) { x.setAttribute("aria-pressed", x === b); });
+    loan();
+  });
+  ["lP", "lR", "lY"].forEach(function (id) { $(id).addEventListener("input", loan); });
+
+  // 債券
+  function bond() {
+    var c = +$("bC").value, n = +$("bN").value, y = +$("bY").value / 100;
+    $("bCo").textContent = c.toFixed(2) + "%";
+    $("bNo").textContent = n + "年";
+    $("bYo").textContent = (y * 100).toFixed(2) + "%";
+    var p = 0;
+    for (var t = 1; t <= n; t++) p += c / Math.pow(1 + y, t);
+    p += 100 / Math.pow(1 + y, n);
+    var d = p - 100;
+    $("bPr").textContent = p.toFixed(1);
+    $("bDiff").textContent = (d >= 0 ? "+" : "") + d.toFixed(1) + "%";
+    $("bDiff").className = "v " + (d < 0 ? "up" : "good");
+    $("bNote").textContent = Math.abs(d) < 0.05
+      ? "市場金利と債券の利率が同じなので、値段は額面どおりです。"
+      : (d < 0
+        ? "市場金利の方が高いので、この債券は " + Math.abs(d).toFixed(1) + "% 安くしないと売れません。残りの年数が長いほど下がり方が大きくなります（動画の40年債はこの影響が大きい）。"
+        : "市場金利の方が低いので、この債券は高く売れます。金利が下がると債券を持つ人が得をします。");
+  }
+  ["bC", "bN", "bY"].forEach(function (id) { $(id).addEventListener("input", bond); });
+
+  // 成長率と金利
+  function growth() {
+    var g = +$("gG").value, r = +$("gR").value;
+    $("gGo").textContent = g.toFixed(2) + "%";
+    $("gRo").textContent = r.toFixed(2) + "%";
+    var w = Math.pow((1 + r / 100) / (1 + g / 100), 10) * 100;
+    var d = g - r;
+    $("gW").textContent = w.toFixed(0) + "（今を100）";
+    $("gW").className = "v " + (w > 100.5 ? "up" : "good");
+    $("gD").textContent = (d >= 0 ? "+" : "") + d.toFixed(2) + "%p";
+    $("gNote").textContent = d > 0
+      ? "稼ぎの伸びが金利を上回っているので、新しく借りなければ借金は稼ぎに比べて軽くなります。動画で「金利7%まで耐えられる」と冗談まじりに言っていたのはこの状態です。"
+      : (d < 0
+        ? "金利が稼ぎの伸びを上回っているので、借金は稼ぎに比べて重くなっていきます。借金の多い家計や会社が先に苦しくなるのはこのためです。"
+        : "稼ぎと利息が同じ速さで増えるので、借金の重さは変わりません。");
+  }
+  ["gG", "gR"].forEach(function (id) { $(id).addEventListener("input", growth); });
+
+  loan(); bond(); growth();
+})();
+</script>
+</body>
+</html>
