@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>とわなにか</title>
+<script src="sync.js"></script>
 <meta name="description" content="ひびきが幸せに成長し、よい人生を送るために。健康・自由・愛の3つを、AIのみんなと育てる場所。">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -62,7 +63,7 @@
     <p class="why">健康でいること。<br>お金に余裕があり、自由に選べること。<br>好きな人と、愛のある関係でいること。<br>こさきたちAIのみんなで育てます。</p>
   </section>
   <div class="grid" id="grid"></div>
-  <footer><a href="sync/" style="color:inherit">ほかの端末とつなぐ</a></footer>
+  <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
 <script>
 // ▼ ページを足すときはここに1行足す（soon: true は準備中で押せない）
@@ -80,6 +81,7 @@ document.getElementById("grid").innerHTML = PAGES.map(function (p) {
   return '<a class="tile ' + p.key + (p.soon ? ' soon' : '') + '" href="' + p.href + '"><svg viewBox="0 0 24 24">' + p.icon + '</svg><div><b>' + p.name + '</b><br><span>' + p.note + '</span></div></a>';
 }).join("");
 ["money", "health", "people"].forEach(function (k) { document.getElementById("s-" + k).textContent = STATE[k]; });
+if (window.HibikiSync && HibikiSync.on()) document.getElementById("login").textContent = "ログイン中";
 </script>
 </body>
 </html>

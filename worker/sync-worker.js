@@ -8,6 +8,8 @@
 // 読む: GET  /pull?id=<id>          → { keys }
 // 書く: POST /push { id, keys }     → { keys }（まぜた後の全部）
 // 消す: POST /wipe { id }           → { ok }
+// 鍵:   GET  /owner                 → { pub }（個人ページを暗号にするための公開鍵。秘密ではない）
+//       POST /owner { id, pub }     → 空のときか、同じ id のときだけ置ける（2026-10-09）
 
 import { DurableObject } from "cloudflare:workers";
 
@@ -23,6 +25,18 @@ export default {
     if (request.method === "OPTIONS") return new Response(null, { headers: cors(origin) });
     const url = new URL(request.url);
     let id = "", body = null;
+    if (url.pathname === "/owner") {
+      const box = env.BOX.get(env.BOX.idFromName("owner"));
+      if (request.method === "GET") return json(await box.owner(null), 200, origin);
+      if (request.method === "POST") {
+        const text = await request.text();
+        if (text.length > 4096) return json({ error: "too_big" }, 413, origin);
+        let b; try { b = JSON.parse(text); } catch (e) { return json({ error: "bad_json" }, 400, origin); }
+        if (!b || !ID.test(b.id || "") || !b.pub || typeof b.pub !== "object") return json({ error: "bad" }, 400, origin);
+        const out = await box.owner(b);
+        return json(out, out.error ? 403 : 200, origin);
+      }
+    }
     if (url.pathname === "/pull" && request.method === "GET") {
       id = url.searchParams.get("id") || "";
     } else if ((url.pathname === "/push" || url.pathname === "/wipe") && request.method === "POST") {
@@ -41,6 +55,14 @@ export default {
 };
 
 export class SyncBox extends DurableObject {
+  async owner(b) {
+    const cur = await this.ctx.storage.get("owner");
+    if (!b) return { pub: cur ? cur.pub : null };
+    if (cur && cur.id !== b.id) return { error: "taken" };
+    const pub = { kty: "EC", crv: "P-256", x: String(b.pub.x || ""), y: String(b.pub.y || "") };
+    await this.ctx.storage.put("owner", { id: b.id, pub, at: Date.now() });
+    return { pub };
+  }
   async handle(path, body) {
     const keys = (await this.ctx.storage.get("keys")) || {};
     if (path === "/pull") return { keys };
