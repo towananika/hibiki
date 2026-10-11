@@ -1,11 +1,11 @@
 # とわなにか（ひびきのライフサイト）作業メモ
 
 ひびき（韓国在住・日本語でやりとり）が幸せに成長し、よい人生を送るための場所。公開: https://towananika.github.io/hibiki/
-ひびきはWebページだけを読む（mdは読まない）。文字は少なく、図・メーター・カードで見せる。返事は日本語。
+ひびきは日本語だけで読む（サイトの表示はすべて日本語）。新しい内容はトークン節約のため、まず `/mnt/project-files/hibiki/` に md で書き、Webページにするのは頼まれたときだけ（2026-10-11）。ページは文字を少なく、図・メーター・カードで見せる。
 
 ## 新しいページを足す手順
 1. `<name>/index.html` を作る。既存ページ（`timeline/` `study/` `home/`）の head と `:root` の色をそのまま写す（木 `--wood`・セージ `--sage`・青 `--blue`・赤 `--red`、ダークモード対応、`max-width:480px`）。
-2. head に `<meta name="robots" content="noindex, nofollow">` と `<script src="../sync.js"></script>` を入れる。ログインしていない端末ではページが隠れる（`window.HB_PUBLIC = true` で公開）。
+2. head に `<meta name="robots" content="noindex, nofollow">` と `<script src="../sync.js"></script>` を入れる。（`sync.js` は日本語固定（翻訳オフ）と、PCでの拡大（700px以上で1.3倍、1200px以上で1.5倍）も全ページにかける）ログインしていない端末ではページが隠れる（`window.HB_PUBLIC = true` で公開）。
 3. 入口 `index.html` の `GROUPS` に1行足す。`new: "YYYY-MM-DD"` を付けると7日間「NEW」が出る。
 4. ページで保存する値は localStorage の `hibiki-` で始まる鍵に入れる（`sync.js` が端末どうしでそろえる）。
 5. スマホ幅（390px）で Playwright のスクリーンショットを撮って確かめる。`sync.js` は route で空にするか、`HibikiSync.open` を平文で差し替える。
