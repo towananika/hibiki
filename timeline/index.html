@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>タイムライン — とわなにか</title>
+<meta name="description" content="ひびきの履歴・経験・経歴を、年表にして残す。">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<meta name="theme-color" content="#5b7a99">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --sage:#74886d; --red:#b5583f; --blue:#5b7a99; --plum:#8a6a8f; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --sage:#9db394; --red:#e08b70; --blue:#8fb0cf; --plum:#c4a3c9; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; }
+  .brand { color:var(--blue); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
+  .date { color:var(--muted); font-size:13px; }
+  h1 { font-size:28px; margin:16px 0 0; }
+  .sub { color:var(--muted); font-size:14px; margin:4px 0 0; line-height:1.7; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:18px; margin-top:14px; }
+  .label { color:var(--muted); font-size:13px; margin:0 0 12px; display:flex; justify-content:space-between; }
+  .label b { color:var(--blue); }
+  .note { color:var(--muted); font-size:12px; line-height:1.7; margin:10px 0 0; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px; }
+  .chips button { font:inherit; font-size:13px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:999px; padding:5px 12px; cursor:pointer; }
+  .chips button.on { background:var(--blue); border-color:var(--blue); color:var(--surface); }
+  form { display:grid; gap:8px; }
+  form input, form textarea { font:inherit; font-size:15px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text); width:100%; }
+  form textarea { min-height:64px; resize:vertical; }
+  form button.go { font:inherit; font-weight:600; border:0; border-radius:12px; padding:11px; background:var(--blue); color:var(--surface); cursor:pointer; }
+  .tl { position:relative; margin-left:6px; padding-left:20px; border-left:2px solid var(--border); }
+  .yr { font-size:20px; font-weight:700; margin:22px 0 10px -20px; font-variant-numeric:tabular-nums; }
+  .yr:first-child { margin-top:0; }
+  .ev { position:relative; padding:0 26px 16px 0; }
+  .ev::before { content:""; position:absolute; left:-27px; top:6px; width:12px; height:12px; border-radius:50%; background:var(--c,var(--muted)); border:2px solid var(--surface); }
+  .ev small { display:block; font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+  .ev small em { font-style:normal; font-weight:700; color:var(--c,var(--muted)); margin-left:6px; }
+  .ev b { font-size:15px; display:block; margin:1px 0; }
+  .ev p { margin:2px 0 0; font-size:14px; line-height:1.7; color:var(--text); }
+  .ev .x { position:absolute; right:0; top:0; border:0; background:none; color:var(--muted); font-size:18px; cursor:pointer; }
+  footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="brand" href="../">← とわなにか</a><span class="date" id="count"></span></div>
+  <h1>タイムライン</h1>
+  <p class="sub">ひびきの履歴・経験・経歴。<br>あとから振り返るための年表。</p>
+
+  <section class="card">
+    <p class="label"><span>足す</span></p>
+    <form id="form">
+      <input id="when" placeholder="いつ（例：2015 / 2015-04 / 2015-04-12）" inputmode="numeric" maxlength="10" required>
+      <div class="chips" id="cats" style="margin:0"></div>
+      <input id="title" placeholder="できごと（例：○○に入社した）" maxlength="40" required>
+      <textarea id="memo" placeholder="そのとき感じたこと・学んだこと（なくてもOK）" maxlength="300"></textarea>
+      <button class="go">年表に足す</button>
+    </form>
+    <p class="note">年だけ、年月だけでもOK。思い出した順でいい。この端末に残り、ログインしていればほかの端末ともそろいます。</p>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>年表</span><b id="order" style="cursor:pointer">新しい順 ⇅</b></p>
+    <div class="chips" id="filter"></div>
+    <div class="tl" id="tl"></div>
+  </section>
+
+  <footer>履歴は、あとから素敵な宝物になる。</footer>
+</main>
+<script>
+var CATS = [
+  { k: "work", n: "仕事", c: "var(--wood)" }, { k: "learn", n: "学び", c: "var(--blue)" },
+  { k: "home", n: "住まい", c: "var(--sage)" }, { k: "people", n: "人", c: "var(--red)" },
+  { k: "event", n: "できごと", c: "var(--plum)" }, { k: "aha", n: "気づき", c: "var(--muted)" }
+];
+var KEY = "hibiki-timeline-v1";
+function rd(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
+function esc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+var mine = rd(KEY, []), seed = [], cat = "event", flt = "", desc = true;
+function save() { try { localStorage.setItem(KEY, JSON.stringify(mine)); } catch (e) {} }
+function catOf(k) { return CATS.filter(function (c) { return c.k === k; })[0] || CATS[4]; }
+function fmt(w) { var p = w.split("-"); return p[0] + "年" + (p[1] ? +p[1] + "月" : "") + (p[2] ? +p[2] + "日" : ""); }
+
+function render() {
+  document.getElementById("cats").innerHTML = CATS.map(function (c) { return '<button type="button" class="' + (c.k === cat ? 'on' : '') + '" data-k="' + c.k + '">' + c.n + '</button>'; }).join("");
+  document.getElementById("filter").innerHTML = '<button class="' + (!flt ? 'on' : '') + '" data-k="">すべて</button>' + CATS.map(function (c) { return '<button class="' + (c.k === flt ? 'on' : '') + '" data-k="' + c.k + '">' + c.n + '</button>'; }).join("");
+  var all = seed.map(function (e) { e.seed = true; return e; }).concat(mine.map(function (e, i) { e.i = i; return e; }));
+  document.getElementById("count").textContent = all.length + "件";
+  var list = all.filter(function (e) { return !flt || e.cat === flt; }).sort(function (a, b) { return (a.when < b.when ? -1 : a.when > b.when ? 1 : 0) * (desc ? -1 : 1); });
+  if (!list.length) { document.getElementById("tl").innerHTML = '<p class="note" style="margin:0">まだありません。上から足してください。</p>'; return; }
+  var y = "", h = "";
+  list.forEach(function (e) {
+    var yy = e.when.slice(0, 4), c = catOf(e.cat);
+    if (yy !== y) { h += '<div class="yr">' + yy + '</div>'; y = yy; }
+    h += '<div class="ev" style="--c:' + c.c + '"><small>' + fmt(e.when) + '<em>' + c.n + '</em></small><b>' + esc(e.title) + '</b>' + (e.memo ? '<p>' + esc(e.memo) + '</p>' : '') + (e.seed ? '' : '<button class="x" data-del="' + e.i + '" aria-label="消す">×</button>') + '</div>';
+  });
+  document.getElementById("tl").innerHTML = h;
+}
+document.getElementById("cats").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { cat = b.dataset.k; render(); } });
+document.getElementById("filter").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) { flt = b.dataset.k; render(); } });
+document.getElementById("order").addEventListener("click", function () { desc = !desc; document.getElementById("order").textContent = (desc ? "新しい順" : "古い順") + " ⇅"; render(); });
+document.getElementById("tl").addEventListener("click", function (e) {
+  var b = e.target.closest("[data-del]"); if (!b || !confirm("消しますか？")) return;
+  mine.splice(+b.dataset.del, 1); save(); render();
+});
+document.getElementById("form").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var w = document.getElementById("when").value.trim().replace(/[\/.]/g, "-");
+  if (!/^\d{4}(-\d{1,2}(-\d{1,2})?)?$/.test(w)) { alert("年は「2015」、年月は「2015-04」の形で入れてください"); return; }
+  w = w.split("-").map(function (p, i) { return i ? ("0" + p).slice(-2) : p; }).join("-");
+  mine.push({ when: w, cat: cat, title: document.getElementById("title").value.trim(), memo: document.getElementById("memo").value.trim() });
+  save(); e.target.reset(); render();
+});
+render();
+// ひびきと一緒に書いた年表（private/timeline.json。ログインした端末だけで読める）
+if (window.HibikiSync) HibikiSync.open("timeline").then(function (T) { if (T && T.events) { seed = T.events; render(); } });
+</script>
+</body>
+</html>
