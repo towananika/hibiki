@@ -5,7 +5,7 @@
 - `index.html` 入口。グループ分けのメニュー。ページを足すときは `GROUPS` に1行（`new:` で7日間NEW）
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）
 - `health/` 健康、`relations/` 愛と関係、`home/` 住まい（入居チェック）
-- `study/` 勉強（放送大学「デジタル経済の理解」全15章、進み具合は `hibiki-study-digital-v1`）
+- `study/` 勉強（7章は `study/ch7.html` にくわしく。放送大学「デジタル経済の理解」全15章、進み具合は `hibiki-study-digital-v1`）
 - `timeline/` これまでの道（人生タイムライン）。できごとは `private/timeline.json`（暗号）、本人が足した分は `hibiki-timeline-v1`
 
 ## 端末どうしの同期
