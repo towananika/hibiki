@@ -154,7 +154,7 @@
 
   <section class="card">
     <p class="label"><span>荷解きと整理</span><b id="uCount"></b></p>
-    <p style="margin:0;font-size:14px;line-height:1.8">引っ越しは10日に終わったけれど、荷解きは途中。前は着ていなかった服まで来てしまったので、<b>14㎡に入る分だけ</b>を残して、あとは手放す。</p>
+    <p style="margin:0;font-size:14px;line-height:1.8">引っ越しは10日に終わったけれど、荷解きは途中。前は着ていなかった服まで来てしまったので、<b>14㎡に入る分だけ</b>を残して、あとは手放す。家具も同じ。「全部使う」をやめると、息苦しさが減る。</p>
     <div class="bar"><i id="uBar" style="background:var(--sage)"></i></div>
     <div id="uList" style="margin-top:10px"></div>
     <div class="fact" style="align-items:center"><span>手放した数（服・物）</span><b><button class="step" data-d="-1">−</button> <span id="gone" style="color:var(--text);display:inline-block;min-width:28px;text-align:center">0</span> <button class="step" data-d="1">＋</button></b></div>
@@ -252,6 +252,7 @@ if (window.HibikiSync) HibikiSync.open("contract").then(function (C) {
 // 荷解きと整理（チェックと「手放した数」は hibiki-unpack-v1 に保存）
 var UNPACK = [
   { k: "box", t: "段ボールを全部あける" },
+  { k: "furn", t: "家具は「14㎡に入る分だけ」に決める" },
   { k: "sort", t: "服を「残す・手放す・迷う箱」に分ける" },
   { k: "out", t: "手放す物を出す（捨てる・売る・譲る）" },
   { k: "place", t: "残す物の置き場所を決める" },
