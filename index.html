@@ -24,65 +24,55 @@
          font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
   main { max-width:480px; margin:0 auto; padding:40px 16px 32px; }
   h1 { font-size:28px; margin:0; letter-spacing:.06em; }
-  .sub { color:var(--muted); font-size:14px; margin:6px 0 28px; }
-  .core { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:12px 16px 16px; margin-bottom:14px; }
-  .core svg { width:100%; height:auto; display:block; }
-  .c { fill-opacity:.35; stroke-width:2; }
-  .money-c { fill:var(--wood); stroke:var(--wood); } .health-c { fill:var(--sage); stroke:var(--sage); } .people-c { fill:var(--red); stroke:var(--red); }
-  .cn { font-size:17px; font-weight:700; fill:var(--text); text-anchor:middle; }
-  .cs { font-size:12px; fill:var(--muted); text-anchor:middle; }
-  .me { font-size:14px; font-weight:800; fill:var(--text); text-anchor:middle; }
-  .why { font-size:13px; color:var(--muted); text-align:center; margin:4px 0 0; line-height:1.7; }
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .tile { display:flex; flex-direction:column; justify-content:space-between; min-height:150px; padding:16px; border-radius:20px;
-          text-decoration:none; color:var(--text); background:var(--surface); border:1px solid var(--border); }
-  .tile svg { width:40px; height:40px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
-  .tile b { font-size:20px; }
-  .tile span { font-size:12px; color:var(--muted); }
-  .tile.soon { opacity:.55; pointer-events:none; }
-  .money { background:var(--wood-soft); } .money svg { stroke:var(--wood); }
-  .health { background:var(--sage-soft); } .health svg { stroke:var(--sage); }
-  .people { background:var(--red-soft); } .people svg { stroke:var(--red); }
-  .more { background:var(--blue-soft); } .more svg { stroke:var(--blue); }
+  .sub { color:var(--muted); font-size:14px; margin:6px 0 4px; line-height:1.7; }
+  .grp { color:var(--muted); font-size:13px; font-weight:600; margin:22px 4px 8px; letter-spacing:.05em; }
+  .menu { background:var(--surface); border:1px solid var(--border); border-radius:20px; overflow:hidden; }
+  .item { display:flex; align-items:center; gap:14px; padding:14px 16px; text-decoration:none; color:var(--text); }
+  .item + .item { border-top:1px solid var(--border); }
+  .ic { flex:none; width:44px; height:44px; border-radius:14px; display:grid; place-items:center; }
+  .ic svg { width:24px; height:24px; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .item .t { flex:1; min-width:0; }
+  .item b { font-size:17px; }
+  .item .t > span { display:block; font-size:12px; color:var(--muted); margin-top:2px; }
+  .new { font-style:normal; font-size:10px; font-weight:700; color:#fff; background:var(--red); border-radius:999px; padding:2px 7px; margin-left:6px; vertical-align:2px; }
+  .chev { color:var(--muted); font-size:20px; }
+  .money .ic { background:var(--wood-soft); } .money svg { stroke:var(--wood); }
+  .health .ic { background:var(--sage-soft); } .health svg { stroke:var(--sage); }
+  .people .ic { background:var(--red-soft); } .people svg { stroke:var(--red); }
+  .more .ic { background:var(--blue-soft); } .more svg { stroke:var(--blue); }
   footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
 </style>
 </head>
 <body>
 <main>
   <h1>とわなにか</h1>
-  <p class="sub">ひびきが幸せに成長して、<br>よい人生を送るための場所。</p>
-  <section class="core">
-    <svg viewBox="0 0 300 250" role="img" aria-label="自由・健康・愛の3つの輪が重なり、真ん中にひびき">
-      <circle cx="150" cy="88" r="72" class="c money-c"/>
-      <circle cx="102" cy="170" r="72" class="c health-c"/>
-      <circle cx="198" cy="170" r="72" class="c people-c"/>
-      <text x="150" y="58" class="cn">自由</text><text x="150" y="80" class="cs" id="s-money"></text>
-      <text x="74" y="196" class="cn">健康</text><text x="74" y="218" class="cs" id="s-health"></text>
-      <text x="226" y="196" class="cn">愛</text><text x="226" y="218" class="cs" id="s-people"></text>
-      <text x="150" y="150" class="me">ひびき</text>
-    </svg>
-    <p class="why">健康でいること。<br>お金に余裕があり、自由に選べること。<br>好きな人と、愛のある関係でいること。<br>こさきたちAIのみんなで育てます。</p>
-  </section>
-  <div class="grid" id="grid"></div>
+  <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
+  <div id="menu"></div>
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
 <script>
-// ▼ ページを足すときはここに1行足す（soon: true は準備中で押せない）
-var PAGES = [
-  { key: "money",  name: "お金と自由",   note: "金利・配分・週間レポート", href: "money/", icon: '<circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M9 13h6M9 16h6M12 13v5"/>' },
-  { key: "health", name: "健康",   note: "毎日4つをタップ", href: "health/", icon: '<path d="M3 12h4l2-5 4 10 2-5h6"/>' },
-  { key: "people", name: "愛と関係",   note: "連絡・ありがとう・大切な人", href: "relations/", icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' },
-  { key: "money",  name: "住まい", note: "明日の入居チェック", href: "home/", icon: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>' },
-  { key: "more",   name: "これまでの道", note: "人生タイムライン", href: "timeline/", icon: '<path d="M6 3v18"/><circle cx="6" cy="7" r="2"/><circle cx="6" cy="17" r="2"/><path d="M10 7h10M10 17h7"/>' },
-  { key: "more",   name: "道具箱", note: "間合い：計算ツール", href: "../tool/", icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>' }
+// ▼ ページを足すときはここに1行足す。new: 足した日（7日間「NEW」が出る）
+var GROUPS = [
+  { n: "毎日", pages: [
+    { key: "health", name: "健康", note: "毎日4つをタップ", href: "health/", icon: '<path d="M3 12h4l2-5 4 10 2-5h6"/>' },
+    { key: "people", name: "愛と関係", note: "連絡・ありがとう・大切な人", href: "relations/", icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' } ]},
+  { n: "お金と暮らし", pages: [
+    { key: "money", name: "お金と自由", note: "金利・配分・週間レポート", href: "money/", icon: '<circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M9 13h6M9 16h6M12 13v5"/>' },
+    { key: "money", name: "住まい", note: "チョンセ・住まい代", href: "home/", icon: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>' } ]},
+  { n: "自分", pages: [
+    { key: "more", name: "これまでの道", note: "人生タイムライン", href: "timeline/", new: "2026-10-11", icon: '<path d="M6 3v18"/><circle cx="6" cy="7" r="2"/><circle cx="6" cy="17" r="2"/><path d="M10 7h10M10 17h7"/>' },
+    { key: "more", name: "勉強", note: "デジタル経済の理解・全15章", href: "study/", new: "2026-10-11", icon: '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 7h6"/>' } ]},
+  { n: "道具", pages: [
+    { key: "more", name: "道具箱", note: "間合い：計算ツール", href: "../tool/", icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>' } ]}
 ];
-// 3つの資産の今の状態（ひとこと）
-var STATE = { money: "金利は高め", health: "まず眠る週", people: "写真を送る" };
 // ▲
-document.getElementById("grid").innerHTML = PAGES.map(function (p) {
-  return '<a class="tile ' + p.key + (p.soon ? ' soon' : '') + '" href="' + p.href + '"><svg viewBox="0 0 24 24">' + p.icon + '</svg><div><b>' + p.name + '</b><br><span>' + p.note + '</span></div></a>';
+var NOW = Date.now();
+document.getElementById("menu").innerHTML = GROUPS.map(function (g) {
+  return '<div class="grp">' + g.n + '</div><div class="menu">' + g.pages.map(function (p) {
+    var fresh = p.new && NOW - new Date(p.new).getTime() < 7 * 864e5;
+    return '<a class="item ' + p.key + '" href="' + p.href + '"><span class="ic"><svg viewBox="0 0 24 24">' + p.icon + '</svg></span><span class="t"><b>' + p.name + '</b>' + (fresh ? '<em class="new">NEW</em>' : '') + '<span>' + p.note + '</span></span><span class="chev">›</span></a>';
+  }).join("") + '</div>';
 }).join("");
-["money", "health", "people"].forEach(function (k) { document.getElementById("s-" + k).textContent = STATE[k]; });
 if (window.HibikiSync && HibikiSync.on()) document.getElementById("login").textContent = "ログイン中";
 </script>
 </body>
