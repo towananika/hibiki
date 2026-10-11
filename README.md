@@ -16,3 +16,4 @@
 - 個人的な数字は `private/<name>.json` に、ひびきの公開鍵（`private/owner.pub.json`）で暗号にして置く。読めるのはログインした端末だけ。
 - 暗号にする: `node tools/seal.mjs <平文.json> <name>`。平文はリポジトリに置かない（共有フォルダ economy/private/）。
 - 秘密鍵は合言葉から作った鍵で包んで同期（`hibiki-keywrap`）。公開鍵は Worker の `/owner` に置かれる。
+- 契約書の内容は `private/contract.json`（暗号）。住所・保証金・月払いだけ。氏名・住民登録番号・電話・口座は載せない。
