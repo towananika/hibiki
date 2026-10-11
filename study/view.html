@@ -19,52 +19,61 @@
   body { margin:0; background:var(--bg); color:var(--text); line-height:1.7;
          font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
   main { max-width:520px; margin:0 auto; padding:28px 16px 40px; }
-  .top { display:flex; justify-content:space-between; font-size:13px; }
+  .top { display:flex; justify-content:space-between; align-items:center; font-size:14px; }
+  .fz { display:flex; gap:6px; } .fz button { all:unset; cursor:pointer; box-sizing:border-box; min-width:36px; height:30px; padding:0 8px; display:grid; place-items:center; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--sage); font-weight:700; font-size:13px; }
   .top a { color:var(--muted); text-decoration:none; } .top a:first-child { color:var(--sage); font-weight:600; letter-spacing:.1em; }
-  h1 { font-size:26px; line-height:1.4; margin:16px 0 8px; }
+  h1 { font-size:calc(28px*var(--k,1)); line-height:1.4; margin:16px 0 8px; }
   .toc { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 4px; }
-  .toc a { font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:4px 10px; text-decoration:none; }
+  .toc a { font-size:calc(14px*var(--k,1)); color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:4px 10px; text-decoration:none; }
   section { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 16px 14px; margin-top:14px; }
-  h2 { font-size:19px; margin:14px 0 6px; scroll-margin-top:12px; }
-  h3 { font-size:15px; color:var(--blue); margin:16px 0 4px; }
-  p, li { font-size:15px; } ul, ol { padding-left:1.3em; margin:6px 0; } li { margin:3px 0; }
+  h2 { font-size:calc(22px*var(--k,1)); margin:14px 0 6px; scroll-margin-top:12px; }
+  h3 { font-size:calc(18px*var(--k,1)); color:var(--blue); margin:16px 0 4px; }
+  p, li { font-size:calc(18px*var(--k,1)); } ul, ol { padding-left:1.3em; margin:6px 0; } li { margin:3px 0; }
   strong { color:var(--text); background:linear-gradient(transparent 62%, rgba(91,122,153,.22) 0); }
   hr { display:none; }
   blockquote { margin:8px 0; border-left:3px solid var(--sage); padding:2px 0 2px 12px; color:var(--muted); }
   .tw { overflow-x:auto; margin:8px 0; }
-  table { border-collapse:collapse; width:100%; font-size:13px; }
+  table { border-collapse:collapse; width:100%; font-size:calc(15px*var(--k,1)); }
   th { background:var(--blue-soft); text-align:left; } th, td { padding:7px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
   .bars { display:grid; gap:8px; margin:10px 0; }
-  .bar { display:grid; grid-template-columns:96px 1fr 52px; align-items:center; gap:8px; font-size:13px; }
+  .bar { display:grid; grid-template-columns:calc(110px*var(--k,1)) 1fr calc(60px*var(--k,1)); align-items:center; gap:8px; font-size:calc(15px*var(--k,1)); }
   .bar .tr { height:14px; border-radius:7px; background:var(--bg); overflow:hidden; }
   .bar .tr i { display:block; height:100%; border-radius:7px; }
   .bar b { text-align:right; font-variant-numeric:tabular-nums; }
   .tl { position:relative; margin:10px 0; padding-left:22px; }
   .tl::before { content:""; position:absolute; left:6px; top:4px; bottom:4px; width:2px; background:var(--border); }
-  .tl div { position:relative; padding:5px 0; font-size:14px; line-height:1.5; }
+  .tl div { position:relative; padding:5px 0; font-size:calc(17px*var(--k,1)); line-height:1.5; }
   .tl div::before { content:""; position:absolute; left:-21px; top:10px; width:12px; height:12px; border-radius:50%; background:var(--blue); border:2px solid var(--surface); }
-  .tl b { margin-right:6px; font-variant-numeric:tabular-nums; } .tl small { display:block; color:var(--muted); font-size:12px; }
+  .tl b { margin-right:6px; font-variant-numeric:tabular-nums; } .tl small { display:block; color:var(--muted); font-size:calc(14px*var(--k,1)); }
   .eq { display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; font-weight:700; margin:12px 0; }
   .eq span { padding:6px 12px; border-radius:999px; background:var(--bg); }
   .eq span:nth-of-type(1) { background:var(--blue); color:#fff; } .eq span:nth-of-type(2) { background:var(--sage); color:#fff; }
   .eq i { font-style:normal; color:var(--muted); }
-  .flow { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:10px 0; font-size:13px; }
+  .flow { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:10px 0; font-size:calc(16px*var(--k,1)); }
   .flow span { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:5px 10px; } .flow i { font-style:normal; color:var(--muted); }
   .q { border-top:1px solid var(--border); padding:10px 0; }
   .q:first-child { border-top:0; }
-  .q b { display:block; font-size:15px; }
-  .q button { margin-top:6px; border:1px solid var(--blue); background:none; color:var(--blue); font:inherit; font-size:13px; padding:4px 12px; border-radius:999px; cursor:pointer; }
-  .q p { display:none; margin:6px 0 0; font-size:14px; background:var(--bg); border-radius:12px; padding:8px 12px; }
+  .q b { display:block; font-size:calc(18px*var(--k,1)); }
+  .q button { margin-top:6px; border:1px solid var(--blue); background:none; color:var(--blue); font:inherit; font-size:calc(15px*var(--k,1)); padding:4px 12px; border-radius:999px; cursor:pointer; }
+  .q p { display:none; margin:6px 0 0; font-size:calc(17px*var(--k,1)); background:var(--bg); border-radius:12px; padding:8px 12px; }
   .q.open p { display:block; } .q.open button { display:none; }
   .err { color:var(--muted); text-align:center; margin-top:40px; }
 </style>
 </head>
 <body>
 <main>
-  <div class="top"><a href="../">とわなにか</a><a id="bk" href="./">‹ 勉強</a></div>
+  <div class="top"><a href="../">とわなにか</a><span class="fz"><button id="fm" aria-label="文字を小さく">A−</button><button id="fp" aria-label="文字を大きく">A＋</button></span><a id="bk" href="./">‹ 勉強</a></div>
   <div id="doc"><p class="err">読みこみ中…</p></div>
 </main>
 <script>
+(function () {
+  var KS = [0.9, 1, 1.15, 1.3, 1.5], KEY = "hibiki-view-k", i = 1;
+  try { var v = parseFloat(localStorage.getItem(KEY)); if (KS.indexOf(v) >= 0) i = KS.indexOf(v); } catch (e) {}
+  function set() { document.documentElement.style.setProperty("--k", KS[i]); try { localStorage.setItem(KEY, KS[i]); } catch (e) {} }
+  set();
+  document.getElementById("fm").onclick = function () { if (i > 0) { i--; set(); } };
+  document.getElementById("fp").onclick = function () { if (i < KS.length - 1) { i++; set(); } };
+})();
 // 勉強ノート（md）を絵つきで表示する。?n=ch7 なら notes/ch7.md を読む。
 // md の中の ```bars ```timeline ```eq ```flow ```quiz を図にする（書き方は notes/README.md）
 var COL = { b: "var(--blue)", s: "var(--sage)", w: "var(--wood)", r: "var(--red)", m: "var(--muted)" };
