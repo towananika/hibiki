@@ -3,6 +3,13 @@
 // hibiki- で始まる localStorage が変わったら、鍵ごとの時刻をつけてサーバーへ送る。
 // ページを開いたとき・戻ってきたときに読み、サーバーのほうが新しければ入れて画面を読み直す。
 (function () {
+  // ── 全ページ共通の見え方（2026-10-11 ひびき：日本語をデフォルトに・PCでは大きく）
+  var de = document.documentElement;
+  de.lang = "ja"; de.setAttribute("translate", "no"); de.classList.add("notranslate");
+  var gm = document.createElement("meta"); gm.name = "google"; gm.content = "notranslate"; document.head.appendChild(gm);
+  var zs = document.createElement("style");
+  zs.textContent = "@media (min-width:700px){body{zoom:1.3}}@media (min-width:1200px){body{zoom:1.5}}";
+  document.head.appendChild(zs);
   var URL_ = "https://hibiki-sync.jaykim-can.workers.dev";
   var PREFIX = "hibiki-", IDK = "hb-sync-id", TK = "hb-sync-t", EXK = "hb-sync-exp", PK = "hb-key", PUBK = "hb-key-pub", WRAP = "hibiki-keywrap";
   var BASE = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, "");

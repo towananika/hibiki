@@ -5,7 +5,7 @@
 
 ## 新しいページを足す手順
 1. `<name>/index.html` を作る。既存ページ（`timeline/` `study/` `home/`）の head と `:root` の色をそのまま写す（木 `--wood`・セージ `--sage`・青 `--blue`・赤 `--red`、ダークモード対応、`max-width:480px`）。
-2. head に `<meta name="robots" content="noindex, nofollow">` と `<script src="../sync.js"></script>` を入れる。ログインしていない端末ではページが隠れる（`window.HB_PUBLIC = true` で公開）。
+2. head に `<meta name="robots" content="noindex, nofollow">` と `<script src="../sync.js"></script>` を入れる。（`sync.js` は日本語固定（翻訳オフ）と、PCでの拡大（700px以上で1.3倍、1200px以上で1.5倍）も全ページにかける）ログインしていない端末ではページが隠れる（`window.HB_PUBLIC = true` で公開）。
 3. 入口 `index.html` の `GROUPS` に1行足す。`new: "YYYY-MM-DD"` を付けると7日間「NEW」が出る。
 4. ページで保存する値は localStorage の `hibiki-` で始まる鍵に入れる（`sync.js` が端末どうしでそろえる）。
 5. スマホ幅（390px）で Playwright のスクリーンショットを撮って確かめる。`sync.js` は route で空にするか、`HibikiSync.open` を平文で差し替える。
