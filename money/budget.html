@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>家計の所得と費用 — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a.back { color:var(--wood); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .sum { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .sum div { border-radius:12px; padding:10px 12px; }
+  .sum small { display:block; color:var(--muted); font-size:12px; }
+  .sum b { font-size:18px; }
+  .in { background:var(--sage-soft); } .out { background:var(--wood-soft); }
+  .left { grid-column:1 / 3; background:var(--blue-soft); } .left.neg { background:var(--red-soft); }
+  .left.neg b { color:var(--red); }
+  .meter { height:10px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:12px 0 4px; }
+  .meter i { display:block; height:100%; background:var(--sage); } .meter i.over { background:var(--red); }
+  .note { color:var(--muted); font-size:12px; }
+  .head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  button { white-space:nowrap; font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:4px 12px; font-size:14px; }
+  button.main { background:var(--wood); color:#fff; border-color:var(--wood); }
+  button.del { color:var(--red); }
+  .row { display:grid; grid-template-columns:1fr auto; gap:2px 8px; padding:10px 0; border-top:1px solid var(--border); }
+  .row:first-of-type { border-top:0; }
+  .name { font-weight:600; word-break:break-word; } .amt { text-align:right; font-variant-numeric:tabular-nums; }
+  .amt.zero { color:var(--muted); font-weight:400; font-size:13px; }
+  .tag { display:inline-block; white-space:nowrap; font-size:11px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 8px; margin-left:6px; font-weight:400; }
+  .share { grid-column:1 / 3; height:6px; background:var(--wood-soft); border-radius:3px; overflow:hidden; }
+  .share i { display:block; height:100%; background:var(--wood); }
+  .acts { grid-column:1 / 3; display:flex; gap:8px; }
+  form.edit { display:grid; gap:8px; margin:8px 0 4px; padding:12px; border-radius:12px; background:var(--wood-soft); }
+  form.edit label { font-size:12px; color:var(--muted); display:grid; gap:2px; }
+  form.edit input, form.edit select { font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); width:100%; }
+  .btns { display:flex; gap:8px; justify-content:flex-end; }
+  .empty { color:var(--muted); font-size:14px; padding:8px 0; }
+  .foot { text-align:center; margin-top:8px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← お金と自由</a>
+  <h1>家計の所得と費用</h1>
+  <p class="lead">1か月ぶんを、入ってくるお金（所得）と出ていくお金（費用）に分けます。単位はウォン（₩）。金額はこの端末とログインした端末にだけ残り、サイトには載りません。</p>
+
+  <div class="card">
+    <div class="sum">
+      <div class="in"><small>所得（月）</small><b id="tin">0</b></div>
+      <div class="out"><small>費用（月）</small><b id="tout">0</b></div>
+      <div class="left" id="left"><small>残る額（月）</small><b id="tleft">0</b></div>
+    </div>
+    <div class="meter"><i id="mbar" style="width:0%"></i></div>
+    <div class="note" id="mnote"></div>
+  </div>
+
+  <div class="card" id="cin"></div>
+  <div class="card" id="cout"></div>
+
+  <div class="foot"><button id="reset">はじめの形にもどす</button></div>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-budget-v1";
+  function uid() { return "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function defaults() {
+    return {
+      income: [{ id: uid(), name: "給料（手取り）", amt: 0 }],
+      expense: [
+        { id: uid(), name: "住まい（家賃・返済・管理費）", amt: 0, kind: "fixed" },
+        { id: uid(), name: "光熱費（電気・ガス・水道）", amt: 0, kind: "var" },
+        { id: uid(), name: "通信費（携帯・ネット）", amt: 0, kind: "fixed" },
+        { id: uid(), name: "食費", amt: 0, kind: "var" },
+        { id: uid(), name: "日用品", amt: 0, kind: "var" },
+        { id: uid(), name: "交通費（ガソリン・駐車など）", amt: 0, kind: "var" },
+        { id: uid(), name: "保険・医療", amt: 0, kind: "fixed" }
+      ]
+    };
+  }
+  function load() {
+    try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.income && s.expense) return s; } catch (e) {}
+    return defaults();
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  var S = load(), editing = null; // editing: {type:'income'|'expense', id|null}
+  function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
+  function man(n) { return n >= 10000 ? "（約" + (Math.round(n / 1000) / 10).toLocaleString("ja-JP") + "万ウォン）" : ""; }
+  function sum(a) { return a.reduce(function (t, x) { return t + (+x.amt || 0); }, 0); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+
+  function renderSummary() {
+    var i = sum(S.income), o = sum(S.expense), l = i - o;
+    document.getElementById("tin").textContent = won(i);
+    document.getElementById("tout").textContent = won(o);
+    document.getElementById("tleft").textContent = (l < 0 ? "−" : "") + won(Math.abs(l));
+    document.getElementById("left").className = "left" + (l < 0 ? " neg" : "");
+    var pct = i > 0 ? Math.min(100, o / i * 100) : (o > 0 ? 100 : 0);
+    var bar = document.getElementById("mbar");
+    bar.style.width = pct + "%"; bar.className = o > i ? "over" : "";
+    document.getElementById("mnote").textContent = i > 0
+      ? "所得のうち " + Math.round(o / i * 100) + "% を使っています" + (l >= 0 ? "。残り " + won(l) + man(l) : "。足りない額 " + won(-l))
+      : "所得の金額を入れると、使った割合が出ます";
+  }
+
+  function form(type, item) {
+    var f = el("form", "edit");
+    var n = el("label", null, "名前"); var ni = el("input"); ni.value = item ? item.name : ""; ni.maxLength = 40; ni.required = true; n.appendChild(ni);
+    var a = el("label", null, "月の金額（ウォン）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1000"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
+    f.appendChild(n); f.appendChild(a);
+    var ki = null;
+    if (type === "expense") {
+      var k = el("label", null, "種類"); ki = el("select");
+      [["fixed", "固定費（毎月ほぼ同じ）"], ["var", "変動費（月によって変わる）"]].forEach(function (p) { var o = el("option", null, p[1]); o.value = p[0]; ki.appendChild(o); });
+      ki.value = item ? item.kind : "var"; k.appendChild(ki); f.appendChild(k);
+    }
+    var b = el("div", "btns"); var c = el("button", null, "やめる"); c.type = "button"; var s = el("button", "main", item ? "直す" : "足す"); s.type = "submit";
+    b.appendChild(c); b.appendChild(s); f.appendChild(b);
+    c.onclick = function () { editing = null; render(); };
+    f.onsubmit = function (e) {
+      e.preventDefault();
+      var name = ni.value.trim(); if (!name) return;
+      var amt = Math.max(0, Math.round(+ai.value || 0));
+      var list = S[type];
+      if (item) { item.name = name; item.amt = amt; if (ki) item.kind = ki.value; }
+      else { var x = { id: uid(), name: name, amt: amt }; if (ki) x.kind = ki.value; list.push(x); }
+      editing = null; save(); render();
+    };
+    setTimeout(function () { ni.focus(); }, 0);
+    return f;
+  }
+
+  function section(type, root, title, total) {
+    root.textContent = "";
+    var h = el("div", "head"); h.appendChild(el("h2", null, title + "　" + won(total)));
+    var add = el("button", "main", "＋ 足す"); add.onclick = function () { editing = { type: type, id: null }; render(); };
+    h.appendChild(add); root.appendChild(h);
+    if (editing && editing.type === type && editing.id === null) root.appendChild(form(type, null));
+    var list = S[type];
+    if (!list.length) root.appendChild(el("div", "empty", "まだありません。「＋ 足す」で入れます。"));
+    list.forEach(function (it) {
+      if (editing && editing.type === type && editing.id === it.id) { root.appendChild(form(type, it)); return; }
+      var r = el("div", "row");
+      var nm = el("div", "name", it.name);
+      if (type === "expense") nm.appendChild(el("span", "tag", it.kind === "fixed" ? "固定費" : "変動費"));
+      r.appendChild(nm);
+      r.appendChild(el("div", "amt" + (it.amt ? "" : " zero"), it.amt ? won(it.amt) : "金額を入れる"));
+      if (type === "expense" && total > 0 && it.amt) {
+        var sh = el("div", "share"), bar = el("i"); bar.style.width = (it.amt / total * 100) + "%"; sh.appendChild(bar); r.appendChild(sh);
+      }
+      var acts = el("div", "acts");
+      var eb = el("button", null, "直す"); eb.onclick = function () { editing = { type: type, id: it.id }; render(); };
+      var db = el("button", "del", "消す"); db.onclick = function () {
+        if (!confirm("「" + it.name + "」を消しますか？")) return;
+        S[type] = S[type].filter(function (x) { return x.id !== it.id; }); save(); render();
+      };
+      acts.appendChild(eb); acts.appendChild(db); r.appendChild(acts); root.appendChild(r);
+    });
+  }
+
+  function render() {
+    renderSummary();
+    section("income", document.getElementById("cin"), "所得（入ってくるお金）", sum(S.income));
+    section("expense", document.getElementById("cout"), "費用（出ていくお金）", sum(S.expense));
+  }
+  document.getElementById("reset").onclick = function () {
+    if (!confirm("入れた内容を消して、はじめの形にもどします。いいですか？")) return;
+    S = defaults(); editing = null; save(); render();
+  };
+  render();
+})();
+</script>
+</body>
+</html>
