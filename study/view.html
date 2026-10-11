@@ -61,7 +61,7 @@
 </head>
 <body>
 <main>
-  <div class="top"><a href="../">とわなにか</a><a href="./">‹ 勉強</a></div>
+  <div class="top"><a href="../">とわなにか</a><a id="bk" href="./">‹ 勉強</a></div>
   <div id="doc"><p class="err">読みこみ中…</p></div>
 </main>
 <script>
@@ -122,6 +122,7 @@ function md(src) {
 }
 
 var n = (new URLSearchParams(location.search).get("n") || "").replace(/[^a-z0-9-]/g, "");
+if (/^ch\d/.test(n)) { var bk = document.getElementById("bk"); bk.href = "digital.html"; bk.textContent = "‹ デジタル経済"; }
 fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (text) {
   var html = md(text), box = document.createElement("div"); box.innerHTML = html;
   // h2 ごとにカードにする
