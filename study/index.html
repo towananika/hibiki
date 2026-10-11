@@ -47,6 +47,12 @@
     <span class="chev">›</span>
   </a>
 
+  <a class="sj" href="words.html">
+    <span class="ic" style="background:var(--wood)">言</span>
+    <span class="t"><b>あとで聞く言葉</b><small>知らない言葉を選んで、あとで答えを見る</small><small id="nW"></small></span>
+    <span class="chev">›</span>
+  </a>
+
   <footer>科目が増えたら、ここに並びます。<br>講義ノートをもとに、自分の言葉で短くまとめたものです。</footer>
 </main>
 <script>
@@ -57,6 +63,7 @@
     document.getElementById("nDig").textContent = n + " / 15章";
     document.getElementById("mDig").style.width = (n / 15 * 100) + "%";
   } catch (e) {}
+  try { var w = JSON.parse(localStorage.getItem("hibiki-words-v1")) || []; if (w.length) document.getElementById("nW").textContent = w.length + " 個たまっています"; } catch (e) {}
 })();
 </script>
 </body>
