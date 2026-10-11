@@ -5,6 +5,7 @@
 - `index.html` 入口。3つの資産の図とページの一覧。ページを足すときは `PAGES` に1行、状態は `STATE`
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）
 - `health/` 健康、`relations/` 愛と関係、`home/` 住まい（入居チェック）
+- `timeline/` これまでの道（人生タイムライン）。できごとは `private/timeline.json`（暗号）、本人が足した分は `hibiki-timeline-v1`
 
 ## 端末どうしの同期
 - `sync.js` を各記録ページの `<head>` で読む。`hibiki-` で始まる localStorage を鍵ごとに新しいほうでそろえる。
