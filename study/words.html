@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>あとで聞く言葉 — とわなにか</title>
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --blue-soft:#dde6ee; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --sage:#9db394; --sage-soft:#26301f; --blue:#8fb0cf; --blue-soft:#222d37; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.7; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 48px; }
+  .top { display:flex; justify-content:space-between; font-size:14px; } .top a { color:var(--sage); text-decoration:none; font-weight:600; }
+  h1 { font-size:24px; margin:12px 0 2px; } .lead { color:var(--muted); font-size:13px; margin:0 0 12px; }
+  .it { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:14px; margin-top:10px; }
+  .w { font-size:18px; font-weight:700; } .ctx { color:var(--muted); font-size:12px; margin-top:2px; }
+  .ans { margin-top:8px; padding:8px 10px; border-radius:10px; background:var(--sage-soft); font-size:14px; }
+  .wait { margin-top:8px; font-size:13px; color:var(--blue); background:var(--blue-soft); padding:6px 10px; border-radius:10px; }
+  .acts { display:flex; gap:8px; margin-top:8px; }
+  button, a.b { font:inherit; font-size:13px; border:1px solid var(--border); background:var(--surface); color:inherit; border-radius:999px; padding:4px 12px; cursor:pointer; text-decoration:none; }
+  button.main { background:var(--wood); color:#fff; border-color:var(--wood); width:100%; padding:10px; font-size:15px; font-weight:600; }
+  .empty { color:var(--muted); text-align:center; padding:32px 0; font-size:14px; }
+  .sec { margin:18px 4px 0; font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body data-nowords>
+<main>
+  <div class="top"><a href="./">‹ 勉強</a><a href="../">とわなにか</a></div>
+  <h1>あとで聞く言葉</h1>
+  <p class="lead">勉強ページで言葉を選ぶと、ここにたまります。答えがわかっている言葉は、すぐ出ます。</p>
+  <div id="ask"></div>
+  <div id="list"></div>
+  <p class="sec" id="how"></p>
+</main>
+<script src="words.js"></script>
+<script>
+(function () {
+  function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function render() {
+    var a = HBWords.load(), un = a.filter(function (x) { return !HBWords.find(x.w); });
+    var ask = document.getElementById("ask"), list = document.getElementById("list");
+    ask.innerHTML = un.length ? '<button class="main" id="cp">答えがまだの ' + un.length + ' 個を、まとめてコピー</button>' : "";
+    list.innerHTML = a.length ? a.slice().reverse().map(function (x) {
+      var m = HBWords.find(x.w);
+      return '<div class="it"><div class="w">' + esc(x.w) + '</div><div class="ctx">' + esc(x.ctx) + '</div>' +
+        (m ? '<div class="ans">' + esc(m) + '</div>' : '<div class="wait">答えを待っています</div>') +
+        '<div class="acts"><a class="b" href="' + esc(x.src) + '">出てきた所へ</a><button data-id="' + x.id + '">消す</button></div></div>';
+    }).join("") : '<div class="empty">まだありません。<br>勉強ページで、知らない言葉を指でなぞると、下に「あとで聞く」が出ます。</div>';
+    document.getElementById("how").textContent = un.length ? "コピーした文を、このチャットに貼ってください。答えをつけて、ここに出るようにします。" : "";
+    var cp = document.getElementById("cp");
+    if (cp) cp.onclick = function () {
+      var t = "あとで聞く言葉\n" + un.map(function (x) { return "・" + x.w + "　（" + x.ctx.slice(0, 50) + "）"; }).join("\n");
+      (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function () { cp.textContent = "コピーしました ✓"; }, function () { prompt("コピーして貼ってください", t); });
+    };
+    [].forEach.call(list.querySelectorAll("button[data-id]"), function (b) {
+      b.onclick = function () { HBWords.save(HBWords.load().filter(function (x) { return x.id !== b.getAttribute("data-id"); })); render(); };
+    });
+  }
+  window.addEventListener("hbgloss", render); render();
+})();
+</script>
+</body>
+</html>

@@ -137,5 +137,6 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
 }).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
 document.addEventListener("click", function (e) { var b = e.target.closest(".q button"); if (b) b.parentNode.classList.add("open"); });
 </script>
+<script src="words.js"></script>
 </body>
 </html>
