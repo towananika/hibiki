@@ -13,6 +13,30 @@
   var URL_ = "https://hibiki-sync.jaykim-can.workers.dev";
   var PREFIX = "hibiki-", IDK = "hb-sync-id", TK = "hb-sync-t", EXK = "hb-sync-exp", PK = "hb-key", PUBK = "hb-key-pub", WRAP = "hibiki-keywrap";
   var BASE = (document.currentScript && document.currentScript.src || location.href).replace(/[^/]*$/, "");
+  // ── 「一番上へ」「ホーム」ボタン（2026-10-11 ひびき：下まで読んだあとに戻れるように）
+  // 300px以上スクロールしたら右下に出る。入口ページでは「一番上へ」だけ。ログインしていない人には、ゲートの設定で見えない
+  (function () {
+    function mk() {
+      var hub = location.pathname.replace(/index\.html$/, "") === BASE.replace(/^https?:\/\/[^/]+/, "");
+      var css = document.createElement("style");
+      css.textContent = "#hb-nav{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:8;display:flex;flex-direction:column;gap:8px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .2s,transform .2s}" +
+        "#hb-nav.on{opacity:1;transform:none;pointer-events:auto}" +
+        "#hb-nav a,#hb-nav button{all:unset;box-sizing:border-box;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:var(--surface,#fbf9f4);color:var(--wood,#93704b);border:1px solid var(--border,#e2dac8);box-shadow:0 2px 10px rgba(0,0,0,.15)}" +
+        "#hb-nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}";
+      document.head.appendChild(css);
+      var nav = document.createElement("div"); nav.id = "hb-nav";
+      nav.innerHTML = (hub ? "" : '<a href="' + BASE + '" aria-label="ホームへ"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/></svg></a>') +
+        '<button type="button" aria-label="一番上へ"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>';
+      document.body.appendChild(nav);
+      nav.querySelector("button").onclick = function () {
+        var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: calm ? "auto" : "smooth" });
+      };
+      function upd() { nav.className = (window.pageYOffset || document.documentElement.scrollTop) > 300 ? "on" : ""; }
+      window.addEventListener("scroll", upd, { passive: true }); upd();
+    }
+    if (document.body) mk(); else document.addEventListener("DOMContentLoaded", mk);
+  })();
   var DAYS = 7, DAY = 864e5;   // ログインは7日。開くたびに7日へ延びる（2026-10-09 ひびき）
   var ls; try { ls = window.localStorage; ls.getItem(IDK); } catch (e) { return; }
   var rawSet = ls.setItem.bind(ls);
