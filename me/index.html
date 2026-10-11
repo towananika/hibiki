@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ひびき — とわなにか</title>
+<meta name="description" content="ひびきに関するすべてを一か所で見る。健康・愛・住まい・大切な人。">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<meta name="theme-color" content="#5b7a99">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#b5583f; --red-soft:#f3e2db; --blue:#5b7a99; --blue-soft:#e0e7ee; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#e08b70; --red-soft:#3a2520; --blue:#8fb0cf; --blue-soft:#1f2a35; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; }
+  .brand { color:var(--blue); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
+  .date { color:var(--muted); font-size:13px; }
+  h1 { font-size:28px; margin:16px 0 0; letter-spacing:.06em; }
+  .sub { color:var(--muted); font-size:14px; margin:4px 0 0; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:18px; margin-top:14px; }
+  .label { color:var(--muted); font-size:13px; margin:0 0 12px; display:flex; justify-content:space-between; align-items:baseline; }
+  .label b { color:var(--blue); }
+  .label a { color:var(--blue); text-decoration:none; font-weight:600; }
+  .note { color:var(--muted); font-size:12px; line-height:1.7; margin:10px 0 0; }
+
+  .sum { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .s { display:block; text-decoration:none; color:var(--text); border-radius:16px; padding:14px; }
+  .s small { display:block; font-size:12px; color:var(--muted); }
+  .s b { display:block; font-size:24px; font-variant-numeric:tabular-nums; margin:2px 0; }
+  .s span { font-size:12px; color:var(--muted); }
+  .s.health { background:var(--sage-soft); } .s.love { background:var(--red-soft); }
+  .s.home { background:var(--wood-soft); } .s.money { background:var(--blue-soft); }
+  .bar { height:8px; border-radius:999px; background:var(--border); overflow:hidden; margin-top:8px; }
+  .bar i { display:block; height:100%; background:var(--wood); }
+
+  .big { font-size:34px; font-weight:700; font-variant-numeric:tabular-nums; margin:0; }
+  .big small { font-size:15px; color:var(--muted); font-weight:500; margin-left:4px; }
+  .facts { margin-top:10px; }
+  .fact { display:flex; justify-content:space-between; font-size:14px; padding:6px 0; border-top:1px solid var(--border); }
+  .fact span { color:var(--muted); }
+
+  .ck { width:100%; font:inherit; color:var(--text); text-align:left; background:none; border:0; border-top:1px solid var(--border); padding:10px 0; display:flex; gap:12px; align-items:center; cursor:pointer; font-size:14px; }
+  .ck:first-child { border-top:0; }
+  .box { width:22px; height:22px; flex:none; border-radius:7px; border:2px solid var(--border); display:grid; place-items:center; }
+  .ck.on .box { background:var(--sage); border-color:var(--sage); }
+  .ck.on .box::after { content:""; width:10px; height:5px; border:2px solid var(--surface); border-top:0; border-right:0; transform:rotate(-45deg) translate(1px,-1px); }
+  .ck.on span:last-child { text-decoration:line-through; color:var(--muted); }
+  .step { font:inherit; width:28px; height:28px; border-radius:50%; border:1px solid var(--border); background:var(--bg); color:var(--text); cursor:pointer; }
+  .tags { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 8px; }
+  .tags button { font:inherit; font-size:13px; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:999px; padding:5px 12px; cursor:pointer; }
+  .tags button.on { background:var(--wood); border-color:var(--wood); color:var(--surface); }
+  form.add { display:flex; gap:8px; }
+  form.add input { flex:1; min-width:0; font:inherit; font-size:15px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text); }
+  form.add button { font:inherit; font-weight:600; border:0; border-radius:12px; padding:0 16px; background:var(--wood); color:var(--surface); cursor:pointer; }
+  .n { position:relative; padding:10px 28px 10px 0; border-top:1px solid var(--border); font-size:14px; line-height:1.6; }
+  .n:first-child { border-top:0; }
+  .n em { font-style:normal; font-size:11px; font-weight:700; color:var(--surface); background:var(--wood); border-radius:999px; padding:1px 8px; margin-right:6px; }
+  .n small { display:block; color:var(--muted); font-size:12px; }
+  .n .x { position:absolute; right:0; top:8px; border:0; background:none; color:var(--muted); font-size:18px; cursor:pointer; }
+
+  .tips { margin:0; padding:0; list-style:none; display:grid; gap:10px; }
+  .tips li { font-size:14px; line-height:1.7; }
+  .tips b { display:block; font-size:15px; }
+  .tips span { color:var(--muted); font-size:13px; }
+
+  .p { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-top:1px solid var(--border); font-size:15px; }
+  .p:first-child { border-top:0; }
+  .p small { display:block; font-size:12px; color:var(--muted); }
+  .gap { font-weight:700; font-variant-numeric:tabular-nums; color:var(--sage); }
+  .gap.far { color:var(--red); }
+
+  .links { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .links a { text-decoration:none; color:var(--text); background:var(--bg); border-radius:14px; padding:12px; font-size:14px; font-weight:600; }
+  .links a small { display:block; font-weight:400; font-size:12px; color:var(--muted); }
+  footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="brand" href="../">← とわなにか</a><span class="date" id="date"></span></div>
+  <h1>ひびき</h1>
+  <p class="sub">ひびきに関するものを、ここにぜんぶ集める。</p>
+
+  <section class="card">
+    <p class="label"><span>今日のようす</span></p>
+    <div class="sum">
+      <a class="s health" href="../health/"><small>健康（今日）</small><b id="sHealth"></b><span id="sHealthW"></span></a>
+      <a class="s love" href="../relations/"><small>愛と関係（今日）</small><b id="sLove"></b><span id="sLoveW"></span></a>
+      <a class="s home" href="../home/"><small>住まいの入居チェック</small><b id="sHome"></b><span>大事なものから</span></a>
+      <a class="s money" href="../money/"><small>お金と自由</small><b>→</b><span>金利・配分・レポート</span></a>
+    </div>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>いまの家</span><a href="../home/">住まいページ →</a></p>
+    <p class="big" id="days"></p>
+    <div class="facts">
+      <div class="fact"><span>引っ越した日</span><b>2026年10月10日</b></div>
+      <div class="fact"><span>広さ</span><b>14.28㎡（思ったより狭い）</b></div>
+      <div class="fact"><span>建物</span><b>12階・東向き・2013年築</b></div>
+      <div class="fact"><span>契約の期間</span><b>2026/10/10 〜 2028/10/09（24か月）</b></div>
+      <div class="fact"><span>次の家賃日</span><b id="fNext"></b></div>
+      <div class="fact"><span>荷解きと整理</span><b id="fUnpack"></b></div>
+      <div class="fact"><span>住まいの種類</span><b>保証金つき月払い（월세）</b></div>
+      <div class="fact"><span>毎月のお金</span><b id="fMoney"><a href="../sync/" style="color:var(--blue)">ログインで見える</a></b></div>
+    </div>
+    <div class="bar"><i id="homeBar"></i></div>
+    <p class="note">入居チェックの進み具合</p>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>契約書のまとめ</span><b>2026/08/22 契約</b></p>
+    <a class="lock" id="cLock" href="../sync/" style="color:var(--blue);font-size:14px">ログインすると、住所と金額が見えます</a>
+    <div id="cBody" hidden>
+      <div class="fact"><span>住所</span><b id="cAddr" style="text-align:right;max-width:70%"></b></div>
+      <div class="fact"><span>保証金</span><b id="cDep"></b></div>
+      <div class="fact"><span>　契約金（契約時）</span><b id="cDown"></b></div>
+      <div class="fact"><span>　残金（10/10）</span><b id="cBal"></b></div>
+      <div class="fact"><span>月払い（毎月10日・先払い）</span><b id="cRent"></b></div>
+      <div class="fact"><span>仲介</span><b id="cAgent" style="text-align:right"></b></div>
+    </div>
+    <p class="note">管理費・光熱費は別（金額は管理事務所で確認）。登記簿は契約日時点で担保（근저당）なし。</p>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>契約の大事な日</span></p>
+    <div class="fact" style="border-top:0"><span>満期の3か月前まで</span><b>2028/07/09</b></div>
+    <p class="note" style="margin:0 0 8px">更新するか退去するかを大家さん・仲介に連絡。しないと<b>2年自動更新</b>になります。</p>
+    <div class="fact"><span>契約が終わる日</span><b>2028/10/09</b></div>
+    <div class="fact"><span>賃貸契約の申告</span><b>契約から30日以内（9/21）</b></div>
+    <p class="note" style="margin:0">전입신고と같이 주민센터で出していれば済みます。まだなら、早めに確認を。</p>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>契約のきまり（特約）</span></p>
+    <ul class="tips">
+      <li><b>室内禁煙・ペット不可</b><span>違反すると借主が費用を負担。</span></li>
+      <li><b>備え付けは壊したら原状回復</b><span>エアコン・洗濯機・冷蔵庫・IH・下駄箱など。リモコンの紛失も費用がかかることがある。</span></li>
+      <li><b>退去のとき</b><span>自分で掃除して、入居時と同じ状態に。次の入居者が入るまで、家賃・管理費・光熱費は払う。</span></li>
+      <li><b>満期より前に出るとき</b><span>仲介手数料は借主の負担。</span></li>
+      <li><b>融資が前提の契約</b><span>建物や大家さん側の理由で融資が通らなければ契約は無効で、契約金は全額もどる。借主の気が変わった・信用の問題は対象外。</span></li>
+      <li><b>管理費・駐車費は建物のルール</b><span>公共料金は全部借主。駐車は場所と車種の相談が必要。</span></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>荷解きと整理</span><b id="uCount"></b></p>
+    <p style="margin:0;font-size:14px;line-height:1.8">引っ越しは10日に終わったけれど、荷解きは途中。前は着ていなかった服まで来てしまったので、<b>14㎡に入る分だけ</b>を残して、あとは手放す。家具も同じ。「全部使う」をやめると、息苦しさが減る。</p>
+    <div class="bar"><i id="uBar" style="background:var(--sage)"></i></div>
+    <div id="uList" style="margin-top:10px"></div>
+    <div class="fact" style="align-items:center"><span>手放した数（服・物）</span><b><button class="step" data-d="-1">−</button> <span id="gone" style="color:var(--text);display:inline-block;min-width:28px;text-align:center">0</span> <button class="step" data-d="1">＋</button></b></div>
+    <p class="note">服は「この1年着たか」「迷ったら箱に入れて1か月、開けなければ手放す」で分けると進みます。</p>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>住んでみて分かったこと</span><b id="nCount"></b></p>
+    <p style="margin:0;font-size:14px;line-height:1.8">14㎡は思ったより狭かった。広さ・収納・眺めは、<b>住んでみて初めて分かる</b>こと。気づいたことをその場で書き留めておくと、次の部屋選びでそのまま使える。</p>
+    <div class="tags" id="tags"></div>
+    <form class="add" id="nForm"><input id="nText" placeholder="例：思ったより洗濯物を干す場所が足りない" maxlength="80"><button>足す</button></form>
+    <div id="notes" style="margin-top:8px"></div>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>次の部屋を選ぶときの見方</span></p>
+    <ul class="tips">
+      <li><b>ひびきの基準：広さと環境が先、近さは後</b><span>近くても狭いのはよくない。少し時間がかかっても、広くて環境のいい家のほうがいい。前の家は広さが十分で、お金はかかったけれど、振り返ると価値があった。</span></li>
+      <li><b>広さは、数字と体感の両方で</b><span>専有面積だけでなく、家具を置いた状態を想像する。内見でベッドと机の場所を、歩幅で測ってみる。</span></li>
+      <li><b>収納の量</b><span>クローゼットや備え付けの棚があると、床が空いて広く感じる。</span></li>
+      <li><b>間取りの形</b><span>同じ面積でも、細長い部屋より正方形に近いほうが使いやすい。</span></li>
+      <li><b>天井の高さと窓の位置</b><span>眺めがなくても、明るさと開放感で狭さはかなり和らぐ。</span></li>
+      <li><b>眺めは「あれば嬉しいおまけ」</b><span>写真や内見でも魅力が伝わりやすい。でも毎日の暮らしやすさに効くのは広さ。広さを確保したうえで眺めを考える。</span></li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>大切な人</span><a href="../relations/">足す・記録 →</a></p>
+    <div id="people"></div>
+  </section>
+
+  <section class="card">
+    <p class="label"><span>ぜんぶのページ</span></p>
+    <div class="links">
+      <a href="../money/">お金と自由<small>金利・配分・週間レポート</small></a>
+      <a href="../health/">健康<small>毎日5つをタップ</small></a>
+      <a href="../relations/">愛と関係<small>連絡・ありがとう</small></a>
+      <a href="../home/">住まい<small>入居チェック</small></a>
+      <a href="../timeline/">タイムライン<small>履歴・経験・経歴</small></a>
+    </div>
+  </section>
+
+  <footer>記録はこの端末に残ります。<a href="../sync/" style="color:inherit">ログイン</a>すると、ほかの端末ともそろいます</footer>
+</main>
+<script>
+function rd(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
+function ymd(dt) { return dt.getFullYear() + "-" + ("0" + (dt.getMonth() + 1)).slice(-2) + "-" + ("0" + dt.getDate()).slice(-2); }
+function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+var now = new Date(), today = ymd(now);
+document.getElementById("date").textContent = (now.getMonth() + 1) + "月" + now.getDate() + "日";
+
+// 今日のようす（健康は5つ、愛は4つ。直近7日のチェック数も出す）
+function summary(key, kinds, ok, idDay, idWeek) {
+  var d = rd(key, {}), t = d[today] || {}, n = 0, w = 0, i;
+  kinds.forEach(function (k) { if (t[k]) n++; });
+  for (i = 0; i < 7; i++) { var dt = new Date(now); dt.setDate(now.getDate() - i); var r = d[ymd(dt)] || {}; kinds.forEach(function (k) { if (r[k]) w++; }); }
+  document.getElementById(idDay).textContent = n + " / " + kinds.length + (n >= ok ? " 合格" : "");
+  document.getElementById(idWeek).textContent = "この1週間 " + w + " / " + kinds.length * 7;
+}
+summary("hibiki-health-v1", ["sleep", "walk", "water", "veg", "enough"], 3, "sHealth", "sHealthW");
+summary("hibiki-love-v1", ["touch", "time", "thanks", "self"], 2, "sLove", "sLoveW");
+
+// 住まい：入居チェックは home/ の PHASES と同じ10項目
+var HOME_TOTAL = 10, hd = rd("hibiki-home-v1", {}), hn = Object.keys(hd).filter(function (k) { return hd[k]; }).length;
+document.getElementById("sHome").textContent = hn + " / " + HOME_TOTAL;
+document.getElementById("homeBar").style.width = Math.min(100, hn / HOME_TOTAL * 100) + "%";
+var days = Math.floor((new Date(today) - new Date("2026-10-10")) / 864e5) + 1;
+document.getElementById("days").innerHTML = (days < 1 ? "もうすぐ" : days) + '<small>' + (days < 1 ? "入居" : "日目") + '</small>';
+if (window.HibikiSync) HibikiSync.open("home").then(function (H) {
+  if (!H) return;
+  var loan = H.deposit * H.loanPct / 100, v = loan * H.rate / 100 / 12 + H.rent + (H.fee || 0);
+  document.getElementById("fMoney").textContent = (Math.round(v * 10) / 10).toLocaleString() + "万ウォン / 月";
+});
+
+// 次の家賃日（毎月10日）と、契約書の中身（private/contract.json。ログインした端末だけで読める。単位：万ウォン）
+(function () {
+  var d = new Date(now.getFullYear(), now.getMonth(), 10);
+  if (now.getDate() > 10) d = new Date(now.getFullYear(), now.getMonth() + 1, 10);
+  var left = Math.round((d - new Date(today)) / 864e5);
+  document.getElementById("fNext").textContent = (d.getMonth() + 1) + "/10（" + (left === 0 ? "今日" : "あと" + left + "日") + "）";
+})();
+if (window.HibikiSync) HibikiSync.open("contract").then(function (C) {
+  if (!C) return;
+  function f(v) { return (v >= 10000 ? Math.floor(v / 10000) + "億" + (v % 10000 ? (v % 10000).toLocaleString() + "万" : "") : v.toLocaleString() + "万") + "ウォン"; }
+  document.getElementById("cLock").hidden = true;
+  document.getElementById("cBody").hidden = false;
+  document.getElementById("cAddr").textContent = C.address;
+  document.getElementById("cDep").textContent = f(C.deposit);
+  document.getElementById("cDown").textContent = f(C.down);
+  document.getElementById("cBal").textContent = f(C.balance);
+  document.getElementById("cRent").textContent = f(C.rent);
+  document.getElementById("cAgent").textContent = C.agent + " " + C.agentTel;
+});
+
+// 荷解きと整理（チェックと「手放した数」は hibiki-unpack-v1 に保存）
+var UNPACK = [
+  { k: "box", t: "段ボールを全部あける" },
+  { k: "furn", t: "家具は「14㎡に入る分だけ」に決める" },
+  { k: "sort", t: "服を「残す・手放す・迷う箱」に分ける" },
+  { k: "out", t: "手放す物を出す（捨てる・売る・譲る）" },
+  { k: "place", t: "残す物の置き場所を決める" },
+  { k: "floor", t: "床に直置きの物をなくす" }
+];
+var U = rd("hibiki-unpack-v1", {});
+function usave() { try { localStorage.setItem("hibiki-unpack-v1", JSON.stringify(U)); } catch (e) {} }
+function urender() {
+  var n = UNPACK.filter(function (u) { return U[u.k]; }).length;
+  document.getElementById("uList").innerHTML = UNPACK.map(function (u) {
+    return '<button class="ck' + (U[u.k] ? ' on' : '') + '" data-k="' + u.k + '" aria-pressed="' + !!U[u.k] + '"><span class="box"></span><span>' + u.t + '</span></button>';
+  }).join("");
+  document.getElementById("uCount").textContent = n + " / " + UNPACK.length;
+  document.getElementById("uBar").style.width = n / UNPACK.length * 100 + "%";
+  document.getElementById("gone").textContent = U.gone || 0;
+  document.getElementById("fUnpack").textContent = n === UNPACK.length ? "ぜんぶ終わった" : "途中（" + n + " / " + UNPACK.length + "）";
+}
+document.getElementById("uList").addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b) return; U[b.dataset.k] = !U[b.dataset.k]; usave(); urender();
+});
+document.querySelector(".step").parentNode.addEventListener("click", function (e) {
+  var b = e.target.closest(".step"); if (!b) return; U.gone = Math.max(0, (U.gone || 0) + +b.dataset.d); usave(); urender();
+});
+urender();
+
+// 住んでみて分かったこと
+var NKEY = "hibiki-homenotes-v1", TAGS = ["広さ", "収納", "眺め・光", "音", "設備", "お金", "その他"], tag = TAGS[0];
+var notes = rd(NKEY, []);
+function nsave() { try { localStorage.setItem(NKEY, JSON.stringify(notes)); } catch (e) {} }
+function nrender() {
+  document.getElementById("tags").innerHTML = TAGS.map(function (t) { return '<button type="button" class="' + (t === tag ? 'on' : '') + '" data-t="' + t + '">' + t + '</button>'; }).join("");
+  document.getElementById("nCount").textContent = notes.length ? notes.length + "件" : "";
+  document.getElementById("notes").innerHTML = notes.length ? notes.slice().reverse().map(function (n, i) {
+    return '<div class="n"><button class="x" data-del="' + (notes.length - 1 - i) + '" aria-label="消す">×</button><em>' + esc(n.tag) + '</em>' + esc(n.text) + '<small>' + esc(n.date) + '</small></div>';
+  }).join("") : '<p class="note" style="margin:0">まだありません。気づいたら書いておこう。</p>';
+}
+document.getElementById("tags").addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; tag = b.dataset.t; nrender(); });
+document.getElementById("notes").addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b || !confirm("消しますか？")) return;
+  notes.splice(+b.dataset.del, 1); nsave(); nrender();
+});
+document.getElementById("nForm").addEventListener("submit", function (e) {
+  e.preventDefault(); var v = document.getElementById("nText").value.trim(); if (!v) return;
+  notes.push({ tag: tag, text: v, date: today }); document.getElementById("nText").value = ""; nsave(); nrender();
+});
+nrender();
+
+// 大切な人（話してからの日数。relations/ と同じ記録を読む）
+var people = rd("hibiki-people-v1", []);
+document.getElementById("people").innerHTML = people.length ? people.map(function (p) {
+  var d = p.last ? Math.floor((new Date(today) - new Date(p.last)) / 864e5) : null;
+  return '<div class="p"><div><b>' + esc(p.name) + '</b><small>' + (p.last ? "最後：" + p.last.slice(5).replace("-", "/") : "まだ記録なし") + '</small></div><div class="gap' + (d === null || d > 14 ? ' far' : '') + '">' + (d === null ? "−" : d + "日") + '</div></div>';
+}).join("") : '<p class="note" style="margin:0">まだいません。愛と関係のページで足せます。</p>';
+</script>
+</body>
+</html>
