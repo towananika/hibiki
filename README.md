@@ -4,7 +4,7 @@
 
 - `index.html` 入口。3つの資産の図とページの一覧。ページを足すときは `PAGES` に1行、状態は `STATE`
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）
-- `health/` 健康、`relations/` 愛と関係、`home/` 住まい（入居チェック）
+- `health/` 健康、`relations/` 愛と関係、`home/` 住まい（入居チェック）、`me/` ひびき（すべてを集めた一覧。住んでみて分かったことのメモ）
 
 ## 端末どうしの同期
 - `sync.js` を各記録ページの `<head>` で読む。`hibiki-` で始まる localStorage を鍵ごとに新しいほうでそろえる。
