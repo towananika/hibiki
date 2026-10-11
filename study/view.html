@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>勉強ノート — とわなにか</title>
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<meta name="theme-color" content="#5b7a99">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --sage:#74886d; --blue:#5b7a99; --blue-soft:#e0e7ee; --red:#b5583f; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --sage:#9db394; --blue:#8fb0cf; --blue-soft:#1f2a35; --red:#e08b70; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); line-height:1.7;
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
+  main { max-width:520px; margin:0 auto; padding:28px 16px 40px; }
+  .top { display:flex; justify-content:space-between; font-size:13px; }
+  .top a { color:var(--muted); text-decoration:none; } .top a:first-child { color:var(--sage); font-weight:600; letter-spacing:.1em; }
+  h1 { font-size:26px; line-height:1.4; margin:16px 0 8px; }
+  .toc { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 4px; }
+  .toc a { font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:4px 10px; text-decoration:none; }
+  section { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 16px 14px; margin-top:14px; }
+  h2 { font-size:19px; margin:14px 0 6px; scroll-margin-top:12px; }
+  h3 { font-size:15px; color:var(--blue); margin:16px 0 4px; }
+  p, li { font-size:15px; } ul, ol { padding-left:1.3em; margin:6px 0; } li { margin:3px 0; }
+  strong { color:var(--text); background:linear-gradient(transparent 62%, rgba(91,122,153,.22) 0); }
+  hr { display:none; }
+  blockquote { margin:8px 0; border-left:3px solid var(--sage); padding:2px 0 2px 12px; color:var(--muted); }
+  .tw { overflow-x:auto; margin:8px 0; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th { background:var(--blue-soft); text-align:left; } th, td { padding:7px 8px; border-bottom:1px solid var(--border); vertical-align:top; }
+  .bars { display:grid; gap:8px; margin:10px 0; }
+  .bar { display:grid; grid-template-columns:96px 1fr 52px; align-items:center; gap:8px; font-size:13px; }
+  .bar .tr { height:14px; border-radius:7px; background:var(--bg); overflow:hidden; }
+  .bar .tr i { display:block; height:100%; border-radius:7px; }
+  .bar b { text-align:right; font-variant-numeric:tabular-nums; }
+  .tl { position:relative; margin:10px 0; padding-left:22px; }
+  .tl::before { content:""; position:absolute; left:6px; top:4px; bottom:4px; width:2px; background:var(--border); }
+  .tl div { position:relative; padding:5px 0; font-size:14px; line-height:1.5; }
+  .tl div::before { content:""; position:absolute; left:-21px; top:10px; width:12px; height:12px; border-radius:50%; background:var(--blue); border:2px solid var(--surface); }
+  .tl b { margin-right:6px; font-variant-numeric:tabular-nums; } .tl small { display:block; color:var(--muted); font-size:12px; }
+  .eq { display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; font-weight:700; margin:12px 0; }
+  .eq span { padding:6px 12px; border-radius:999px; background:var(--bg); }
+  .eq span:nth-of-type(1) { background:var(--blue); color:#fff; } .eq span:nth-of-type(2) { background:var(--sage); color:#fff; }
+  .eq i { font-style:normal; color:var(--muted); }
+  .flow { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:10px 0; font-size:13px; }
+  .flow span { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:5px 10px; } .flow i { font-style:normal; color:var(--muted); }
+  .q { border-top:1px solid var(--border); padding:10px 0; }
+  .q:first-child { border-top:0; }
+  .q b { display:block; font-size:15px; }
+  .q button { margin-top:6px; border:1px solid var(--blue); background:none; color:var(--blue); font:inherit; font-size:13px; padding:4px 12px; border-radius:999px; cursor:pointer; }
+  .q p { display:none; margin:6px 0 0; font-size:14px; background:var(--bg); border-radius:12px; padding:8px 12px; }
+  .q.open p { display:block; } .q.open button { display:none; }
+  .err { color:var(--muted); text-align:center; margin-top:40px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a href="../">とわなにか</a><a href="./">‹ 勉強</a></div>
+  <div id="doc"><p class="err">読みこみ中…</p></div>
+</main>
+<script>
+// 勉強ノート（md）を絵つきで表示する。?n=ch7 なら notes/ch7.md を読む。
+// md の中の ```bars ```timeline ```eq ```flow ```quiz を図にする（書き方は notes/README.md）
+var COL = { b: "var(--blue)", s: "var(--sage)", w: "var(--wood)", r: "var(--red)", m: "var(--muted)" };
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function rows(t) { return t.trim().split("\n").filter(Boolean).map(function (l) { return l.split("|").map(function (x) { return x.trim(); }); }); }
+var BLOCK = {
+  // ラベル | 値 | 表示（省略可）| 色 b s w r m（省略可）。最大値は自動
+  bars: function (t) {
+    var r = rows(t), max = Math.max.apply(null, r.map(function (x) { return +x[1]; }));
+    return '<div class="bars">' + r.map(function (x) {
+      return '<div class="bar"><span>' + esc(x[0]) + '</span><span class="tr"><i style="width:' + (+x[1] / max * 100) + '%;background:' + (COL[x[3]] || COL.b) + '"></i></span><b>' + esc(x[2] || x[1]) + '</b></div>';
+    }).join("") + '</div>';
+  },
+  // 年 | できごと | ひとこと（省略可）
+  timeline: function (t) {
+    return '<div class="tl">' + rows(t).map(function (x) { return '<div><b>' + esc(x[0]) + '</b>' + esc(x[1]) + (x[2] ? '<small>' + esc(x[2]) + '</small>' : '') + '</div>'; }).join("") + '</div>';
+  },
+  // 予測 + 判断 = 決定
+  eq: function (t) {
+    return '<div class="eq">' + t.trim().split(/\s+/).map(function (w) { return /^[+=×→−]$/.test(w) ? '<i>' + w + '</i>' : '<span>' + esc(w) + '</span>'; }).join("") + '</div>';
+  },
+  // A → B → C
+  flow: function (t) {
+    return '<div class="flow">' + t.trim().split(/\s*→\s*/).map(function (w) { return '<span>' + esc(w) + '</span>'; }).join("<i>→</i>") + '</div>';
+  },
+  // Q: 問い / A: 答え（くり返し）
+  quiz: function (t) {
+    var out = [], cur = null;
+    t.split("\n").forEach(function (l) {
+      if (/^Q[:：]/.test(l)) { cur = { q: l.replace(/^Q[:：]\s*/, ""), a: "" }; out.push(cur); }
+      else if (/^A[:：]/.test(l) && cur) cur.a = l.replace(/^A[:：]\s*/, "");
+    });
+    return '<div class="quiz">' + out.map(function (x) { return '<div class="q"><b>' + esc(x.q) + '</b><button>答えを見る</button><p>' + esc(x.a) + '</p></div>'; }).join("") + '</div>';
+  }
+};
+// 小さな md の読み方：見出し・段落・箇条書き・表・引用・太字・図ブロック
+function inl(t) { return esc(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>'); }
+function cells(l) { return l.trim().replace(/^\||\|$/g, "").split("|").map(function (x) { return x.trim(); }); }
+function md(src) {
+  var L = src.replace(/\r/g, "").split("\n"), out = [], i = 0;
+  while (i < L.length) {
+    var l = L[i];
+    if (/^```/.test(l)) { var lang = l.slice(3).trim(), buf = []; i++; while (i < L.length && !/^```/.test(L[i])) buf.push(L[i++]); i++; out.push(BLOCK[lang] ? BLOCK[lang](buf.join("\n")) : "<pre>" + esc(buf.join("\n")) + "</pre>"); continue; }
+    var h = l.match(/^(#{1,3})\s+(.*)/); if (h) { out.push("<h" + h[1].length + ">" + inl(h[2]) + "</h" + h[1].length + ">"); i++; continue; }
+    if (/^---\s*$/.test(l) || !l.trim()) { i++; continue; }
+    if (/^\|/.test(l)) { var t = []; while (i < L.length && /^\|/.test(L[i])) t.push(L[i++]); var head = cells(t[0]), body = t.slice(2);
+      out.push('<div class="tw"><table><thead><tr>' + head.map(function (c) { return "<th>" + inl(c) + "</th>"; }).join("") + "</tr></thead><tbody>" + body.map(function (r) { return "<tr>" + cells(r).map(function (c) { return "<td>" + inl(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>"); continue; }
+    if (/^\s*([-*]|\d+\.)\s/.test(l)) { var ol = /^\s*\d+\./.test(l), items = [];
+      while (i < L.length && /^\s*([-*]|\d+\.)\s/.test(L[i])) { var d = /^\s{2,}/.test(L[i]); items.push((d ? '<li style="margin-left:1.2em;list-style:circle">' : "<li>") + inl(L[i].replace(/^\s*([-*]|\d+\.)\s+/, "")) + "</li>"); i++; }
+      out.push((ol ? "<ol>" : "<ul>") + items.join("") + (ol ? "</ol>" : "</ul>")); continue; }
+    if (/^>\s?/.test(l)) { out.push("<blockquote>" + inl(l.replace(/^>\s?/, "")) + "</blockquote>"); i++; continue; }
+    var p = []; while (i < L.length && L[i].trim() && !/^(#|```|\||>|\s*([-*]|\d+\.)\s)/.test(L[i])) p.push(L[i++]); out.push("<p>" + inl(p.join(" ")) + "</p>");
+  }
+  return out.join("\n");
+}
+
+var n = (new URLSearchParams(location.search).get("n") || "").replace(/[^a-z0-9-]/g, "");
+fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (text) {
+  var html = md(text), box = document.createElement("div"); box.innerHTML = html;
+  // h2 ごとにカードにする
+  var doc = document.getElementById("doc"); doc.innerHTML = "";
+  var sec = null, toc = [], i = 0;
+  Array.prototype.slice.call(box.childNodes).forEach(function (el) {
+    if (el.tagName === "H1") { document.title = el.textContent + " — とわなにか"; doc.appendChild(el); var t = document.createElement("div"); t.className = "toc"; doc.appendChild(t); return; }
+    if (el.tagName === "H2") { sec = document.createElement("section"); el.id = "s" + (++i); toc.push('<a href="#s' + i + '">' + esc(el.textContent.replace(/^\d+\.\s*/, "").split(/[：:]/)[0]) + '</a>'); doc.appendChild(sec); }
+    (sec || doc).appendChild(el);
+  });
+  var t = doc.querySelector(".toc"); if (t) t.innerHTML = toc.join("");
+}).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
+document.addEventListener("click", function (e) { var b = e.target.closest(".q button"); if (b) b.parentNode.classList.add("open"); });
+</script>
+</body>
+</html>
