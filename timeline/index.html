@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>人生タイムライン — とわなにか</title>
+<meta name="description" content="ひびきのこれまで。できごとを1本の線に。">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<meta name="theme-color" content="#74886d">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --red:#b5583f; --ink:#6d6656; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --sage:#9db394; --sage-soft:#26301f; --blue:#8fb0cf; --red:#e08b70; --ink:#c4baa6; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; }
+  .brand { color:var(--sage); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
+  .date { color:var(--muted); font-size:13px; }
+  h1 { font-size:28px; margin:16px 0 0; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:18px; margin-top:14px; }
+  .lock { text-align:center; color:var(--muted); font-size:14px; line-height:1.8; }
+  .lock a { color:var(--sage); }
+
+  .legend { display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12px; color:var(--muted); margin-top:12px; }
+  .legend span { display:flex; align-items:center; gap:5px; }
+  .legend i { width:10px; height:10px; border-radius:50%; }
+
+  .counts { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+  .cnt { text-align:center; }
+  .cnt svg { width:26px; height:26px; }
+  .cnt b { display:block; font-size:20px; font-variant-numeric:tabular-nums; }
+  .cnt small { font-size:11px; color:var(--muted); }
+
+  .chap { font-size:13px; color:var(--muted); font-weight:600; margin:22px 0 4px 44px; letter-spacing:.05em; }
+  .tl { position:relative; }
+  .tl::before { content:""; position:absolute; left:17px; top:0; bottom:0; width:2px; background:var(--border); }
+  .ev { position:relative; display:flex; gap:12px; align-items:flex-start; padding:8px 0; }
+  .dot { flex:none; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; position:relative; z-index:1;
+         border:3px solid var(--bg); }
+  .dot svg { width:18px; height:18px; stroke:#fff; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .ev .body { flex:1; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:10px 14px; }
+  .ev.big .body { border-width:2px; }
+  .ev .meta { font-size:12px; color:var(--muted); display:flex; gap:8px; align-items:center; }
+  .ev .meta button { border:1px dashed var(--muted); background:none; color:var(--muted); border-radius:999px; font:inherit; font-size:11px; padding:1px 8px; cursor:pointer; }
+  .ev b { display:block; font-size:16px; margin-top:2px; }
+  .ev.big b { font-size:18px; }
+  .ev small { display:block; font-size:13px; color:var(--muted); margin-top:2px; }
+  .ev .x { border:0; background:none; color:var(--muted); font-size:16px; cursor:pointer; padding:0 2px; }
+
+  .now { display:flex; gap:12px; align-items:center; padding:10px 0 0; }
+  .now .dot { background:var(--sage); animation:pulse 2s infinite; }
+  @keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(116,136,109,.5)} 70%{box-shadow:0 0 0 12px rgba(116,136,109,0)} 100%{box-shadow:0 0 0 0 rgba(116,136,109,0)} }
+  .now b { font-size:18px; color:var(--sage); }
+
+  .add { display:grid; gap:10px; }
+  .add input, .add select { font:inherit; font-size:16px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:var(--bg); color:var(--text); width:100%; }
+  .kinds { display:flex; flex-wrap:wrap; gap:6px; }
+  .kinds button { border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:999px; font:inherit; font-size:13px; padding:6px 12px; cursor:pointer; }
+  .kinds button.on { color:#fff; border-color:transparent; }
+  .go { border:0; background:var(--sage); color:#fff; font:inherit; font-weight:600; padding:12px; border-radius:12px; cursor:pointer; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .label { color:var(--muted); font-size:13px; margin:0 0 12px; }
+  footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="brand" href="../">とわなにか</a><span class="date" id="today"></span></div>
+  <h1>これまでの道</h1>
+
+  <section class="card lock" id="lock">ログインした端末で見られます。<br><a href="../sync/">ログインする</a></section>
+
+  <div id="body" hidden>
+    <section class="card">
+      <div class="counts" id="counts"></div>
+    </section>
+
+    <div id="tl"></div>
+
+    <section class="card">
+      <p class="label">思い出を足す</p>
+      <div class="add">
+        <input id="aT" placeholder="できごと（例：初めての一人旅）" maxlength="30">
+        <div class="row2">
+          <input id="aY" type="number" inputmode="numeric" placeholder="年（例：2019）">
+          <input id="aA" type="number" inputmode="numeric" placeholder="または 年齢">
+        </div>
+        <div class="kinds" id="aK"></div>
+        <button class="go" id="aGo">線に足す</button>
+      </div>
+    </section>
+  </div>
+
+  <footer>「時期？」をタップすると年を入れられます。<a href="../sync/" style="color:inherit">ログイン</a>した端末どうしでそろいます</footer>
+</main>
+<script>
+var KINDS = {
+  money:  { n: "お金",     c: "var(--wood)", i: '<circle cx="12" cy="12" r="8"/><path d="M9 9l3 4 3-4M9 13h6M12 13v5"/>' },
+  health: { n: "体",       c: "var(--sage)", i: '<path d="M3 12h4l2-5 4 10 2-5h6"/>' },
+  people: { n: "つながり", c: "var(--blue)", i: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' },
+  home:   { n: "住まい",   c: "var(--red)",  i: '<path d="M3 11l9-7 9 7v9H3z"/>' },
+  self:   { n: "自分",     c: "var(--ink)",  i: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>' }
+};
+var CHAP = { child: "子どものころ", mid: "それから" };
+var KEY = "hibiki-timeline-v1", AK = "hibiki-life-age";
+var NOW = new Date(), YEAR = NOW.getFullYear();
+document.getElementById("today").textContent = YEAR + "年" + (NOW.getMonth() + 1) + "月" + NOW.getDate() + "日";
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+function getAge(D) { var a = null; try { a = +localStorage.getItem(AK) || null; } catch (e) {} return a || D.age || null; }
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+var D = null, kind = "self";
+function render() {
+  var S = load(), fix = S.fix || {}, AGE = getAge(D);
+  var all = D.items.map(function (e) { var o = {}; for (var k in e) o[k] = e[k]; if (fix[e.id]) o.y = +fix[e.id]; return o; })
+    .concat((S.add || []).map(function (e) { var o = {}; for (var k in e) o[k] = e[k]; o.mine = true; return o; }));
+  var first = Infinity;
+  all.forEach(function (e) {
+    if (e.d) e.y = +e.d.slice(0, 4) + (+e.d.slice(5, 7) - 1) / 12 + (+e.d.slice(8, 10) - 1) / 365;
+    if (e.d) first = Math.min(first, e.y);
+  });
+  all.forEach(function (e) { e.sort = e.y != null ? e.y : (e.c === "child" ? -1e4 : (first < Infinity ? first - .01 : YEAR)); });
+  all.sort(function (a, b) { return a.sort - b.sort; });
+
+  // 種類ごとの数
+  document.getElementById("counts").innerHTML = Object.keys(KINDS).map(function (k) {
+    var n = all.filter(function (e) { return e.k === k; }).length;
+    return '<div class="cnt"><svg viewBox="0 0 24 24" style="stroke:' + KINDS[k].c + ';fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round">' + KINDS[k].i + '</svg><b>' + n + '</b><small>' + KINDS[k].n + '</small></div>';
+  }).join("");
+
+  var html = "", last = null;
+  all.forEach(function (e) {
+    var ch = e.y == null ? (CHAP[e.c] || "それから") : (e.d ? e.d.slice(0, 4) + "年" + (+e.d.slice(5, 7)) + "月" : Math.floor(e.y) + "年");
+    if (e.y != null && !e.d && AGE) ch += "（" + Math.round(AGE - (YEAR - e.y)) + "歳ごろ）";
+    if (ch !== last) { html += (last !== null ? '</div>' : '') + '<div class="chap">' + esc(ch) + '</div><div class="tl">'; last = ch; }
+    var K = KINDS[e.k] || KINDS.self, meta = "";
+    if (e.d) meta = (+e.d.slice(5, 7)) + "/" + (+e.d.slice(8, 10));
+    else if (e.when) meta = e.when;
+    if (e.y == null && !e.when) meta = '<button data-fix="' + e.id + '">時期？</button>';
+    else if (fix[e.id]) meta = '<button data-fix="' + e.id + '">' + fix[e.id] + '年</button>';
+    meta += ' <span>' + K.n + '</span>';
+    html += '<div class="ev' + (e.big ? ' big' : '') + '"><div class="dot" style="background:' + K.c + '"><svg viewBox="0 0 24 24">' + K.i + '</svg></div>' +
+      '<div class="body"><div class="meta">' + meta + (e.mine ? '<span style="flex:1"></span><button class="x" data-del="' + e.id + '" aria-label="消す">×</button>' : '') + '</div>' +
+      '<b>' + esc(e.t) + '</b>' + (e.s ? '<small>' + esc(e.s) + '</small>' : '') + '</div></div>';
+  });
+  html += '</div><div class="tl"><div class="now"><div class="dot"></div><div><b>いま ここ</b><br><small style="color:var(--muted)">' + (AGE ? AGE + "歳・" : "") + YEAR + "年" + (NOW.getMonth() + 1) + '月</small></div></div></div>';
+  document.getElementById("tl").innerHTML = html;
+}
+
+document.getElementById("tl").addEventListener("click", function (ev) {
+  var b = ev.target.closest("button"); if (!b) return;
+  var S = load();
+  if (b.dataset.fix) {
+    var v = prompt("何年のことですか？（例：2018）", (S.fix || {})[b.dataset.fix] || "");
+    if (v === null) return;
+    S.fix = S.fix || {};
+    if (/^\d{4}$/.test(v.trim())) S.fix[b.dataset.fix] = v.trim(); else delete S.fix[b.dataset.fix];
+  } else if (b.dataset.del) {
+    S.add = (S.add || []).filter(function (e) { return e.id !== b.dataset.del; });
+  }
+  save(S); render();
+});
+
+document.getElementById("aK").innerHTML = Object.keys(KINDS).map(function (k) {
+  return '<button data-k="' + k + '">' + KINDS[k].n + '</button>';
+}).join("");
+function paintKinds() {
+  [].forEach.call(document.querySelectorAll("#aK button"), function (b) {
+    var on = b.dataset.k === kind; b.className = on ? "on" : ""; b.style.background = on ? KINDS[b.dataset.k].c : "";
+  });
+}
+document.getElementById("aK").addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (b) { kind = b.dataset.k; paintKinds(); } });
+paintKinds();
+document.getElementById("aGo").addEventListener("click", function () {
+  var t = document.getElementById("aT").value.trim(); if (!t) return;
+  var y = +document.getElementById("aY").value, a = +document.getElementById("aA").value, AGE = getAge(D);
+  if (!y && a && AGE) y = YEAR - (AGE - a);
+  var e = { id: "m" + Date.now(), k: kind, t: t };
+  if (y > 1900 && y <= YEAR) e.y = y; else e.c = "mid";
+  var S = load(); S.add = (S.add || []).concat([e]); save(S);
+  document.getElementById("aT").value = document.getElementById("aY").value = document.getElementById("aA").value = "";
+  render();
+});
+
+if (window.HibikiSync) HibikiSync.open("timeline").then(function (T) {
+  if (!T) return;
+  D = T;
+  document.getElementById("lock").hidden = true;
+  document.getElementById("body").hidden = false;
+  render();
+});
+</script>
+</body>
+</html>
