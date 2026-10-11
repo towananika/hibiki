@@ -2,9 +2,10 @@
 
 ひびきが幸せに成長し、よい人生を送るための場所。健康・自由（お金）・愛の3つを、こさきたちAIのみんなと育てる。公開: https://towananika.github.io/hibiki/
 
-- `index.html` 入口。3つの資産の図とページの一覧。ページを足すときは `PAGES` に1行、状態は `STATE`
+- `index.html` 入口。グループ分けのメニュー。ページを足すときは `GROUPS` に1行（`new:` で7日間NEW）
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）
 - `health/` 健康、`relations/` 愛と関係、`home/` 住まい（入居チェック）
+- `study/` 勉強（放送大学「デジタル経済の理解」全15章、進み具合は `hibiki-study-digital-v1`）
 - `timeline/` これまでの道（人生タイムライン）。できごとは `private/timeline.json`（暗号）、本人が足した分は `hibiki-timeline-v1`
 
 ## 端末どうしの同期
