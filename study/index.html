@@ -19,12 +19,16 @@
   .brand { color:var(--sage); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
   h1 { font-size:26px; margin:16px 0 2px; }
   .sub { color:var(--muted); font-size:13px; margin:0 0 6px; }
-  a.sj { display:flex; gap:14px; align-items:center; margin-top:14px; padding:16px; text-decoration:none; color:inherit; background:var(--surface); border:1px solid var(--border); border-radius:20px; }
+  .sj { display:flex; gap:14px; align-items:center; margin-top:14px; padding:16px; text-decoration:none; color:inherit; background:var(--surface); border:1px solid var(--border); border-radius:20px; }
   .ic { flex:none; width:48px; height:48px; border-radius:14px; display:grid; place-items:center; color:#fff; font-size:22px; font-weight:700; }
   .t { flex:1; min-width:0; } .t b { display:block; font-size:17px; } .t small { color:var(--muted); font-size:12px; display:block; }
   .meter { height:6px; border-radius:3px; background:var(--border); margin-top:8px; overflow:hidden; } .meter i { display:block; height:100%; background:var(--sage); width:0; }
   .chev { color:var(--muted); font-size:20px; }
   .new { font-size:11px; background:var(--wood); color:#fff; border-radius:999px; padding:1px 8px; margin-left:6px; vertical-align:2px; }
+  .due { margin-top:12px; padding:12px 14px; border-radius:16px; background:var(--sage-soft); font-size:14px; line-height:1.6; }
+  .due b { font-size:20px; }
+  .sj.soon { opacity:.78; }
+  .ev { display:inline-block; margin-top:6px; font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 10px; cursor:pointer; border:0; font-family:inherit; }
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; line-height:1.7; }
 </style>
 </head>
@@ -32,20 +36,10 @@
 <main>
   <a class="brand" href="../">とわなにか</a>
   <h1>勉強</h1>
-  <p class="sub">科目をえらんでください</p>
+  <p class="sub">受けている科目を、1つずつ</p>
 
-  <a class="sj" href="digital.html">
-    <span class="ic" style="background:var(--sage)">経</span>
-    <span class="t"><b>デジタル経済の理解</b><small>放送大学 経済学科・全15章</small>
-      <span class="meter"><i id="mDig"></i></span><small id="nDig">0 / 15章</small></span>
-    <span class="chev">›</span>
-  </a>
-
-  <a class="sj" href="view.html?n=tradition7">
-    <span class="ic" style="background:var(--blue)">食</span>
-    <span class="t"><b>伝統社会と生活文化<span class="new">NEW</span></b><small>放送大学・7講「食と食生活文化」</small></span>
-    <span class="chev">›</span>
-  </a>
+  <div class="due" id="due"></div>
+  <div id="subjects"></div>
 
   <a class="sj" href="words.html">
     <span class="ic" style="background:var(--wood)">言</span>
@@ -57,13 +51,47 @@
 </main>
 <script>
 (function () {
-  try {
-    var s = JSON.parse(localStorage.getItem("hibiki-study-digital-v1")) || {}, n = 0;
-    for (var k in s) if (s[k] && +k >= 0 && +k < 15) n++;
-    document.getElementById("nDig").textContent = n + " / 15章";
-    document.getElementById("mDig").style.width = (n / 15 * 100) + "%";
-  } catch (e) {}
-  try { var w = JSON.parse(localStorage.getItem("hibiki-words-v1")) || []; if (w.length) document.getElementById("nW").textContent = w.length + " 個たまっています"; } catch (e) {}
+  // 受けている科目（2026年2学期・韓国の放送大学）。教材ができたら href を入れる
+  var SUBJECTS = [
+    { k: "dig", name: "デジタル経済の理解", sub: "全15章", href: "digital.html", c: "var(--sage)", ch: "経" },
+    { k: "trad", name: "伝統社会と生活文化", sub: "7講「食と食生活文化」", href: "view.html?n=tradition7", c: "var(--blue)", ch: "食", isNew: true },
+    { k: "money", name: "貨幣金融論", sub: "教材はこれから", c: "var(--wood)", ch: "貨" },
+    { k: "macro", name: "上級マクロ経済論", sub: "教材はこれから", c: "var(--wood)", ch: "マ" },
+    { k: "rel", name: "世界の宗教", sub: "教材はこれから", c: "var(--wood)", ch: "宗" },
+    { k: "open", name: "開かれた社会と21世紀", sub: "教材はこれから", c: "var(--wood)", ch: "社" }
+  ];
+  function jget(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
+  function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+  function render() {
+    var dig = jget("hibiki-study-digital-v1", {}), n = 0, EV = jget("hibiki-study-eval-v1", {});
+    for (var k in dig) if (dig[k] && +k >= 0 && +k < 15) n++;
+    document.getElementById("subjects").innerHTML = SUBJECTS.map(function (x) {
+      var ev = EV[x.k], tag = x.href ? "a" : "div", h = x.href ? ' href="' + x.href + '"' : "";
+      return '<' + tag + ' class="sj' + (x.href ? "" : " soon") + '"' + h + '>' +
+        '<span class="ic" style="background:' + x.c + '">' + x.ch + '</span>' +
+        '<span class="t"><b>' + esc(x.name) + (x.isNew ? '<span class="new">NEW</span>' : '') + '</b><small>' + esc(x.sub) + '</small>' +
+        (x.k === "dig" ? '<span class="meter"><i style="width:' + (n / 15 * 100) + '%"></i></span><small>' + n + ' / 15章</small>' : '') +
+        '<button class="ev" data-k="' + x.k + '">形成評価 ' + (ev == null ? "—" : ev + "%") + '（直す）</button></span>' +
+        (x.href ? '<span class="chev">›</span>' : '') + '</' + tag + '>';
+    }).join("");
+    [].forEach.call(document.querySelectorAll(".ev"), function (b) {
+      b.onclick = function (e) {
+        e.preventDefault(); e.stopPropagation();
+        var k = b.getAttribute("data-k"), v = prompt("形成評価の進み具合（％）を入れてください", EV[k] == null ? "" : EV[k]);
+        if (v === null) return;
+        var num = parseFloat(v), M = jget("hibiki-study-eval-v1", {});
+        if (isNaN(num)) delete M[k]; else M[k] = Math.max(0, Math.min(100, Math.round(num * 100) / 100));
+        try { localStorage.setItem("hibiki-study-eval-v1", JSON.stringify(M)); } catch (e2) {}
+        render();
+      };
+    });
+    var w = jget("hibiki-words-v1", []);
+    document.getElementById("nW").textContent = w.length ? w.length + " 個たまっています" : "";
+    var end = new Date("2026-12-13T23:59:59+09:00"), left = Math.ceil((end - new Date()) / 864e5);
+    document.getElementById("due").innerHTML = left >= 0
+      ? '形成評価の期限 <b>12月13日</b>まで、あと <b>' + left + '</b> 日' : '形成評価の期間は終わりました';
+  }
+  render();
 })();
 </script>
 </body>
