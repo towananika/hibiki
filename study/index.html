@@ -62,6 +62,7 @@
   .me b { color:var(--sage); font-size:12px; display:block; }
   .read { margin-top:12px; width:100%; border:1px solid var(--sage); background:none; color:var(--sage); font:inherit; font-weight:600; padding:10px; border-radius:12px; cursor:pointer; }
   .ch.done .read { background:var(--sage); color:#fff; }
+  .more { display:block; margin-top:12px; text-align:center; background:var(--blue); color:#fff; font-weight:600; padding:10px; border-radius:12px; text-decoration:none; }
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; line-height:1.7; }
 </style>
 </head>
@@ -125,7 +126,7 @@ var CH = [
     one: "経済学から見ると、AIは「予測」を安くする技術。予測が安くなると、判断する人の価値が上がる。",
     pic: [P(["予測", "+", "判断", "=", "決定"]), "AIが安くするのは予測。判断は人<small>判断＝得と損の見積もり</small>"],
     terms: [["汎用技術", "일반목적기술", "蒸気機関や電気のように、あらゆる産業を変える技術"], ["ダ・ヴィンチ問題", "다빈치 문제", "発明から生産性が上がるまで時間がかかる。組織や教育の変化が必要"], ["暗黙知", "암묵적 지식", "自転車の乗り方のように言葉にできない知識。AIが苦手とされてきた"]],
-    me: "生成AIは、慣れていない人ほど伸びが大きいという研究が紹介されている。こさきとの勉強もその一つ。" },
+    me: "生成AIは、慣れていない人ほど伸びが大きいという研究が紹介されている。こさきとの勉強もその一つ。", more: "ch7.html" },
   { t: "ブロックチェーン", k: "블록체인",
     one: "中央の管理者なしで、みんなが同じ帳簿を持つしくみ。書き換えるのに莫大な計算が要るので、ずるが割に合わない。",
     pic: [P(["ブロック", "→", "ブロック", "→", "ブロック"]), "前のハッシュをつないだ鎖<small>大事なのは形のあるお金かどうかではなく、帳簿をどう守るか</small>"],
@@ -181,6 +182,7 @@ CH.forEach(function (c, i) {
     '<div class="in"><p class="one">' + c.one + '</p><div class="pic">' + c.pic.map(function (r) { return '<div class="row">' + r + '</div>'; }).join("") + '</div>' +
     '<div class="terms">' + c.terms.map(function (t) { return '<div class="term"><b>' + t[0] + '</b><em>' + t[1] + '</em><br>' + t[2] + '</div>'; }).join("") + '</div>' +
     '<div class="me"><b>ひびきの暮らしでいうと</b>' + c.me + '</div>' +
+    (c.more ? '<a class="more" href="' + c.more + '">くわしく読む ›</a>' : '') +
     '<button class="read" data-r="' + i + '">わかった</button></div></div>';
 });
 document.getElementById("list").innerHTML = html;

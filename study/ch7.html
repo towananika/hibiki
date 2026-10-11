@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7章 人工知能 — とわなにか</title>
+<meta name="description" content="デジタル経済の理解 7章「人工知能」をくわしく。">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<meta name="theme-color" content="#5b7a99">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --sage:#74886d; --blue:#5b7a99; --blue-soft:#e0e7ee; --red:#b5583f; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --sage:#9db394; --blue:#8fb0cf; --blue-soft:#1f2a35; --red:#e08b70; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","Apple SD Gothic Neo",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; }
+  .brand { color:var(--sage); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
+  .back { color:var(--muted); font-size:13px; text-decoration:none; }
+  .ch-no { display:inline-block; margin-top:18px; background:var(--blue); color:#fff; font-weight:700; font-size:13px; border-radius:999px; padding:3px 12px; }
+  h1 { font-size:28px; margin:8px 0 2px; }
+  .sub { color:var(--muted); font-size:13px; margin:0; }
+  .toc { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+  .toc a { font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:5px 10px; text-decoration:none; }
+  h2 { font-size:19px; margin:30px 4px 4px; scroll-margin-top:12px; }
+  h2 small { display:block; color:var(--muted); font-size:12px; font-weight:400; margin-top:2px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:16px; margin-top:12px; }
+  .lead { font-size:15px; line-height:1.75; margin:0; }
+  .label { color:var(--muted); font-size:12px; font-weight:600; margin:0 0 10px; letter-spacing:.04em; }
+  .note { color:var(--muted); font-size:12px; line-height:1.6; margin:10px 0 0; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .box { background:var(--bg); border-radius:14px; padding:12px; font-size:13px; line-height:1.6; }
+  .box b { display:block; font-size:15px; margin-bottom:2px; }
+  .box em { font-style:normal; color:var(--muted); font-size:11px; }
+
+  /* 年表 */
+  .tl { position:relative; margin:4px 0 0; padding-left:22px; }
+  .tl::before { content:""; position:absolute; left:6px; top:4px; bottom:4px; width:2px; background:var(--border); }
+  .tl div { position:relative; padding:6px 0; font-size:14px; line-height:1.5; }
+  .tl div::before { content:""; position:absolute; left:-21px; top:11px; width:12px; height:12px; border-radius:50%; background:var(--blue); border:2px solid var(--surface); }
+  .tl div.cold::before { background:var(--muted); }
+  .tl b { font-variant-numeric:tabular-nums; margin-right:6px; }
+  .tl small { display:block; color:var(--muted); font-size:12px; }
+
+  /* 棒グラフ */
+  .bars { display:grid; gap:8px; }
+  .bar { display:grid; grid-template-columns:92px 1fr 48px; align-items:center; gap:8px; font-size:13px; }
+  .bar .tr { height:14px; border-radius:7px; background:var(--bg); overflow:hidden; }
+  .bar .tr i { display:block; height:100%; border-radius:7px; }
+  .bar b { text-align:right; font-variant-numeric:tabular-nums; }
+
+  /* 知識の地図 */
+  .spec { display:grid; grid-template-columns:1fr 1fr 1fr; border-radius:14px; overflow:hidden; text-align:center; font-size:12px; line-height:1.5; }
+  .spec div { padding:12px 6px; }
+  .spec b { display:block; font-size:14px; margin-bottom:4px; }
+
+  /* 傘 */
+  .rain { display:grid; gap:12px; }
+  .rain label { font-size:13px; display:flex; justify-content:space-between; }
+  .rain input[type=range] { width:100%; accent-color:var(--blue); }
+  .seg { display:flex; gap:6px; }
+  .seg button { flex:1; border:1px solid var(--border); background:var(--bg); color:var(--text); font:inherit; font-size:13px; padding:8px 4px; border-radius:10px; cursor:pointer; }
+  .seg button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .verdict { text-align:center; background:var(--bg); border-radius:14px; padding:14px; }
+  .verdict b { font-size:22px; display:block; }
+  .eq { display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; font-weight:700; font-size:15px; }
+  .eq span { padding:6px 12px; border-radius:999px; background:var(--bg); }
+  .eq .ai { background:var(--blue); color:#fff; } .eq .me { background:var(--sage); color:#fff; } .eq i { font-style:normal; color:var(--muted); }
+
+  .pol { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .pol .box b { font-size:14px; }
+
+  .q { border-top:1px solid var(--border); padding:12px 0; }
+  .q:first-of-type { border-top:0; padding-top:0; }
+  .q b { font-size:15px; line-height:1.6; display:block; }
+  .q button { margin-top:8px; border:1px solid var(--blue); background:none; color:var(--blue); font:inherit; font-size:13px; padding:6px 12px; border-radius:999px; cursor:pointer; }
+  .q p { display:none; margin:8px 0 0; font-size:14px; line-height:1.7; background:var(--bg); border-radius:12px; padding:10px 12px; }
+  .q.open p { display:block; } .q.open button { display:none; }
+  .me-line { margin-top:12px; border-left:3px solid var(--sage); padding:4px 0 4px 10px; font-size:13px; line-height:1.6; }
+  .me-line b { color:var(--sage); font-size:12px; display:block; }
+  footer { color:var(--muted); font-size:12px; margin-top:22px; text-align:center; line-height:1.7; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="brand" href="../">とわなにか</a><a class="back" href="./">‹ 15章の一覧</a></div>
+  <span class="ch-no">7章</span>
+  <h1>人工知能</h1>
+  <p class="sub">인공지능・技術と産業のはじまり</p>
+  <div class="toc"><a href="#s1">1 汎用技術</a><a href="#s2">2 AIの歩み</a><a href="#s3">3 職場での効果</a><a href="#s4">4 予測と判断</a><a href="#s5">5 社会の課題</a><a href="#s6">確かめる</a></div>
+
+  <section class="card" style="margin-top:16px">
+    <p class="lead">この章の答えは、ひとことで言うと<b>「AIは予測を安くする技術。予測が安くなると、判断する人の価値が上がる」</b>。そこに行くまでに、AIの歴史、職場での実験、社会の課題を見ていきます。</p>
+  </section>
+
+  <!-- 1 -->
+  <h2 id="s1">1. 汎用技術としてのAI<small>일반목적기술 GPT</small></h2>
+  <section class="card">
+    <p class="lead">蒸気機関や電気のように、<b>あらゆる産業に広がり、ほかの発明を呼び込む技術</b>を「汎用技術」と呼びます。それだけで答えを出すのではなく、新しいことができる「土台」になる技術です。</p>
+  </section>
+  <section class="card">
+    <p class="label">機械の2つの力</p>
+    <div class="two">
+      <div class="box"><b>体の力</b><em>동력・physical power</em><br>物を動かし、形を変える。蒸気機関 → エンジン → 電気。18世紀の産業革命。</div>
+      <div class="box" style="background:var(--blue-soft)"><b>頭の力</b><em>통제・mental power</em><br>どこへ動かし、どう変えるかを決める。コンピュータ → データ → AI。2000年代から。</div>
+    </div>
+    <p class="note">体の力は人を「助ける」ものが多かった。頭の力は、人を助けるのか、代わるのか。ここが14・15章につながります。</p>
+  </section>
+  <section class="card">
+    <p class="label">ダ・ヴィンチ問題 ― 発明から効果まで時間がかかる</p>
+    <div class="tl">
+      <div><b>1493</b>ダ・ヴィンチがヘリコプターを描く<small>まわりの技術がなく、作れなかった</small></div>
+      <div><b>1880s</b>工場に電気モーターが入る<small>でも生産性はすぐには上がらない</small></div>
+      <div class="cold"><b>＋30年</b>やっと生産性が上がる<small>工場の作り直し、働く人の教育、古い世代の管理職の引退が必要だった</small></div>
+    </div>
+    <p class="note">AIも同じで、会社や仕事のやり方まで変わって、はじめて効果が出ます。</p>
+  </section>
+
+  <!-- 2 -->
+  <h2 id="s2">2. AIの歩み<small>인공지능의 진화와 돌파구</small></h2>
+  <section class="card">
+    <p class="label">知識の2つの種類（ポランニー）</p>
+    <div class="spec">
+      <div style="background:var(--blue-soft)"><b>機械が得意</b>決まった規則<br>四則計算<br>搭乗券の発行</div>
+      <div style="background:var(--bg)"><b>間</b>パターン認識<br>声で名前を<br>聞き取る</div>
+      <div style="background:#74886d33"><b>人が得意</b>言葉にできない<br>運転<br>法律の文章</div>
+    </div>
+    <p class="note"><b>明示知</b>（명시적 지식）は言葉や式で伝えられる知識。<b>暗黙知</b>（암묵적 지식）は自転車の乗り方のように体験でしか伝わらない知識。料理のレシピは、暗黙知を明示知にした例。最近のAIは、暗黙知だと思われていた所まで入ってきています。</p>
+  </section>
+  <section class="card">
+    <p class="label">年表</p>
+    <div class="tl">
+      <div><b>1956</b>ダートマス会議<small>マッカーシーが「人工知能」と名づける</small></div>
+      <div><b>1970s</b>エキスパートシステム<small>MYCIN：医師に聞いた600の規則で診断。でも広い分野には広げられない</small></div>
+      <div class="cold"><b>…</b>AIの冬<small>規則を書くやり方（記号主義）が行きづまる</small></div>
+      <div><b>1997</b>ディープ・ブルーがチェスで世界王者に勝つ</div>
+      <div><b>2011</b>ワトソンがクイズ番組で人間の3倍以上の賞金</div>
+      <div><b>2012</b>ディープラーニングで画像認識が急に良くなる</div>
+      <div><b>2016</b>アルファ碁がイ・セドルに4勝1敗</div>
+      <div><b>2017</b>ポーカーでもプロに勝つ<small>相手の手が見えない「不完全情報」のゲームでも</small></div>
+      <div><b>2022</b>ChatGPT公開<small>そのあとGemini、Llama、Claudeなど</small></div>
+    </div>
+  </section>
+  <section class="card">
+    <p class="label">画像認識のまちがい率（イメージネット）</p>
+    <div class="bars" id="imgnet"></div>
+    <p class="note">人がつけるとまちがいは約5%。2015年に初めて人より正確になりました。</p>
+  </section>
+  <section class="card">
+    <p class="label">モラベックのパラドックス</p>
+    <p class="lead" style="font-size:14px">「難しいことは簡単で、簡単なことは難しい」。計算や推論は機械に楽で、顔を見分ける、ボールを取る、声を聞き取るといった4歳の子でもできることが、機械にはとても難しい。</p>
+  </section>
+  <section class="card">
+    <p class="label">機械学習の3つのやり方</p>
+    <div class="bars" style="gap:8px">
+      <div class="box"><b>教師あり学習</b><em>지도학습</em><br>問題と答えのセットで学ぶ。写真→説明、声→文字、顔→名前。</div>
+      <div class="box"><b>教師なし学習</b><em>비지도학습</em><br>答えなしで、似たものを集める・はずれ値を見つける。</div>
+      <div class="box"><b>強化学習</b><em>강화학습</em><br>目標と行動のルールだけ決めて、ほうびが増える動きを探す。碁やゲーム。</div>
+    </div>
+  </section>
+  <section class="card">
+    <p class="label">いまのAI（大規模言語モデル）の課題</p>
+    <div class="bars" style="gap:8px">
+      <div class="box"><b>確率のオウム</b><em>stochastic parrot</em><br>「太陽が…」のあとに来そうな言葉を確率で並べているだけで、理解しているわけではない。だから、まちがいや偏りが出る。</div>
+      <div class="box"><b>学習の費用</b><br>2016年から毎年約2.4倍。2027年には10億ドルを超える見込み。内訳は機械47〜67%、人29〜49%、電気2〜6%。普通の投資家では足りず、マイクロソフトがOpenAIに、アマゾンがAnthropicに投資する形に。</div>
+      <div class="box"><b>狭いAIと汎用AI</b><br>アルファ碁は碁は最強でもチェスはできない。翻訳AIは何を訳すかは決められない。</div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <h2 id="s3">3. 職場での効果<small>인공지능의 경제적 활용</small></h2>
+  <section class="card">
+    <p class="label">コンサル会社BCGの758人の実験</p>
+    <p class="lead" style="font-size:14px">AIが得意な仕事（新商品のアイデア）と、苦手な仕事（数字から投資を判断）で試した。</p>
+    <p class="label" style="margin:14px 0 8px">得意な仕事：点数の伸び</p><div class="bars" id="bcg"></div><p class="label" style="margin:14px 0 8px">苦手な仕事：正答率</p><div class="bars" id="bcg2"></div>
+    <p class="note"><b>でこぼこの境界</b>（들쭉날쭉한 역량 경계）：AIの得意と苦手の境目はまっすぐではない。苦手な仕事でAIを使うと、正答率が84.5%から60%に下がった。いつAIを信じるかを知ることが大事。</p>
+  </section>
+  <section class="card">
+    <p class="label">ほかの2つの実験</p>
+    <div class="bars" id="others"></div>
+    <p class="note">電話相談（5,179人）：1時間に解決する件数が平均13.8%増。新人ほど伸びた。<br>プログラミング（中国アントグループ1,219人）：書くコードが平均55%増。そのうちAIそのものの効果は約1/3、残りは浮いた時間で効率が上がった分。慣れた人ほどAIの提案を使わなかった。</p>
+    <div class="me-line"><b>ひびきの暮らしでいうと</b>新しいことを覚えるときほど、AIの手助けは大きい。いまの勉強も、こさきに聞きながら進めるのが合っている。</div>
+  </section>
+
+  <!-- 4 -->
+  <h2 id="s4">4. 予測と判断<small>예측과 판단</small></h2>
+  <section class="card">
+    <div class="eq"><span class="ai">予測</span><i>＋</i><span class="me">判断</span><i>＝</i><span>決定</span></div>
+    <p class="lead" style="font-size:14px;margin-top:12px"><b>予測</b>は、持っている情報から、持っていない情報を作ること（確率で表す）。<b>判断</b>は、得と損の見積もり。AIが安くするのは予測で、判断は人の役目です。</p>
+  </section>
+  <section class="card">
+    <p class="label">ためしてみる：傘を持っていく？</p>
+    <div class="rain">
+      <label><span>AIの予測：午後に雨が降る確率</span><b id="pV">80%</b></label>
+      <input type="range" id="p" min="0" max="100" step="10" value="80">
+      <div>
+        <label style="margin-bottom:6px"><span>ひびきの判断：ぬれるのはどれくらいいや？</span></label>
+        <div class="seg" id="wet"><button data-v="1">平気</button><button data-v="3" class="on">ふつう</button><button data-v="8">絶対いや</button></div>
+      </div>
+      <div>
+        <label style="margin-bottom:6px"><span>傘を持つのはどれくらい面倒？</span></label>
+        <div class="seg" id="carry"><button data-v=".5">ぜんぜん</button><button data-v="1.5" class="on">少し</button><button data-v="3">とても</button></div>
+      </div>
+      <div class="verdict"><b id="dec">持っていく</b><span class="note" id="why"></span></div>
+    </div>
+    <p class="note">同じ80%でも、人によって答えが変わる。映画『アイ，ロボット』で、ロボットは生き残る確率45%の大人を助け、11%の子どもを見捨てた。「11%で十分だ。人間ならわかる」。これが判断です。</p>
+  </section>
+  <section class="card">
+    <p class="label">予測が安くなると</p>
+    <div class="two">
+      <div class="box"><b>代わられるもの ↓</b>道路を見て運転する仕事。自動運転は「人がどう運転するか」を予測する問題になった。</div>
+      <div class="box" style="background:#74886d22"><b>価値が上がるもの ↑</b>データ。そして判断。予測を使う場面はどんどん増える。</div>
+    </div>
+    <p class="note">例：走行記録 → 事故を予測 → 運転のくせを直す → 保険料が変わる。予測で新しい価値も作れる。</p>
+  </section>
+  <section class="card">
+    <p class="label">経済学がAIに役立つこと</p>
+    <div class="bars" style="gap:8px">
+      <div class="box"><b>原因と結果を見分ける</b><em>인과 추론</em><br>5月におもちゃの広告も売上も増えた。広告のおかげ？こどもの日のせい？それとも、こどもの日が両方を増やした？</div>
+      <div class="box"><b>行動から好みを読む</b><em>현시 선호</em><br>ドラマを一気に出すか、毎週出すか。会員が続けるか、完結後に入るかで、本当の好みがわかる。</div>
+      <div class="box"><b>しくみを設計して試す</b><em>게임이론・RCT</em><br>ゲーム理論と、くじで分けた比較実験。</div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <h2 id="s5">5. 社会の課題<small>인공지능 기반 경제의 정책적 과제</small></h2>
+  <section class="card">
+    <div class="pol">
+      <div class="box"><b>独占</b>大量のデータと計算力を持つ大企業がさらに強くなる。AIによる価格差別や、AIどうしの値段の談合も。</div>
+      <div class="box"><b>著作権</b>学習に使うデータと、AIが作ったもの、両方で問題に。いまは裁判ごとに決まる。</div>
+      <div class="box"><b>プライバシー</b>個人情報を含むデータで学ぶ。質問の仕方しだいで漏れることも。</div>
+      <div class="box"><b>教育</b>新人ほど得をするが、効果はまだ一部の仕事だけ。生涯の学び直しが要る。</div>
+    </div>
+    <div class="box" style="margin-top:8px"><b>格差</b>国の中では、仕事と所得の変化で差が広がるかも。国どうしでは、人手に頼る産業が強い途上国が不利になるかも（15章へ）。</div>
+  </section>
+
+  <!-- 6 -->
+  <h2 id="s6">確かめる<small>学習目標の問い</small></h2>
+  <section class="card" id="quiz"></section>
+
+  <footer>講義ノート（이남형・2026年2学期）をもとに、こさきが自分の言葉でまとめました。<br>数字は講義ノートにある研究から。</footer>
+</main>
+<script>
+function bars(id, rows, max) {
+  document.getElementById(id).innerHTML = rows.map(function (r) {
+    return '<div class="bar"><span>' + r[0] + '</span><span class="tr"><i style="width:' + (r[1] / max * 100) + '%;background:' + (r[2] || 'var(--blue)') + '"></i></span><b>' + (r[3] || r[1] + '%') + '</b></div>';
+  }).join("");
+}
+bars("imgnet", [["2010年", 28, "var(--muted)"], ["2012年", 16], ["2015年", 4.9, "var(--sage)", "5%未満"], ["人", 5, "var(--wood)"]], 30);
+bars("bcg", [["もとは下位", 43, "var(--sage)", "+43%"], ["もとは上位", 17, "var(--sage)", "+17%"]], 50);
+bars("bcg2", [["AIなし", 84.5, "var(--wood)", "84.5%"], ["AIあり", 60, "var(--red)", "60%"]], 100);
+bars("others", [["電話相談", 13.8, "var(--blue)", "+14%"], ["コード全体", 55, "var(--blue)", "+55%"], ["コード新人", 67, "var(--sage)", "+67%"]], 70);
+
+var W = 3, C = 1.5;
+function decide() {
+  var p = +document.getElementById("p").value / 100;
+  document.getElementById("pV").textContent = Math.round(p * 100) + "%";
+  var lose = p * W, take = C;
+  document.getElementById("dec").textContent = lose > take ? "持っていく ☂" : "持っていかない";
+  document.getElementById("why").textContent = "ぬれるいやさ " + lose.toFixed(1) + " と、持つ面倒 " + take.toFixed(1) + " をくらべた";
+}
+function seg(id, set) {
+  document.getElementById(id).addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    [].forEach.call(this.children, function (x) { x.classList.toggle("on", x === b); });
+    set(+b.dataset.v); decide();
+  });
+}
+seg("wet", function (v) { W = v; }); seg("carry", function (v) { C = v; });
+document.getElementById("p").addEventListener("input", decide);
+decide();
+
+var Q = [
+  ["汎用技術とは？AIはなぜ候補なの？", "多くの産業に広がり、ほかの発明を呼び込む土台の技術（蒸気機関・電気など）。AIは「頭の力」の分野で、あらゆる仕事の予測を変えうるので候補とされる。"],
+  ["ダ・ヴィンチ問題とは？", "発明しても、まわりの技術・組織・教育が追いつくまで効果が出ないこと。電気モーターは生産性が上がるまで約30年かかった。AIも会社全体の変化が要る。"],
+  ["モラベックのパラドックスが教えることは？", "人に難しい計算は機械に簡単で、人に簡単な知覚や動きは機械に難しい。だから人と機械の役割分担は、思っていたのと逆になることがある。"],
+  ["教師あり・教師なし・強化学習のちがいは？", "教師あり＝答えつきで学ぶ（写真→説明）。教師なし＝答えなしで似たものを分ける。強化＝目標とルールだけで、ほうびが増える動きを探す（碁・ゲーム）。"],
+  ["「でこぼこの境界」とは？", "AIが得意な仕事と苦手な仕事の境目がでこぼこで見えにくいこと。得意な仕事では成績が上がり、苦手な仕事で頼ると正答率が下がった。"],
+  ["予測と判断はなぜ分けるの？", "予測は確率を出すこと、判断は得と損の見積もり。同じ予測でも人によって決定が変わる。AIが安くするのは予測で、判断の価値はむしろ上がる。"],
+  ["AIで独占が強まるのはなぜ？", "学習に大量のデータと計算力が要り、それを持つ大企業が有利になるから。データを動かせば競争は増えるが、プライバシーの問題が出る。"]
+];
+document.getElementById("quiz").innerHTML = Q.map(function (q) { return '<div class="q"><b>' + q[0] + '</b><button>答えを見る</button><p>' + q[1] + '</p></div>'; }).join("");
+document.getElementById("quiz").addEventListener("click", function (e) { var b = e.target.closest("button"); if (b) b.parentNode.classList.add("open"); });
+</script>
+</body>
+</html>
