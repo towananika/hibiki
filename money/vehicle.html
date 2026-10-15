@@ -189,7 +189,9 @@
     var ch = false;
     if (!S.km && D.km && !localStorage.getItem("hibiki-vehicle-km-seeded")) { S.km = D.km; ch = true; try { localStorage.setItem("hibiki-vehicle-km-seeded", "1"); } catch (e) {} }
     if (!S.bought && D.bought && !localStorage.getItem("hibiki-vehicle-bought-seeded")) { S.bought = D.bought; ch = true; try { localStorage.setItem("hibiki-vehicle-bought-seeded", "1"); } catch (e) {} }
-    if (D.recs && !localStorage.getItem("hibiki-vehicle-recs-seeded")) { D.recs.forEach(function (r) { if (!S.recs.some(function (x) { return x.id === r.id; })) S.recs.push(r); }); ch = true; try { localStorage.setItem("hibiki-vehicle-recs-seeded", "1"); } catch (e) {} }
+    if (D.recs) { var done = []; try { var v = localStorage.getItem("hibiki-vehicle-recs-seeded"); done = v === "1" ? ["seed-0808"] : JSON.parse(v) || []; } catch (e) {}
+      D.recs.forEach(function (r) { if (done.indexOf(r.id) < 0) { done.push(r.id); S.recs.push(r); ch = true; } });
+      try { localStorage.setItem("hibiki-vehicle-recs-seeded", JSON.stringify(done)); } catch (e) {} }
     if (seeded) { if (ch) { save(); settings(); render(); } return; }
     if (!S.purchase && D.purchase) S.purchase = D.purchase;
     try { localStorage.setItem("hibiki-vehicle-seeded", "1"); } catch (e) {}
