@@ -113,7 +113,7 @@
   function form(type, item) {
     var f = el("form", "edit");
     var n = el("label", null, "名前"); var ni = el("input"); ni.value = item ? item.name : ""; ni.maxLength = 40; ni.required = true; n.appendChild(ni);
-    var a = el("label", null, "月の金額（ウォン）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1000"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
+    var a = el("label", null, "月の金額（ウォン）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
     f.appendChild(n); f.appendChild(a);
     var ki = null;
     if (type === "expense") {
