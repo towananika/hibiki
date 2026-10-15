@@ -65,6 +65,7 @@
   </div>
 
   <div class="card" id="list"></div>
+  <p class="note" style="text-align:center" id="pnote"></p>
   <p class="note" style="text-align:center">投資は値段が上下します。ここには「いまの金額」を自分で入れ直します。</p>
   <div class="foot"><button id="reset">はじめの形にもどす</button></div>
 </main>
@@ -100,11 +101,12 @@
     var n = el("label", null, "名前"); var ni = el("input"); ni.value = item ? item.name : ""; ni.maxLength = 40; ni.required = true; n.appendChild(ni);
     var a = el("label", null, "金額（ウォン。株で入れたときは不要）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
     var sh = el("label", null, "株の数（株で持っているとき。入れると金額は自動）"); var si = el("input"); si.type = "number"; si.min = "0"; si.step = "any"; si.inputMode = "decimal"; si.value = item && item.shares ? item.shares : ""; sh.appendChild(si);
-    var pr = el("label", null, "1株の値段（ウォン）"); var pi = el("input"); pi.type = "number"; pi.min = "0"; pi.step = "any"; pi.inputMode = "decimal"; pi.value = item && item.price ? item.price : ""; pr.appendChild(pi);
+    var sy = el("label", null, "株のコード（自動で値段を取る。例：005930.KS、AAPL。なくてもよい）"); var yi = el("input"); yi.value = item && item.sym ? item.sym : ""; yi.maxLength = 16; yi.setAttribute("autocapitalize", "characters"); sy.appendChild(yi);
+    var pr = el("label", null, "1株の値段（ウォン。コードがあれば自動）"); var pi = el("input"); pi.type = "number"; pi.min = "0"; pi.step = "any"; pi.inputMode = "decimal"; pi.value = item && item.price ? item.price : ""; pr.appendChild(pi);
     var k = el("label", null, "種類"); var ki = el("select");
     CATS.forEach(function (c) { var o = el("option", null, c[1]); o.value = c[0]; ki.appendChild(o); });
     ki.value = item ? item.cat : "cash"; k.appendChild(ki);
-    f.appendChild(n); f.appendChild(k); f.appendChild(sh); f.appendChild(pr); f.appendChild(a);
+    f.appendChild(n); f.appendChild(k); f.appendChild(sh); f.appendChild(sy); f.appendChild(pr); f.appendChild(a);
     var b = el("div", "btns"); var c = el("button", null, "やめる"); c.type = "button"; var s = el("button", "main", item ? "直す" : "足す"); s.type = "submit";
     b.appendChild(c); b.appendChild(s); f.appendChild(b);
     c.onclick = function () { editing = undefined; render(); };
@@ -112,10 +114,10 @@
       e.preventDefault();
       var name = ni.value.trim(); if (!name) return;
       var amt = Math.max(0, Math.round(+ai.value || 0));
-      var shares = Math.max(0, +si.value || 0), price = Math.max(0, +pi.value || 0);
-      if (item) { item.name = name; item.amt = amt; item.cat = ki.value; item.shares = shares; item.price = price; }
-      else S.items.push({ id: uid(), name: name, amt: amt, cat: ki.value, shares: shares, price: price });
-      editing = undefined; save(); render();
+      var sym = yi.value.trim().toUpperCase(), shares = Math.max(0, +si.value || 0), price = Math.max(0, +pi.value || 0);
+      if (item) { item.name = name; item.amt = amt; item.cat = ki.value; item.shares = shares; item.price = price; item.sym = sym; }
+      else S.items.push({ id: uid(), name: name, amt: amt, cat: ki.value, shares: shares, price: price, sym: sym });
+      editing = undefined; save(); render(); refresh();
     };
     setTimeout(function () { ni.focus(); }, 0);
     return f;
@@ -146,11 +148,34 @@
       acts.appendChild(eb); acts.appendChild(db); r.appendChild(acts); root.appendChild(r);
     });
   }
+  // 株のコードがあるものは、開くたびに最新の値段を取ってくる（取れなければ入れた値段のまま）
+  var API = "https://hibiki-sync.jaykim-can.workers.dev";
+  function refresh() {
+    var syms = S.items.filter(function (x) { return x.sym; }).map(function (x) { return x.sym; });
+    var note = document.getElementById("pnote");
+    if (!syms.length) { note.textContent = ""; return; }
+    fetch(API + "/price?s=" + encodeURIComponent(syms.join(","))).then(function (r) { return r.json(); }).then(function (d) {
+      var curs = {};
+      Object.keys(d).forEach(function (k) { if (d[k].cur && d[k].cur !== "KRW") curs[d[k].cur] = 1; });
+      var cl = Object.keys(curs);
+      return (cl.length ? fetch(API + "/price?s=" + encodeURIComponent(cl.map(function (c) { return c + "KRW=X"; }).join(","))).then(function (r) { return r.json(); }) : Promise.resolve({})).then(function (fx) {
+        var n = 0;
+        S.items.forEach(function (x) {
+          var q = x.sym && d[x.sym]; if (!q) return;
+          var rate = q.cur === "KRW" ? 1 : (fx[q.cur + "KRW=X"] || {}).price;
+          if (!rate) return;
+          x.price = q.price * rate; n++;
+        });
+        if (n) { S.pt = Date.now(); save(); render(); }
+        note.textContent = n ? "株の値段を更新しました（" + new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) + "）" : "値段を取れませんでした。入れた値段のままです";
+      });
+    }).catch(function () { note.textContent = "値段を取れませんでした。入れた値段のままです"; });
+  }
   document.getElementById("reset").onclick = function () {
     if (!confirm("入れた内容を消して、はじめの形にもどします。いいですか？")) return;
     S = defaults(); editing = undefined; save(); render();
   };
-  render();
+  render(); refresh();
 })();
 </script>
 </body>
