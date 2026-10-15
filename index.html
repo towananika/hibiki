@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>とわなにか</title>
 <script src="sync.js"></script>
+<script src="priority/pri.js"></script>
 <meta name="description" content="ひびきが幸せに成長し、よい人生を送るために。健康・自由・愛の3つを、AIのみんなと育てる場所。">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -40,6 +41,8 @@
   .health .ic { background:var(--sage-soft); } .health svg { stroke:var(--sage); }
   .people .ic { background:var(--red-soft); } .people svg { stroke:var(--red); }
   .more .ic { background:var(--blue-soft); } .more svg { stroke:var(--blue); }
+  #pri { background:var(--wood); color:#fff; border-radius:20px; padding:16px 18px; text-decoration:none; margin:14px 0 0; }
+  #pri small { opacity:.85; font-size:12px; } #pri b { display:block; font-size:20px; margin:2px 0; } #pri span { font-size:13px; opacity:.95; }
   footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
 </style>
 </head>
@@ -47,6 +50,7 @@
 <main>
   <h1>とわなにか</h1>
   <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
+  <a id="pri" href="priority/" style="display:none"></a>
   <div id="menu"></div>
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
@@ -76,6 +80,7 @@ document.getElementById("menu").innerHTML = GROUPS.map(function (g) {
     return '<a class="item ' + p.key + '" href="' + p.href + '"><span class="ic"><svg viewBox="0 0 24 24">' + p.icon + '</svg></span><span class="t"><b>' + p.name + '</b>' + (fresh ? '<em class="new">NEW</em>' : '') + '<span>' + p.note + '</span></span><span class="chev">›</span></a>';
   }).join("") + '</div>';
 }).join("");
+if (window.HBPRI) { var pr = document.getElementById("pri"), nx = HBPRI.next; pr.style.display = "block"; pr.innerHTML = "<small>いま、これを</small><b>" + nx.t + "</b><span>" + nx.st + "　›　優先の順番を見る</span>"; }
 if (window.HibikiSync && HibikiSync.on()) document.getElementById("login").textContent = "ログイン中";
 </script>
 </body>
