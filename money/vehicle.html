@@ -188,6 +188,7 @@
     if (!D) return;
     var ch = false;
     if (!S.km && D.km && !localStorage.getItem("hibiki-vehicle-km-seeded")) { S.km = D.km; ch = true; try { localStorage.setItem("hibiki-vehicle-km-seeded", "1"); } catch (e) {} }
+    if (!S.bought && D.bought && !localStorage.getItem("hibiki-vehicle-bought-seeded")) { S.bought = D.bought; ch = true; try { localStorage.setItem("hibiki-vehicle-bought-seeded", "1"); } catch (e) {} }
     if (seeded) { if (ch) { save(); settings(); render(); } return; }
     if (!S.purchase && D.purchase) S.purchase = D.purchase;
     try { localStorage.setItem("hibiki-vehicle-seeded", "1"); } catch (e) {}
