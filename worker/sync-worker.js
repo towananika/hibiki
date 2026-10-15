@@ -46,6 +46,7 @@ export default {
       }
     }
     if (url.pathname === "/price" && request.method === "GET") return json(await prices(url.searchParams.get("s") || ""), 200, origin);
+    if (url.pathname === "/search" && request.method === "GET") return json(await search(url.searchParams.get("q") || ""), 200, origin);
     if (url.pathname === "/pull" && request.method === "GET") {
       id = url.searchParams.get("id") || "";
     } else if ((url.pathname === "/push" || url.pathname === "/wipe") && request.method === "POST") {
@@ -134,6 +135,19 @@ async function prices(list) {
     } catch (e) {}
   }));
   return out;
+}
+
+// 会社名 → 株のコード（公開の検索だけ。1時間ためる）
+async function search(q) {
+  q = q.trim().slice(0, 40);
+  if (q.length < 2) return [];
+  try {
+    const r = await fetch("https://query1.finance.yahoo.com/v1/finance/search?quotesCount=8&newsCount=0&lang=ja-JP&q=" + encodeURIComponent(q), {
+      headers: { "User-Agent": "Mozilla/5.0" }, cf: { cacheTtl: 3600, cacheEverything: true },
+    });
+    const d = await r.json();
+    return (d.quotes || []).filter((x) => x.symbol && SYM.test(x.symbol)).map((x) => ({ sym: x.symbol, name: x.longname || x.shortname || x.symbol, ex: x.exchDisp || "" })).slice(0, 8);
+  } catch (e) { return []; }
 }
 
 function cors(origin) {
