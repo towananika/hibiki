@@ -18,7 +18,7 @@
 - ページでは `HibikiSync.open("<name>").then(...)` で読む。null ならロック表示。
 
 ## いまあるページ
-入口 `index.html`（グループ分けメニュー）／ `health/` ／ `relations/` ／ `money/`（週間レポートは自動ルーチンが更新）／ `money/budget.html`（家計：所得と費用、`hibiki-budget-v1`）／ `home/` ／ `timeline/`（`private/timeline.json`）／ `study/`（放送大学「デジタル経済の理解」）。
+入口 `index.html`（グループ分けメニュー）／ `health/` ／ `relations/` ／ `money/`（週間レポートは自動ルーチンが更新）／ `money/budget.html`（家計：所得と費用、`hibiki-budget-v1`）／ `money/assets.html`（預金と投資、`hibiki-assets-v1`）／ `home/` ／ `timeline/`（`private/timeline.json`）／ `study/`（放送大学「デジタル経済の理解」）。
 年齢は `hibiki-life-age` を各ページで共有する。
 
 ## 本人について
