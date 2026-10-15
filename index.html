@@ -81,6 +81,11 @@ document.getElementById("menu").innerHTML = GROUPS.map(function (g) {
   }).join("") + '</div>';
 }).join("");
 if (window.HBPRI) { var pr = document.getElementById("pri"), nx = HBPRI.next; pr.style.display = "block"; pr.innerHTML = "<small>いま、これを</small><b>" + nx.t + "</b><span>" + nx.st + "　›　優先の順番を見る</span>"; }
+if (window.HibikiSync) HibikiSync.open("priority").then(function (D) {
+  if (!D || !D.top || !D.top[0]) return;
+  var pr = document.getElementById("pri"); pr.style.display = "block";
+  pr.innerHTML = "<small>いま大事なこと</small><b>" + D.top[0].t + "</b><span>" + D.top[0].today + "　›　先にやる3つを見る</span>";
+});
 if (window.HibikiSync && HibikiSync.on()) document.getElementById("login").textContent = "ログイン中";
 </script>
 </body>

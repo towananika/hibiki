@@ -56,6 +56,8 @@
   .chip { font-size:12px; padding:2px 10px; border-radius:999px; background:var(--blue-soft); color:var(--blue); white-space:nowrap; }
   .rk.ok .chip { background:var(--sage-soft); color:var(--sage); }
   .tier { grid-column:2 / 4; font-size:11px; color:var(--wood); letter-spacing:.05em; }
+  .t3 { display:grid; grid-template-columns:34px 1fr; gap:2px 12px; padding:12px 0; border-top:1px solid var(--border); text-decoration:none; color:var(--text); }
+  .t3:first-of-type { border-top:0; } .t3 .no { background:var(--wood); color:#fff; } .t3 b { font-size:16px; } .t3 .today { grid-column:2; font-size:13px; background:var(--sage-soft); border-radius:8px; padding:4px 10px; color:var(--text); }
   .skip { display:grid; gap:6px; margin:0; padding:0; list-style:none; font-size:14px; }
   .skip li::before { content:"− "; color:var(--red); font-weight:700; }
 </style>
@@ -66,6 +68,7 @@
   <a class="back" href="../">← 入口</a>
   <h1>いま、これを</h1>
   <p class="lead">目的は「健康で、お金に余裕がある毎日」。上から順に進めます。</p>
+  <div id="top"></div>
   <div id="next"></div>
 
   <div class="card">
@@ -82,6 +85,7 @@
       <li>広い家を探しはじめる前に、予算の上限を決めずに動く</li>
     </ul>
   </div>
+  <p class="note" id="pnote" style="text-align:center"></p>
   <p class="note" style="text-align:center">順番は、健康 → お金の見える化 → 守り → 住まい → 期限 → 育てる → 楽しみ。数字はこの端末の記録から出ます。</p>
 </main>
 <script>
@@ -93,6 +97,17 @@
   document.getElementById("list").innerHTML = P.items.map(function (x, i) {
     return '<a class="rk' + (x.ok ? " ok" : "") + '" href="' + x.href + '"><span class="no">' + (x.ok ? "✓" : i + 1) + '</span><span class="tt">' + x.t + '</span><span class="chip">' + x.st + '</span><span class="why">' + x.why + '</span></a>';
   }).join("");
+  // 個人の中身（体や家計に関わること）は、暗号で置いた private/priority.json から、ログイン中だけ読む
+  if (window.HibikiSync) HibikiSync.open("priority").then(function (D) {
+    if (!D || !D.top) return;
+    document.getElementById("next").style.display = "none";
+    document.getElementById("top").innerHTML = '<div class="card"><h2>先にやる3つ</h2>' + D.top.map(function (x, i) {
+      return '<a class="t3" href="' + x.href + '"><span class="no">' + (i + 1) + '</span><span><b>' + x.t + '</b><br><span class="note">' + x.why + '</span></span><span class="today">今日の一手：' + x.today + '</span></a>';
+    }).join("") + '</div>';
+    var ul = document.querySelector(".skip");
+    (D.skip || []).slice().reverse().forEach(function (t) { var li = document.createElement("li"); li.textContent = t; ul.insertBefore(li, ul.firstChild); });
+    document.getElementById("pnote").textContent = D.note ? D.note + "（" + D.asof + "）" : "";
+  });
 })();
 </script>
 </body>
