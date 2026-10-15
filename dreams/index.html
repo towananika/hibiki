@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>夢日記 — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a.back { color:var(--wood); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .sum { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .sum div { border-radius:12px; padding:10px 12px; }
+  .sum small { display:block; color:var(--muted); font-size:12px; }
+  .sum b { font-size:18px; }
+  .in { background:var(--sage-soft); } .out { background:var(--wood-soft); }
+  .left { grid-column:1 / 3; background:var(--blue-soft); } .left.neg { background:var(--red-soft); }
+  .left.neg b { color:var(--red); }
+  .meter { height:10px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:12px 0 4px; }
+  .meter i { display:block; height:100%; background:var(--sage); } .meter i.over { background:var(--red); }
+  .note { color:var(--muted); font-size:12px; }
+  .head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  button { white-space:nowrap; font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:4px 12px; font-size:14px; }
+  button.main { background:var(--wood); color:#fff; border-color:var(--wood); }
+  button.del { color:var(--red); }
+  .row { display:grid; grid-template-columns:1fr auto; gap:2px 8px; padding:10px 0; border-top:1px solid var(--border); }
+  .row:first-of-type { border-top:0; }
+  .name { font-weight:600; word-break:break-word; } .amt { text-align:right; font-variant-numeric:tabular-nums; }
+  .amt.zero { color:var(--muted); font-weight:400; font-size:13px; }
+  .tag { display:inline-block; white-space:nowrap; font-size:11px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 8px; margin-left:6px; font-weight:400; }
+  .guide { grid-column:1 / 3; font-size:12px; color:var(--muted); }
+  .guide.over { color:var(--red); font-weight:600; }
+  .share { grid-column:1 / 3; height:6px; background:var(--wood-soft); border-radius:3px; overflow:hidden; }
+  .share i { display:block; height:100%; background:var(--wood); }
+  .acts { grid-column:1 / 3; display:flex; gap:8px; }
+  form.edit { display:grid; gap:8px; margin:8px 0 4px; padding:12px; border-radius:12px; background:var(--wood-soft); }
+  form.edit label { font-size:12px; color:var(--muted); display:grid; gap:2px; }
+  form.edit input, form.edit select { font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); width:100%; }
+  .btns { display:flex; gap:8px; justify-content:flex-end; }
+  .empty { color:var(--muted); font-size:14px; padding:8px 0; }
+  .foot { text-align:center; margin-top:8px; }
+  form.add { display:flex; gap:8px; margin-bottom:16px; }
+  form.add input { flex:1; min-width:0; font:inherit; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:var(--surface); color:var(--text); }
+  .d { display:grid; grid-template-columns:auto 1fr auto; gap:2px 10px; align-items:start; padding:12px 0; border-top:1px solid var(--border); }
+  .d:first-child { border-top:0; }
+  .chk { width:28px; height:28px; padding:0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; line-height:1; }
+  .d.ok .chk { background:var(--sage); border-color:var(--sage); color:#fff; }
+  .d .t { word-break:break-word; } .d.ok .t { color:var(--muted); }
+  .d .dt { grid-column:2 / 4; font-size:12px; color:var(--muted); }
+  .d .acts { grid-column:2 / 4; gap:6px; }
+  .big { font-size:28px; font-weight:700; }
+  .sec { font-size:13px; color:var(--muted); margin:16px 0 4px; font-weight:600; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 入口</a>
+  <h1>夢日記</h1>
+  <p class="lead">ねがい・やってみたいこと・こうなったらいいなを、思いついたときに1行ずつ足します。かなったら○を押すと、あとで振り返れます。この端末とログインした端末にだけ残ります。</p>
+
+  <div class="card">
+    <div class="sum">
+      <div class="out"><small>足した夢</small><span class="big" id="n1">0</span></div>
+      <div class="in"><small>かなった</small><span class="big" id="n2">0</span></div>
+    </div>
+    <div class="meter"><i id="mbar" style="width:0%"></i></div>
+    <div class="note" id="mnote"></div>
+  </div>
+
+  <form class="add" id="add"><input id="txt" maxlength="120" placeholder="たとえば：静かな部屋で眠りたい" required><button class="main" type="submit">足す</button></form>
+
+  <div class="card" id="list"></div>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-dreams-v1";
+  function uid() { return "d" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.items) return s; } catch (e) {} return { items: [] }; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  var S = load(), editing = null;
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+  function jp(d) { var a = d.split("-"); return +a[0] + "年" + +a[1] + "月" + +a[2] + "日"; }
+
+  function summary() {
+    var n = S.items.length, k = S.items.filter(function (x) { return x.done; }).length;
+    document.getElementById("n1").textContent = n; document.getElementById("n2").textContent = k;
+    document.getElementById("mbar").style.width = (n ? k / n * 100 : 0) + "%";
+    document.getElementById("mnote").textContent = !n ? "最初の夢を足してみましょう。" : k ? "夢が " + n + " 個、そのうち " + k + " 個がかないました。" : "夢が " + n + " 個たまりました。かなったら○を押します。";
+  }
+  function row(it) {
+    var r = el("div", "d" + (it.done ? " ok" : ""));
+    var c = el("button", "chk", it.done ? "✓" : ""); c.setAttribute("aria-label", it.done ? "かなったを取り消す" : "かなった");
+    c.onclick = function () { it.done = it.done ? "" : today(); save(); render(); };
+    r.appendChild(c);
+    if (editing === it.id) {
+      var i = el("input"); i.value = it.text; i.maxLength = 120; i.style.cssText = "font:inherit;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);min-width:0";
+      var ok = el("button", "main", "直す"); ok.onclick = function () { var v = i.value.trim(); if (v) it.text = v; editing = null; save(); render(); };
+      r.appendChild(i); r.appendChild(ok); setTimeout(function () { i.focus(); }, 0);
+    } else {
+      r.appendChild(el("div", "t", it.text)); r.appendChild(el("span"));
+      r.appendChild(el("div", "dt", it.done ? "かなった：" + jp(it.done) + "　（足した日：" + jp(it.at) + "）" : "足した日：" + jp(it.at)));
+      var a = el("div", "acts");
+      var e = el("button", null, "直す"); e.onclick = function () { editing = it.id; render(); };
+      var d = el("button", "del", "消す"); d.onclick = function () { if (!confirm("「" + it.text + "」を消しますか？")) return; S.items = S.items.filter(function (x) { return x.id !== it.id; }); save(); render(); };
+      a.appendChild(e); a.appendChild(d); r.appendChild(a);
+    }
+    return r;
+  }
+  function render() {
+    summary();
+    var root = document.getElementById("list"); root.textContent = "";
+    var open = S.items.filter(function (x) { return !x.done; }).reverse();
+    var done = S.items.filter(function (x) { return x.done; }).sort(function (a, b) { return a.done < b.done ? 1 : -1; });
+    if (!S.items.length) { root.appendChild(el("div", "empty", "まだありません。上の欄に1行入れて「足す」を押します。")); return; }
+    if (open.length) { root.appendChild(el("div", "sec", "これから（" + open.length + "）")); open.forEach(function (x) { root.appendChild(row(x)); }); }
+    if (done.length) { root.appendChild(el("div", "sec", "かなった（" + done.length + "）")); done.forEach(function (x) { root.appendChild(row(x)); }); }
+  }
+  document.getElementById("add").onsubmit = function (e) {
+    e.preventDefault();
+    var i = document.getElementById("txt"), v = i.value.trim(); if (!v) return;
+    S.items.push({ id: uid(), text: v, at: today(), done: "" }); i.value = ""; save(); render(); i.focus();
+  };
+  // はじめの夢（private/dreams.json に暗号で置いた分）を、1回だけ取りこむ
+  if (window.HibikiSync) HibikiSync.open("dreams").then(function (D) {
+    var seeded = false; try { seeded = !!localStorage.getItem("hibiki-dreams-seeded"); } catch (e) {}
+    if (!D || !D.items || seeded) return;
+    D.items.forEach(function (x) { if (!S.items.some(function (y) { return y.text === x.text; })) S.items.push({ id: uid(), text: x.text, at: x.at, done: "" }); });
+    S.items.sort(function (a, b) { return a.at < b.at ? -1 : a.at > b.at ? 1 : 0; });
+    try { localStorage.setItem("hibiki-dreams-seeded", "1"); } catch (e) {}
+    save(); render();
+  });
+  render();
+})();
+</script>
+</body>
+</html>
