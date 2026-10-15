@@ -53,6 +53,11 @@
   .leg { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); }
   .leg span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--c); margin-right:4px; }
   .ic { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; color:#fff; font-size:13px; font-weight:700; margin-right:8px; vertical-align:middle; }
+  .row .note { grid-column:1 / 3; }
+  .pos { color:var(--sage); } .neg { color:var(--red); }
+  #gbox.neg { background:var(--red-soft); }
+  #chart svg { width:100%; height:auto; display:block; }
+  #chart text { fill:var(--muted); font-size:10px; }
   .sres { display:grid; gap:4px; } .sres button { text-align:left; white-space:normal; border-radius:10px; }
 </style>
 </head>
@@ -66,6 +71,17 @@
     <div class="sum"><div class="in left" style="grid-column:1/3;background:var(--sage-soft)"><small>合計</small><b id="tot">₩0</b></div></div>
     <div class="stack" id="stack"></div>
     <div class="leg" id="leg"></div>
+  </div>
+
+  <div class="card" id="gain" hidden>
+    <h2>増えた・減った</h2>
+    <div class="sum"><div id="gbox" class="in" style="grid-column:1/3"><small>株の損益（買った値段から）</small><b id="gtot">₩0</b></div></div>
+  </div>
+
+  <div class="card" id="hist">
+    <h2>お金の推移</h2>
+    <div id="chart"></div>
+    <div class="note" id="hnote"></div>
   </div>
 
   <div class="card" id="runway">
@@ -113,8 +129,44 @@
     bar.style.width = Math.min(100, m / 6 * 100) + "%"; bar.style.background = m < 3 ? "var(--red)" : "var(--sage)";
     note.textContent = "預金・定期で約 " + (Math.round(m * 10) / 10) + " か月分。まず3か月、できれば6か月が目安です（仕事が止まっても暮らせる長さ）。";
   }
+  function gains() {
+    var g = 0, any = false;
+    S.items.forEach(function (x) { if (x.shares > 0 && x.cost > 0 && x.price > 0) { g += x.shares * (x.price - x.cost); any = true; } });
+    var c = document.getElementById("gain"); c.hidden = !any; if (!any) return;
+    document.getElementById("gtot").textContent = (g >= 0 ? "＋" : "−") + won(Math.abs(g));
+    document.getElementById("gtot").className = g >= 0 ? "pos" : "neg";
+    document.getElementById("gbox").className = g >= 0 ? "in" : "neg";
+  }
+  // 1日1回、合計をためて線にする（この端末の中だけ）
+  var HKEY = "hibiki-assets-hist-v1";
+  function history() {
+    var t = total(), H = [];
+    try { H = JSON.parse(localStorage.getItem(HKEY)) || []; } catch (e) {}
+    var d = new Date(), day = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+    if (t > 0) {
+      if (H.length && H[H.length - 1].d === day) H[H.length - 1].v = t; else H.push({ d: day, v: t });
+      H = H.slice(-120);
+      try { localStorage.setItem(HKEY, JSON.stringify(H)); } catch (e) {}
+    }
+    var box = document.getElementById("chart"), note = document.getElementById("hnote"); box.textContent = "";
+    if (H.length < 2) { note.textContent = "毎日開くと、日ごとの合計が線になります。"; return; }
+    var W = 320, Hh = 120, L = 8, R = 8, T = 10, B = 18;
+    var min = Math.min.apply(null, H.map(function (x) { return x.v; })), max = Math.max.apply(null, H.map(function (x) { return x.v; }));
+    if (max === min) { max += 1; min -= 1; }
+    function X(i) { return L + i * (W - L - R) / (H.length - 1); } function Y(v) { return T + (max - v) / (max - min) * (Hh - T - B); }
+    var pts = H.map(function (x, i) { return X(i).toFixed(1) + "," + Y(x.v).toFixed(1); }).join(" ");
+    var up = H[H.length - 1].v >= H[0].v, col = up ? "var(--sage)" : "var(--red)";
+    var svg = '<svg viewBox="0 0 ' + W + " " + Hh + '" role="img" aria-label="合計の推移">' +
+      '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + (Hh - B) + '" y2="' + (Hh - B) + '" stroke="var(--border)"/>' +
+      '<polyline fill="none" stroke="' + col + '" stroke-width="2" stroke-linejoin="round" points="' + pts + '"/>' +
+      '<circle cx="' + X(H.length - 1).toFixed(1) + '" cy="' + Y(H[H.length - 1].v).toFixed(1) + '" r="4" fill="' + col + '"/>' +
+      '<text x="' + L + '" y="' + (Hh - 4) + '">' + H[0].d.slice(5) + '</text><text x="' + (W - R) + '" y="' + (Hh - 4) + '" text-anchor="end">' + H[H.length - 1].d.slice(5) + '</text></svg>';
+    box.innerHTML = svg;
+    var diff = H[H.length - 1].v - H[0].v;
+    note.textContent = H.length + "日ぶん。はじめから " + (diff >= 0 ? "＋" : "−") + won(Math.abs(diff));
+  }
   function summary() {
-    runway();
+    runway(); gains();
     var t = total(); document.getElementById("tot").textContent = won(t);
     var st = document.getElementById("stack"), lg = document.getElementById("leg"); st.textContent = ""; lg.textContent = "";
     CATS.forEach(function (c) {
@@ -123,6 +175,7 @@
       var b = el("i"); b.style.width = (v / t * 100) + "%"; b.style.background = c[2]; st.appendChild(b);
       var l = el("span", null, c[1] + " " + Math.round(v / t * 100) + "%"); l.style.setProperty("--c", c[2]); lg.appendChild(l);
     });
+    history();
     if (!t) lg.textContent = "金額を入れると、割合が出ます";
   }
 
@@ -132,6 +185,7 @@
     var a = el("label", null, "金額（ウォン。株で入れたときは不要）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
     var sh = el("label", null, "株の数（株で持っているとき。入れると金額は自動）"); var si = el("input"); si.type = "number"; si.min = "0"; si.step = "any"; si.inputMode = "decimal"; si.value = item && item.shares ? item.shares : ""; sh.appendChild(si);
     var sy = el("label", null, "株のコード（自動で値段を取る。例：005930.KS、AAPL。なくてもよい）"); var yi = el("input"); yi.value = item && item.sym ? item.sym : ""; yi.maxLength = 16; yi.setAttribute("autocapitalize", "characters"); sy.appendChild(yi);
+    var co = el("label", null, "買ったときの1株の値段（ウォン。損益を出すとき）"); var coi = el("input"); coi.type = "number"; coi.min = "0"; coi.step = "any"; coi.inputMode = "decimal"; coi.value = item && item.cost ? item.cost : ""; co.appendChild(coi);
     var fl = el("label", null, "会社名で探す（例：サムスン、Apple）"); var fi = el("input"); fl.appendChild(fi);
     var res = el("div", "sres"); var tm;
     fi.oninput = function () {
@@ -153,7 +207,7 @@
     var k = el("label", null, "種類"); var ki = el("select");
     CATS.forEach(function (c) { var o = el("option", null, c[1]); o.value = c[0]; ki.appendChild(o); });
     ki.value = item ? item.cat : "cash"; k.appendChild(ki);
-    f.appendChild(n); f.appendChild(k); f.appendChild(sh); f.appendChild(fl); f.appendChild(res); f.appendChild(sy); f.appendChild(pr); f.appendChild(a);
+    f.appendChild(n); f.appendChild(k); f.appendChild(sh); f.appendChild(co); f.appendChild(fl); f.appendChild(res); f.appendChild(sy); f.appendChild(pr); f.appendChild(a);
     var b = el("div", "btns"); var c = el("button", null, "やめる"); c.type = "button"; var s = el("button", "main", item ? "直す" : "足す"); s.type = "submit";
     b.appendChild(c); b.appendChild(s); f.appendChild(b);
     c.onclick = function () { editing = undefined; render(); };
@@ -161,9 +215,9 @@
       e.preventDefault();
       var name = ni.value.trim(); if (!name) return;
       var amt = Math.max(0, Math.round(+ai.value || 0));
-      var sym = yi.value.trim().toUpperCase(), shares = Math.max(0, +si.value || 0), price = Math.max(0, +pi.value || 0);
-      if (item) { item.name = name; item.amt = amt; item.cat = ki.value; item.shares = shares; item.price = price; item.sym = sym; }
-      else S.items.push({ id: uid(), name: name, amt: amt, cat: ki.value, shares: shares, price: price, sym: sym });
+      var cost = Math.max(0, +coi.value || 0), sym = yi.value.trim().toUpperCase(), shares = Math.max(0, +si.value || 0), price = Math.max(0, +pi.value || 0);
+      if (item) { item.name = name; item.amt = amt; item.cat = ki.value; item.shares = shares; item.price = price; item.sym = sym; item.cost = cost; }
+      else S.items.push({ id: uid(), name: name, amt: amt, cat: ki.value, shares: shares, price: price, sym: sym, cost: cost });
       editing = undefined; save(); render(); refresh();
     };
     setTimeout(function () { ni.focus(); }, 0);
@@ -186,6 +240,10 @@
       if (it.shares > 0) nm.appendChild(el("span", "tag", it.shares.toLocaleString("ja-JP") + "株" + (it.price ? " × " + won(it.price) : "")));
       r.appendChild(el("div", "amt" + (v ? "" : " zero"), v ? won(v) : (it.shares > 0 ? "1株の値段を入れる" : "金額を入れる")));
       if (t > 0 && v) { var sh = el("div", "share"), bar = el("i"); bar.style.width = (v / t * 100) + "%"; bar.style.background = c[2]; sh.appendChild(bar); r.appendChild(sh); }
+      if (it.shares > 0 && it.cost > 0 && it.price > 0) {
+        var g = it.shares * (it.price - it.cost), gp = (it.price / it.cost - 1) * 100;
+        r.appendChild(el("div", "note " + (g >= 0 ? "pos" : "neg"), "買った値段から " + (g >= 0 ? "＋" : "−") + won(Math.abs(g)) + "（" + (gp >= 0 ? "＋" : "−") + Math.abs(Math.round(gp * 10) / 10) + "%）"));
+      }
       if (it.cat === "fund" && !it.sym) r.appendChild(el("div", "note", "「直す」→「会社名で探す」で株を選ぶと、最新の値段で自動計算します。"));
       else if (it.sym && !(it.shares > 0)) r.appendChild(el("div", "note", "株の数を入れると、最新の値段で金額を計算します。"));
       else if (it.sym && it.shares > 0) r.appendChild(el("div", "note", "最新の値段で自動計算（" + it.sym + "）"));
