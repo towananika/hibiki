@@ -45,6 +45,7 @@ export default {
         return json(out, out.error ? 403 : 200, origin);
       }
     }
+    if (url.pathname === "/price" && request.method === "GET") return json(await prices(url.searchParams.get("s") || ""), 200, origin);
     if (url.pathname === "/pull" && request.method === "GET") {
       id = url.searchParams.get("id") || "";
     } else if ((url.pathname === "/push" || url.pathname === "/wipe") && request.method === "POST") {
@@ -116,6 +117,23 @@ export class SyncBox extends DurableObject {
 async function sha(s) {
   const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hibiki-ip:" + s));
   return [...new Uint8Array(h)].map((x) => x.toString(16).padStart(2, "0")).join("").slice(0, 32);
+}
+
+// 株価（公開の値段だけ。記録とは無関係）。コードは最大20個、10分まとめて覚える（2026-10-15）
+const SYM = /^[A-Za-z0-9.^=\-]{1,16}$/;
+async function prices(list) {
+  const syms = [...new Set(list.split(",").map((x) => x.trim()).filter((x) => SYM.test(x)))].slice(0, 20);
+  const out = {};
+  await Promise.all(syms.map(async (sym) => {
+    try {
+      const r = await fetch("https://query1.finance.yahoo.com/v8/finance/chart/" + encodeURIComponent(sym) + "?range=1d&interval=1d", {
+        headers: { "User-Agent": "Mozilla/5.0" }, cf: { cacheTtl: 600, cacheEverything: true },
+      });
+      const m = ((await r.json()).chart.result || [])[0].meta;
+      if (m && m.regularMarketPrice) out[sym] = { price: m.regularMarketPrice, cur: m.currency, t: m.regularMarketTime };
+    } catch (e) {}
+  }));
+  return out;
 }
 
 function cors(origin) {
