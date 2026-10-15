@@ -35,6 +35,8 @@
   .name { font-weight:600; word-break:break-word; } .amt { text-align:right; font-variant-numeric:tabular-nums; }
   .amt.zero { color:var(--muted); font-weight:400; font-size:13px; }
   .tag { display:inline-block; white-space:nowrap; font-size:11px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 8px; margin-left:6px; font-weight:400; }
+  .guide { grid-column:1 / 3; font-size:12px; color:var(--muted); }
+  .guide.over { color:var(--red); font-weight:600; }
   .share { grid-column:1 / 3; height:6px; background:var(--wood-soft); border-radius:3px; overflow:hidden; }
   .share i { display:block; height:100%; background:var(--wood); }
   .acts { grid-column:1 / 3; display:flex; gap:8px; }
@@ -65,6 +67,7 @@
   <div class="card" id="cin"></div>
   <div class="card" id="cout"></div>
 
+  <p class="note" style="text-align:center">「目安」は、一人暮らしでよく言われる割合（手取りに対する%）です。人によって合う額は違うので、参考として見てください。残りは貯金・自由に使うお金に回します。</p>
   <div class="foot"><button id="reset">はじめの形にもどす</button></div>
 </main>
 <script>
@@ -93,6 +96,9 @@
   var S = load(), editing = null; // editing: {type:'income'|'expense', id|null}
   function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
   function man(n) { return n >= 10000 ? "（約" + (Math.round(n / 1000) / 10).toLocaleString("ja-JP") + "万ウォン）" : ""; }
+  // 手取りに対する目安の割合（一人暮らしの一般的な目安。人によって違う）
+  var GUIDE = [["住", 20, 30], ["光熱", 3, 6], ["通信", 2, 4], ["食", 15, 20], ["日用", 2, 4], ["交通", 3, 8], ["保険", 3, 8]];
+  function guideOf(name) { for (var i = 0; i < GUIDE.length; i++) if (name.indexOf(GUIDE[i][0]) === 0 || (GUIDE[i][0].length > 1 && name.indexOf(GUIDE[i][0]) >= 0)) return GUIDE[i]; return null; }
   function sum(a) { return a.reduce(function (t, x) { return t + (+x.amt || 0); }, 0); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
@@ -154,6 +160,13 @@
       r.appendChild(el("div", "amt" + (it.amt ? "" : " zero"), it.amt ? won(it.amt) : "金額を入れる"));
       if (type === "expense" && total > 0 && it.amt) {
         var sh = el("div", "share"), bar = el("i"); bar.style.width = (it.amt / total * 100) + "%"; sh.appendChild(bar); r.appendChild(sh);
+      }
+      var g = type === "expense" ? guideOf(it.name) : null, inc = sum(S.income);
+      if (g) {
+        var lo = Math.round(inc * g[1] / 100), hi = Math.round(inc * g[2] / 100);
+        var gt = "目安：手取りの " + g[1] + "〜" + g[2] + "%" + (inc > 0 ? "（" + won(lo) + "〜" + won(hi) + "）" : "");
+        var over = inc > 0 && it.amt > hi;
+        r.appendChild(el("div", "guide" + (over ? " over" : ""), gt + (over ? "　← 目安より多め" : "")));
       }
       var acts = el("div", "acts");
       var eb = el("button", null, "直す"); eb.onclick = function () { editing = { type: type, id: it.id }; render(); };
