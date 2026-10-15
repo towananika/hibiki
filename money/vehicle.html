@@ -87,6 +87,7 @@
     <div class="grid2" style="margin-top:8px">
       <label for="pp">初期購入費（ウォン）<input id="pp" type="number" min="0" step="1" inputmode="numeric"></label>
       <label for="pd">買った日<input id="pd" type="date"></label>
+      <label for="pk">いまの走行距離（km）<input id="pk" type="number" min="0" step="1" inputmode="numeric"></label>
       <label for="py">何年使う予定<input id="py" type="number" min="1" max="20" step="1" inputmode="numeric"></label>
     </div>
     <div class="note">購入費は、使う年数で割って「月割り」にします。</div>
@@ -99,7 +100,7 @@
   var KEY = "hibiki-vehicle-v1";
   var TYPES = [["charge", "チャージ"], ["repair", "点検・修理"], ["other", "そのほか"]];
   function uid() { return "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
-  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.recs) return s; } catch (e) {} return { purchase: 0, bought: "", years: 5, recs: [] }; }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.recs) return s; } catch (e) {} return { purchase: 0, bought: "", years: 5, km: 0, recs: [] }; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   var S = load(), editing;
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -116,12 +117,13 @@
     var m = months(), rec = S.recs.reduce(function (t, r) { return t + (+r.amt || 0); }, 0);
     var per = S.years > 0 ? (+S.purchase || 0) / (S.years * 12) : 0;
     var real = m ? rec / m : 0;
-    return { m: m, rec: rec, real: real, per: per, total: real + per };
+    var life = m ? (real + per) * m : 0;
+    return { m: m, rec: rec, real: real, per: per, total: real + per, perKm: S.km > 0 && life ? life / S.km : 0, yearKm: S.km > 0 && m ? S.km / (m / 12) : 0 };
   }
   function summary() {
     var c = calc(), kv = document.getElementById("kv"); kv.textContent = "";
     document.getElementById("mt").textContent = c.m || S.purchase ? won(c.total) : "—";
-    [["記録した費用の合計", won(c.rec)], ["記録の期間", c.m ? (Math.round(c.m * 10) / 10) + " か月" : "—"], ["実費の月平均（チャージ・点検・修理）", c.m ? won(c.real) : "—"], ["購入費の月割り", won(c.per)]].forEach(function (p) {
+    [["記録した費用の合計", won(c.rec)], ["記録の期間", c.m ? (Math.round(c.m * 10) / 10) + " か月" : "—"], ["実費の月平均（チャージ・点検・修理）", c.m ? won(c.real) : "—"], ["購入費の月割り", won(c.per)], ["1kmあたりの費用", c.perKm ? won(c.perKm) : "走行距離と買った日を入れる"], ["1年あたりの走行", c.yearKm ? Math.round(c.yearKm).toLocaleString("ja-JP") + " km" : "—"]].forEach(function (p) {
       var r = el("div", "kv"); r.appendChild(el("span", null, p[0])); r.appendChild(el("b", null, p[1])); kv.appendChild(r);
     });
     var note = "";
@@ -130,6 +132,7 @@
   }
   function settings() {
     var pp = document.getElementById("pp"), pd = document.getElementById("pd"), py = document.getElementById("py");
+    var pk = document.getElementById("pk"); pk.value = S.km || ""; pk.onchange = function () { S.km = Math.max(0, Math.round(+pk.value || 0)); save(); render(); };
     pp.value = S.purchase || ""; pd.value = S.bought || ""; py.value = S.years || 5;
     pp.onchange = function () { S.purchase = Math.max(0, Math.round(+pp.value || 0)); save(); render(); };
     pd.onchange = function () { S.bought = pd.value; save(); render(); };
@@ -182,7 +185,10 @@
   // 初期購入費は、暗号で置いた private/vehicle.json から1回だけ取りこむ
   if (window.HibikiSync) HibikiSync.open("vehicle").then(function (D) {
     var seeded = false; try { seeded = !!localStorage.getItem("hibiki-vehicle-seeded"); } catch (e) {}
-    if (!D || seeded) return;
+    if (!D) return;
+    var ch = false;
+    if (!S.km && D.km && !localStorage.getItem("hibiki-vehicle-km-seeded")) { S.km = D.km; ch = true; try { localStorage.setItem("hibiki-vehicle-km-seeded", "1"); } catch (e) {} }
+    if (seeded) { if (ch) { save(); settings(); render(); } return; }
     if (!S.purchase && D.purchase) S.purchase = D.purchase;
     try { localStorage.setItem("hibiki-vehicle-seeded", "1"); } catch (e) {}
     save(); settings(); render();
