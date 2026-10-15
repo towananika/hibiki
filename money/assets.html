@@ -46,6 +46,8 @@
   .btns { display:flex; gap:8px; justify-content:flex-end; }
   .empty { color:var(--muted); font-size:14px; padding:8px 0; }
   .foot { text-align:center; margin-top:8px; }
+  .meter { height:10px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:12px 0 4px; }
+  .meter i { display:block; height:100%; background:var(--sage); }
   .stack { display:flex; height:14px; border-radius:7px; overflow:hidden; background:var(--wood-soft); margin:12px 0 8px; }
   .stack i { display:block; height:100%; }
   .leg { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); }
@@ -63,6 +65,12 @@
     <div class="sum"><div class="in left" style="grid-column:1/3;background:var(--sage-soft)"><small>合計</small><b id="tot">₩0</b></div></div>
     <div class="stack" id="stack"></div>
     <div class="leg" id="leg"></div>
+  </div>
+
+  <div class="card" id="runway">
+    <h2>いまのお金で何か月暮らせる？</h2>
+    <div class="meter"><i id="rbar" style="width:0%"></i></div>
+    <div class="note" id="rnote"></div>
   </div>
 
   <div class="card" id="list"></div>
@@ -86,7 +94,18 @@
   function val(x) { return x.shares > 0 ? Math.round(x.shares * (+x.price || 0)) : (+x.amt || 0); }
   function total() { return S.items.reduce(function (t, x) { return t + val(x); }, 0); }
 
+  // 預金・現金・定期（すぐ使えるお金）÷ 家計の毎月の費用 ＝ 暮らせる月数。目安は6か月
+  function runway() {
+    var safe = S.items.filter(function (x) { return x.cat === "cash" || x.cat === "safe"; }).reduce(function (a, x) { return a + val(x); }, 0), out = 0;
+    try { var B = JSON.parse(localStorage.getItem("hibiki-budget-v1")); if (B && B.expense) out = B.expense.reduce(function (a, x) { return a + (+x.amt || 0); }, 0); } catch (e) {}
+    var bar = document.getElementById("rbar"), note = document.getElementById("rnote");
+    if (!out) { bar.style.width = "0%"; note.textContent = "「家計」で毎月の費用を入れると、ここに出ます。"; return; }
+    var m = safe / out;
+    bar.style.width = Math.min(100, m / 6 * 100) + "%"; bar.style.background = m < 3 ? "var(--red)" : "var(--sage)";
+    note.textContent = "預金・定期で約 " + (Math.round(m * 10) / 10) + " か月分。まず3か月、できれば6か月が目安です（仕事が止まっても暮らせる長さ）。";
+  }
   function summary() {
+    runway();
     var t = total(); document.getElementById("tot").textContent = won(t);
     var st = document.getElementById("stack"), lg = document.getElementById("leg"); st.textContent = ""; lg.textContent = "";
     CATS.forEach(function (c) {
