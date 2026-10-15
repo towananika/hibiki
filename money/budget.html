@@ -149,7 +149,7 @@
     var add = el("button", "main", "＋ 足す"); add.onclick = function () { editing = { type: type, id: null }; render(); };
     h.appendChild(add); root.appendChild(h);
     if (editing && editing.type === type && editing.id === null) root.appendChild(form(type, null));
-    var list = S[type];
+    var list = S[type].slice().sort(function (a, b) { return (+b.amt || 0) - (+a.amt || 0); });
     if (!list.length) root.appendChild(el("div", "empty", "まだありません。「＋ 足す」で入れます。"));
     list.forEach(function (it) {
       if (editing && editing.type === type && editing.id === it.id) { root.appendChild(form(type, it)); return; }

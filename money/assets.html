@@ -125,7 +125,7 @@
     h.appendChild(add); root.appendChild(h);
     if (editing === null) root.appendChild(form(null));
     if (!S.items.length) root.appendChild(el("div", "empty", "まだありません。「＋ 足す」で入れます。"));
-    S.items.forEach(function (it) {
+    S.items.slice().sort(function (a, b) { return (+b.amt || 0) - (+a.amt || 0); }).forEach(function (it) {
       if (editing && editing.id === it.id) { root.appendChild(form(it)); return; }
       var r = el("div", "row"), c = catOf(it.cat);
       var nm = el("div", "name", it.name); nm.appendChild(el("span", "tag", c[1])); r.appendChild(nm);
