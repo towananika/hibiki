@@ -50,6 +50,7 @@
   .stack i { display:block; height:100%; }
   .leg { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); }
   .leg span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--c); margin-right:4px; }
+  .sres { display:grid; gap:4px; } .sres button { text-align:left; white-space:normal; border-radius:10px; }
 </style>
 </head>
 <body>
@@ -77,6 +78,7 @@
   function defaults() { return { items: [{ id: uid(), name: "普通預金", amt: 0, cat: "cash" }, { id: uid(), name: "投資", amt: 0, cat: "fund" }] }; }
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.items) return s; } catch (e) {} return defaults(); }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  var API = "https://hibiki-sync.jaykim-can.workers.dev";
   var S = load(), editing;
   function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -102,11 +104,28 @@
     var a = el("label", null, "金額（ウォン。株で入れたときは不要）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
     var sh = el("label", null, "株の数（株で持っているとき。入れると金額は自動）"); var si = el("input"); si.type = "number"; si.min = "0"; si.step = "any"; si.inputMode = "decimal"; si.value = item && item.shares ? item.shares : ""; sh.appendChild(si);
     var sy = el("label", null, "株のコード（自動で値段を取る。例：005930.KS、AAPL。なくてもよい）"); var yi = el("input"); yi.value = item && item.sym ? item.sym : ""; yi.maxLength = 16; yi.setAttribute("autocapitalize", "characters"); sy.appendChild(yi);
+    var fl = el("label", null, "会社名で探す（例：サムスン、Apple）"); var fi = el("input"); fl.appendChild(fi);
+    var res = el("div", "sres"); var tm;
+    fi.oninput = function () {
+      clearTimeout(tm); res.textContent = "";
+      if (fi.value.trim().length < 2) return;
+      tm = setTimeout(function () {
+        fetch(API + "/search?q=" + encodeURIComponent(fi.value.trim())).then(function (r) { return r.json(); }).then(function (a) {
+          res.textContent = "";
+          if (!a.length) { res.appendChild(el("div", "note", "見つかりませんでした")); return; }
+          a.forEach(function (x) {
+            var b = el("button", null, x.name + "　" + x.sym + (x.ex ? "（" + x.ex + "）" : "")); b.type = "button";
+            b.onclick = function () { yi.value = x.sym; if (!ni.value.trim()) ni.value = x.name; res.textContent = ""; fi.value = ""; ki.value = "fund"; };
+            res.appendChild(b);
+          });
+        }).catch(function () { res.textContent = "探せませんでした"; });
+      }, 400);
+    };
     var pr = el("label", null, "1株の値段（ウォン。コードがあれば自動）"); var pi = el("input"); pi.type = "number"; pi.min = "0"; pi.step = "any"; pi.inputMode = "decimal"; pi.value = item && item.price ? item.price : ""; pr.appendChild(pi);
     var k = el("label", null, "種類"); var ki = el("select");
     CATS.forEach(function (c) { var o = el("option", null, c[1]); o.value = c[0]; ki.appendChild(o); });
     ki.value = item ? item.cat : "cash"; k.appendChild(ki);
-    f.appendChild(n); f.appendChild(k); f.appendChild(sh); f.appendChild(sy); f.appendChild(pr); f.appendChild(a);
+    f.appendChild(n); f.appendChild(k); f.appendChild(sh); f.appendChild(fl); f.appendChild(res); f.appendChild(sy); f.appendChild(pr); f.appendChild(a);
     var b = el("div", "btns"); var c = el("button", null, "やめる"); c.type = "button"; var s = el("button", "main", item ? "直す" : "足す"); s.type = "submit";
     b.appendChild(c); b.appendChild(s); f.appendChild(b);
     c.onclick = function () { editing = undefined; render(); };
@@ -149,7 +168,6 @@
     });
   }
   // 株のコードがあるものは、開くたびに最新の値段を取ってくる（取れなければ入れた値段のまま）
-  var API = "https://hibiki-sync.jaykim-can.workers.dev";
   function refresh() {
     var syms = S.items.filter(function (x) { return x.sym; }).map(function (x) { return x.sym; });
     var note = document.getElementById("pnote");
