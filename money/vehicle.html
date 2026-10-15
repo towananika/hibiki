@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>乗り物の費用 — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a.back { color:var(--wood); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .sum { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .sum div { border-radius:12px; padding:10px 12px; }
+  .sum small { display:block; color:var(--muted); font-size:12px; }
+  .sum b { font-size:18px; }
+  .in { background:var(--sage-soft); } .out { background:var(--wood-soft); }
+  .left { grid-column:1 / 3; background:var(--blue-soft); } .left.neg { background:var(--red-soft); }
+  .left.neg b { color:var(--red); }
+  .meter { height:10px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:12px 0 4px; }
+  .meter i { display:block; height:100%; background:var(--sage); } .meter i.over { background:var(--red); }
+  .note { color:var(--muted); font-size:12px; }
+  .head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  button { white-space:nowrap; font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:4px 12px; font-size:14px; }
+  button.main { background:var(--wood); color:#fff; border-color:var(--wood); }
+  button.del { color:var(--red); }
+  .row { display:grid; grid-template-columns:1fr auto; gap:2px 8px; padding:10px 0; border-top:1px solid var(--border); }
+  .row:first-of-type { border-top:0; }
+  .name { font-weight:600; word-break:break-word; } .amt { text-align:right; font-variant-numeric:tabular-nums; }
+  .amt.zero { color:var(--muted); font-weight:400; font-size:13px; }
+  .tag { display:inline-block; white-space:nowrap; font-size:11px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 8px; margin-left:6px; font-weight:400; }
+  .guide { grid-column:1 / 3; font-size:12px; color:var(--muted); }
+  .guide.over { color:var(--red); font-weight:600; }
+  .share { grid-column:1 / 3; height:6px; background:var(--wood-soft); border-radius:3px; overflow:hidden; }
+  .share i { display:block; height:100%; background:var(--wood); }
+  .acts { grid-column:1 / 3; display:flex; gap:8px; }
+  form.edit { display:grid; gap:8px; margin:8px 0 4px; padding:12px; border-radius:12px; background:var(--wood-soft); }
+  form.edit label { font-size:12px; color:var(--muted); display:grid; gap:2px; }
+  form.edit input, form.edit select { font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); width:100%; }
+  .btns { display:flex; gap:8px; justify-content:flex-end; }
+  .empty { color:var(--muted); font-size:14px; padding:8px 0; }
+  .foot { text-align:center; margin-top:8px; }
+  .meter { height:10px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:12px 0 4px; }
+  .meter i { display:block; height:100%; background:var(--sage); }
+  .stack { display:flex; height:14px; border-radius:7px; overflow:hidden; background:var(--wood-soft); margin:12px 0 8px; }
+  .stack i { display:block; height:100%; }
+  .leg { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); }
+  .leg span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--c); margin-right:4px; }
+  .ic { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; color:#fff; font-size:13px; font-weight:700; margin-right:8px; vertical-align:middle; }
+  .row .note { grid-column:1 / 3; }
+  .pos { color:var(--sage); } .neg { color:var(--red); }
+  #gbox.neg { background:var(--red-soft); }
+  #chart svg { width:100%; height:auto; display:block; }
+  #chart text { fill:var(--muted); font-size:10px; }
+  .sres { display:grid; gap:4px; } .sres button { text-align:left; white-space:normal; border-radius:10px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
+  .grid2 label, form.edit label { font-size:12px; color:var(--muted); display:grid; gap:2px; }
+  .grid2 input, .grid2 select, form.edit input, form.edit select { font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); width:100%; min-width:0; }
+  .kv { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-top:1px solid var(--border); font-size:14px; }
+  .kv:first-of-type { border-top:0; } .kv b { font-variant-numeric:tabular-nums; }
+  .rec { display:grid; grid-template-columns:1fr auto; gap:2px 8px; padding:10px 0; border-top:1px solid var(--border); }
+  .rec:first-child { border-top:0; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← お金と自由</a>
+  <h1>乗り物の費用</h1>
+  <p class="lead">スクーターの「チャージ・点検・修理」を記録して、実際の月あたりの費用を出します。家計の交通費は「手当」（見込み）、ここは「実費」です。金額はこの端末とログインした端末にだけ残ります。</p>
+
+  <div class="card">
+    <h2>月あたりの実際の費用</h2>
+    <div class="sum" style="margin-top:8px"><div class="out" style="grid-column:1/3"><small>合計（実費＋購入費の月割り）</small><b id="mt">—</b></div></div>
+    <div id="kv" style="margin-top:8px"></div>
+    <div class="note" id="mn"></div>
+    <div style="margin-top:10px"><button class="main" id="apply" type="button">家計の交通費（手当）にする</button> <span class="note" id="an"></span></div>
+  </div>
+
+  <div class="card">
+    <h2>設定</h2>
+    <div class="grid2" style="margin-top:8px">
+      <label for="pp">初期購入費（ウォン）<input id="pp" type="number" min="0" step="1" inputmode="numeric"></label>
+      <label for="pd">買った日<input id="pd" type="date"></label>
+      <label for="py">何年使う予定<input id="py" type="number" min="1" max="20" step="1" inputmode="numeric"></label>
+    </div>
+    <div class="note">購入費は、使う年数で割って「月割り」にします。</div>
+  </div>
+
+  <div class="card" id="list"></div>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-vehicle-v1";
+  var TYPES = [["charge", "チャージ"], ["repair", "点検・修理"], ["other", "そのほか"]];
+  function uid() { return "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.recs) return s; } catch (e) {} return { purchase: 0, bought: "", years: 5, recs: [] }; }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  var S = load(), editing;
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
+  function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+  function tl(k) { for (var i = 0; i < TYPES.length; i++) if (TYPES[i][0] === k) return TYPES[i][1]; return "そのほか"; }
+  function months() {
+    var from = S.bought || (S.recs.length ? S.recs.map(function (r) { return r.d; }).sort()[0] : "");
+    if (!from) return 0;
+    var a = new Date(from), b = new Date();
+    return Math.max(1, (b - a) / 864e5 / 30.4);
+  }
+  function calc() {
+    var m = months(), rec = S.recs.reduce(function (t, r) { return t + (+r.amt || 0); }, 0);
+    var per = S.years > 0 ? (+S.purchase || 0) / (S.years * 12) : 0;
+    var real = m ? rec / m : 0;
+    return { m: m, rec: rec, real: real, per: per, total: real + per };
+  }
+  function summary() {
+    var c = calc(), kv = document.getElementById("kv"); kv.textContent = "";
+    document.getElementById("mt").textContent = c.m || S.purchase ? won(c.total) : "—";
+    [["記録した費用の合計", won(c.rec)], ["記録の期間", c.m ? (Math.round(c.m * 10) / 10) + " か月" : "—"], ["実費の月平均（チャージ・点検・修理）", c.m ? won(c.real) : "—"], ["購入費の月割り", won(c.per)]].forEach(function (p) {
+      var r = el("div", "kv"); r.appendChild(el("span", null, p[0])); r.appendChild(el("b", null, p[1])); kv.appendChild(r);
+    });
+    var note = "";
+    try { var B = JSON.parse(localStorage.getItem("hibiki-budget-v1")); var t = B && B.expense.filter(function (x) { return /交通/.test(x.name); })[0]; if (t && t.amt) note = "家計の交通費（手当）は " + won(t.amt) + "。実際は " + (c.total > t.amt ? "手当より " + won(c.total - t.amt) + " 多め" : "手当の中（" + won(t.amt - c.total) + " 余裕）") + "。"; } catch (e) {}
+    document.getElementById("mn").textContent = note || (c.m ? "" : "記録を足すと、月平均が出ます。");
+  }
+  function settings() {
+    var pp = document.getElementById("pp"), pd = document.getElementById("pd"), py = document.getElementById("py");
+    pp.value = S.purchase || ""; pd.value = S.bought || ""; py.value = S.years || 5;
+    pp.onchange = function () { S.purchase = Math.max(0, Math.round(+pp.value || 0)); save(); render(); };
+    pd.onchange = function () { S.bought = pd.value; save(); render(); };
+    py.onchange = function () { S.years = Math.min(20, Math.max(1, Math.round(+py.value || 5))); save(); render(); };
+  }
+  function form(r) {
+    var f = el("form", "edit");
+    var d = el("label", null, "日付"); var di = el("input"); di.type = "date"; di.value = r ? r.d : today(); di.required = true; d.appendChild(di);
+    var t = el("label", null, "種類"); var ti = el("select"); TYPES.forEach(function (p) { var o = el("option", null, p[1]); o.value = p[0]; ti.appendChild(o); }); ti.value = r ? r.t : "charge"; t.appendChild(ti);
+    var a = el("label", null, "金額（ウォン）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1"; ai.inputMode = "numeric"; ai.value = r ? r.amt : ""; ai.required = true; a.appendChild(ai);
+    var n = el("label", null, "メモ（なくてもよい）"); var ni = el("input"); ni.maxLength = 40; ni.value = r && r.n ? r.n : ""; n.appendChild(ni);
+    f.appendChild(d); f.appendChild(t); f.appendChild(a); f.appendChild(n);
+    var b = el("div", "btns"); var c = el("button", null, "やめる"); c.type = "button"; var s = el("button", "main", r ? "直す" : "足す"); s.type = "submit"; b.appendChild(c); b.appendChild(s); f.appendChild(b);
+    c.onclick = function () { editing = undefined; render(); };
+    f.onsubmit = function (e) {
+      e.preventDefault();
+      var o = { d: di.value, t: ti.value, amt: Math.max(0, Math.round(+ai.value || 0)), n: ni.value.trim() };
+      if (r) { r.d = o.d; r.t = o.t; r.amt = o.amt; r.n = o.n; } else { o.id = uid(); S.recs.push(o); }
+      editing = undefined; save(); render();
+    };
+    return f;
+  }
+  function list() {
+    var root = document.getElementById("list"); root.textContent = "";
+    var h = el("div", "head"); h.appendChild(el("h2", null, "記録"));
+    var add = el("button", "main", "＋ 足す"); add.onclick = function () { editing = null; render(); }; h.appendChild(add); root.appendChild(h);
+    if (editing === null) root.appendChild(form(null));
+    if (!S.recs.length) root.appendChild(el("div", "empty", "まだありません。チャージ・点検・修理のたびに足します。"));
+    S.recs.slice().sort(function (a, b) { return a.d < b.d ? 1 : -1; }).forEach(function (r) {
+      if (editing && editing.id === r.id) { root.appendChild(form(r)); return; }
+      var row = el("div", "rec"); var nm = el("div", "name", r.d.replace(/-/g, "/")); nm.appendChild(el("span", "tag", tl(r.t)));
+      row.appendChild(nm); row.appendChild(el("div", "amt", won(r.amt)));
+      if (r.n) row.appendChild(el("div", "note", r.n));
+      var acts = el("div", "acts");
+      var e = el("button", null, "直す"); e.onclick = function () { editing = r; render(); };
+      var x = el("button", "del", "消す"); x.onclick = function () { if (!confirm("この記録を消しますか？")) return; S.recs = S.recs.filter(function (q) { return q.id !== r.id; }); save(); render(); };
+      acts.appendChild(e); acts.appendChild(x); row.appendChild(acts); root.appendChild(row);
+    });
+  }
+  function render() { summary(); list(); }
+  document.getElementById("apply").onclick = function () {
+    var c = calc(), msg = document.getElementById("an");
+    try {
+      var B = JSON.parse(localStorage.getItem("hibiki-budget-v1")); if (!B || !B.expense) throw 0;
+      var t = B.expense.filter(function (x) { return /交通/.test(x.name); })[0]; if (!t) throw 0;
+      t.amt = Math.round(c.total / 1000) * 1000; localStorage.setItem("hibiki-budget-v1", JSON.stringify(B));
+      msg.textContent = "交通費を " + won(t.amt) + " にしました。";
+    } catch (e) { msg.textContent = "先に「家計」ページを一度開いてください。"; }
+  };
+  // 初期購入費は、暗号で置いた private/vehicle.json から1回だけ取りこむ
+  if (window.HibikiSync) HibikiSync.open("vehicle").then(function (D) {
+    var seeded = false; try { seeded = !!localStorage.getItem("hibiki-vehicle-seeded"); } catch (e) {}
+    if (!D || seeded) return;
+    if (!S.purchase && D.purchase) S.purchase = D.purchase;
+    try { localStorage.setItem("hibiki-vehicle-seeded", "1"); } catch (e) {}
+    save(); settings(); render();
+  });
+  settings(); render();
+})();
+</script>
+</body>
+</html>
