@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>預金と投資 — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a.back { color:var(--wood); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .sum { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .sum div { border-radius:12px; padding:10px 12px; }
+  .sum small { display:block; color:var(--muted); font-size:12px; }
+  .sum b { font-size:18px; }
+  .in { background:var(--sage-soft); } .out { background:var(--wood-soft); }
+  .left { grid-column:1 / 3; background:var(--blue-soft); } .left.neg { background:var(--red-soft); }
+  .left.neg b { color:var(--red); }
+  .meter { height:10px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:12px 0 4px; }
+  .meter i { display:block; height:100%; background:var(--sage); } .meter i.over { background:var(--red); }
+  .note { color:var(--muted); font-size:12px; }
+  .head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  button { white-space:nowrap; font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:4px 12px; font-size:14px; }
+  button.main { background:var(--wood); color:#fff; border-color:var(--wood); }
+  button.del { color:var(--red); }
+  .row { display:grid; grid-template-columns:1fr auto; gap:2px 8px; padding:10px 0; border-top:1px solid var(--border); }
+  .row:first-of-type { border-top:0; }
+  .name { font-weight:600; word-break:break-word; } .amt { text-align:right; font-variant-numeric:tabular-nums; }
+  .amt.zero { color:var(--muted); font-weight:400; font-size:13px; }
+  .tag { display:inline-block; white-space:nowrap; font-size:11px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 8px; margin-left:6px; font-weight:400; }
+  .guide { grid-column:1 / 3; font-size:12px; color:var(--muted); }
+  .guide.over { color:var(--red); font-weight:600; }
+  .share { grid-column:1 / 3; height:6px; background:var(--wood-soft); border-radius:3px; overflow:hidden; }
+  .share i { display:block; height:100%; background:var(--wood); }
+  .acts { grid-column:1 / 3; display:flex; gap:8px; }
+  form.edit { display:grid; gap:8px; margin:8px 0 4px; padding:12px; border-radius:12px; background:var(--wood-soft); }
+  form.edit label { font-size:12px; color:var(--muted); display:grid; gap:2px; }
+  form.edit input, form.edit select { font:inherit; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); width:100%; }
+  .btns { display:flex; gap:8px; justify-content:flex-end; }
+  .empty { color:var(--muted); font-size:14px; padding:8px 0; }
+  .foot { text-align:center; margin-top:8px; }
+  .stack { display:flex; height:14px; border-radius:7px; overflow:hidden; background:var(--wood-soft); margin:12px 0 8px; }
+  .stack i { display:block; height:100%; }
+  .leg { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); }
+  .leg span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--c); margin-right:4px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← お金と自由</a>
+  <h1>預金と投資</h1>
+  <p class="lead">いま持っているお金を、種類ごとに入れます。単位はウォン（₩）。金額はこの端末とログインした端末にだけ残り、サイトには載りません。</p>
+
+  <div class="card">
+    <div class="sum"><div class="in left" style="grid-column:1/3;background:var(--sage-soft)"><small>合計</small><b id="tot">₩0</b></div></div>
+    <div class="stack" id="stack"></div>
+    <div class="leg" id="leg"></div>
+  </div>
+
+  <div class="card" id="list"></div>
+  <p class="note" style="text-align:center">投資は値段が上下します。ここには「いまの金額」を自分で入れ直します。</p>
+  <div class="foot"><button id="reset">はじめの形にもどす</button></div>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-assets-v1";
+  var CATS = [["cash", "預金・現金", "#74886d"], ["fund", "投資（株・ファンド）", "#5b7c99"], ["safe", "定期・積立", "#93704b"], ["other", "そのほか", "#a8553f"]];
+  function uid() { return "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function defaults() { return { items: [{ id: uid(), name: "普通預金", amt: 0, cat: "cash" }, { id: uid(), name: "投資", amt: 0, cat: "fund" }] }; }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.items) return s; } catch (e) {} return defaults(); }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  var S = load(), editing;
+  function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function catOf(k) { for (var i = 0; i < CATS.length; i++) if (CATS[i][0] === k) return CATS[i]; return CATS[3]; }
+  function total() { return S.items.reduce(function (t, x) { return t + (+x.amt || 0); }, 0); }
+
+  function summary() {
+    var t = total(); document.getElementById("tot").textContent = won(t);
+    var st = document.getElementById("stack"), lg = document.getElementById("leg"); st.textContent = ""; lg.textContent = "";
+    CATS.forEach(function (c) {
+      var v = S.items.filter(function (x) { return x.cat === c[0]; }).reduce(function (a, x) { return a + (+x.amt || 0); }, 0);
+      if (!v || !t) return;
+      var b = el("i"); b.style.width = (v / t * 100) + "%"; b.style.background = c[2]; st.appendChild(b);
+      var l = el("span", null, c[1] + " " + Math.round(v / t * 100) + "%"); l.style.setProperty("--c", c[2]); lg.appendChild(l);
+    });
+    if (!t) lg.textContent = "金額を入れると、割合が出ます";
+  }
+
+  function form(item) {
+    var f = el("form", "edit");
+    var n = el("label", null, "名前"); var ni = el("input"); ni.value = item ? item.name : ""; ni.maxLength = 40; ni.required = true; n.appendChild(ni);
+    var a = el("label", null, "いまの金額（ウォン）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
+    var k = el("label", null, "種類"); var ki = el("select");
+    CATS.forEach(function (c) { var o = el("option", null, c[1]); o.value = c[0]; ki.appendChild(o); });
+    ki.value = item ? item.cat : "cash"; k.appendChild(ki);
+    f.appendChild(n); f.appendChild(a); f.appendChild(k);
+    var b = el("div", "btns"); var c = el("button", null, "やめる"); c.type = "button"; var s = el("button", "main", item ? "直す" : "足す"); s.type = "submit";
+    b.appendChild(c); b.appendChild(s); f.appendChild(b);
+    c.onclick = function () { editing = undefined; render(); };
+    f.onsubmit = function (e) {
+      e.preventDefault();
+      var name = ni.value.trim(); if (!name) return;
+      var amt = Math.max(0, Math.round(+ai.value || 0));
+      if (item) { item.name = name; item.amt = amt; item.cat = ki.value; }
+      else S.items.push({ id: uid(), name: name, amt: amt, cat: ki.value });
+      editing = undefined; save(); render();
+    };
+    setTimeout(function () { ni.focus(); }, 0);
+    return f;
+  }
+
+  function render() {
+    summary();
+    var root = document.getElementById("list"), t = total(); root.textContent = "";
+    var h = el("div", "head"); h.appendChild(el("h2", null, "持っているもの"));
+    var add = el("button", "main", "＋ 足す"); add.onclick = function () { editing = null; render(); };
+    h.appendChild(add); root.appendChild(h);
+    if (editing === null) root.appendChild(form(null));
+    if (!S.items.length) root.appendChild(el("div", "empty", "まだありません。「＋ 足す」で入れます。"));
+    S.items.forEach(function (it) {
+      if (editing && editing.id === it.id) { root.appendChild(form(it)); return; }
+      var r = el("div", "row"), c = catOf(it.cat);
+      var nm = el("div", "name", it.name); nm.appendChild(el("span", "tag", c[1])); r.appendChild(nm);
+      r.appendChild(el("div", "amt" + (it.amt ? "" : " zero"), it.amt ? won(it.amt) : "金額を入れる"));
+      if (t > 0 && it.amt) { var sh = el("div", "share"), bar = el("i"); bar.style.width = (it.amt / t * 100) + "%"; bar.style.background = c[2]; sh.appendChild(bar); r.appendChild(sh); }
+      var acts = el("div", "acts");
+      var eb = el("button", null, "直す"); eb.onclick = function () { editing = it; render(); };
+      var db = el("button", "del", "消す"); db.onclick = function () {
+        if (!confirm("「" + it.name + "」を消しますか？")) return;
+        S.items = S.items.filter(function (x) { return x.id !== it.id; }); save(); render();
+      };
+      acts.appendChild(eb); acts.appendChild(db); r.appendChild(acts); root.appendChild(r);
+    });
+  }
+  document.getElementById("reset").onclick = function () {
+    if (!confirm("入れた内容を消して、はじめの形にもどします。いいですか？")) return;
+    S = defaults(); editing = undefined; save(); render();
+  };
+  render();
+})();
+</script>
+</body>
+</html>
