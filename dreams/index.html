@@ -128,6 +128,15 @@
     var i = document.getElementById("txt"), v = i.value.trim(); if (!v) return;
     S.items.push({ id: uid(), text: v, at: today(), done: "" }); i.value = ""; save(); render(); i.focus();
   };
+  // はじめの夢（private/dreams.json に暗号で置いた分）を、1回だけ取りこむ
+  if (window.HibikiSync) HibikiSync.open("dreams").then(function (D) {
+    var seeded = false; try { seeded = !!localStorage.getItem("hibiki-dreams-seeded"); } catch (e) {}
+    if (!D || !D.items || seeded) return;
+    D.items.forEach(function (x) { if (!S.items.some(function (y) { return y.text === x.text; })) S.items.push({ id: uid(), text: x.text, at: x.at, done: "" }); });
+    S.items.sort(function (a, b) { return a.at < b.at ? -1 : a.at > b.at ? 1 : 0; });
+    try { localStorage.setItem("hibiki-dreams-seeded", "1"); } catch (e) {}
+    save(); render();
+  });
   render();
 })();
 </script>
