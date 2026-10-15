@@ -80,13 +80,14 @@
   function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function catOf(k) { for (var i = 0; i < CATS.length; i++) if (CATS[i][0] === k) return CATS[i]; return CATS[3]; }
-  function total() { return S.items.reduce(function (t, x) { return t + (+x.amt || 0); }, 0); }
+  function val(x) { return x.shares > 0 ? Math.round(x.shares * (+x.price || 0)) : (+x.amt || 0); }
+  function total() { return S.items.reduce(function (t, x) { return t + val(x); }, 0); }
 
   function summary() {
     var t = total(); document.getElementById("tot").textContent = won(t);
     var st = document.getElementById("stack"), lg = document.getElementById("leg"); st.textContent = ""; lg.textContent = "";
     CATS.forEach(function (c) {
-      var v = S.items.filter(function (x) { return x.cat === c[0]; }).reduce(function (a, x) { return a + (+x.amt || 0); }, 0);
+      var v = S.items.filter(function (x) { return x.cat === c[0]; }).reduce(function (a, x) { return a + val(x); }, 0);
       if (!v || !t) return;
       var b = el("i"); b.style.width = (v / t * 100) + "%"; b.style.background = c[2]; st.appendChild(b);
       var l = el("span", null, c[1] + " " + Math.round(v / t * 100) + "%"); l.style.setProperty("--c", c[2]); lg.appendChild(l);
@@ -97,11 +98,13 @@
   function form(item) {
     var f = el("form", "edit");
     var n = el("label", null, "名前"); var ni = el("input"); ni.value = item ? item.name : ""; ni.maxLength = 40; ni.required = true; n.appendChild(ni);
-    var a = el("label", null, "いまの金額（ウォン）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
+    var a = el("label", null, "金額（ウォン。株で入れたときは不要）"); var ai = el("input"); ai.type = "number"; ai.min = "0"; ai.step = "1"; ai.inputMode = "numeric"; ai.value = item && item.amt ? item.amt : ""; a.appendChild(ai);
+    var sh = el("label", null, "株の数（株で持っているとき。入れると金額は自動）"); var si = el("input"); si.type = "number"; si.min = "0"; si.step = "any"; si.inputMode = "decimal"; si.value = item && item.shares ? item.shares : ""; sh.appendChild(si);
+    var pr = el("label", null, "1株の値段（ウォン）"); var pi = el("input"); pi.type = "number"; pi.min = "0"; pi.step = "any"; pi.inputMode = "decimal"; pi.value = item && item.price ? item.price : ""; pr.appendChild(pi);
     var k = el("label", null, "種類"); var ki = el("select");
     CATS.forEach(function (c) { var o = el("option", null, c[1]); o.value = c[0]; ki.appendChild(o); });
     ki.value = item ? item.cat : "cash"; k.appendChild(ki);
-    f.appendChild(n); f.appendChild(a); f.appendChild(k);
+    f.appendChild(n); f.appendChild(k); f.appendChild(sh); f.appendChild(pr); f.appendChild(a);
     var b = el("div", "btns"); var c = el("button", null, "やめる"); c.type = "button"; var s = el("button", "main", item ? "直す" : "足す"); s.type = "submit";
     b.appendChild(c); b.appendChild(s); f.appendChild(b);
     c.onclick = function () { editing = undefined; render(); };
@@ -109,8 +112,9 @@
       e.preventDefault();
       var name = ni.value.trim(); if (!name) return;
       var amt = Math.max(0, Math.round(+ai.value || 0));
-      if (item) { item.name = name; item.amt = amt; item.cat = ki.value; }
-      else S.items.push({ id: uid(), name: name, amt: amt, cat: ki.value });
+      var shares = Math.max(0, +si.value || 0), price = Math.max(0, +pi.value || 0);
+      if (item) { item.name = name; item.amt = amt; item.cat = ki.value; item.shares = shares; item.price = price; }
+      else S.items.push({ id: uid(), name: name, amt: amt, cat: ki.value, shares: shares, price: price });
       editing = undefined; save(); render();
     };
     setTimeout(function () { ni.focus(); }, 0);
@@ -125,12 +129,14 @@
     h.appendChild(add); root.appendChild(h);
     if (editing === null) root.appendChild(form(null));
     if (!S.items.length) root.appendChild(el("div", "empty", "まだありません。「＋ 足す」で入れます。"));
-    S.items.slice().sort(function (a, b) { return (+b.amt || 0) - (+a.amt || 0); }).forEach(function (it) {
+    S.items.slice().sort(function (a, b) { return val(b) - val(a); }).forEach(function (it) {
       if (editing && editing.id === it.id) { root.appendChild(form(it)); return; }
       var r = el("div", "row"), c = catOf(it.cat);
       var nm = el("div", "name", it.name); nm.appendChild(el("span", "tag", c[1])); r.appendChild(nm);
-      r.appendChild(el("div", "amt" + (it.amt ? "" : " zero"), it.amt ? won(it.amt) : "金額を入れる"));
-      if (t > 0 && it.amt) { var sh = el("div", "share"), bar = el("i"); bar.style.width = (it.amt / t * 100) + "%"; bar.style.background = c[2]; sh.appendChild(bar); r.appendChild(sh); }
+      var v = val(it);
+      if (it.shares > 0) nm.appendChild(el("span", "tag", it.shares.toLocaleString("ja-JP") + "株" + (it.price ? " × " + won(it.price) : "")));
+      r.appendChild(el("div", "amt" + (v ? "" : " zero"), v ? won(v) : (it.shares > 0 ? "1株の値段を入れる" : "金額を入れる")));
+      if (t > 0 && v) { var sh = el("div", "share"), bar = el("i"); bar.style.width = (v / t * 100) + "%"; bar.style.background = c[2]; sh.appendChild(bar); r.appendChild(sh); }
       var acts = el("div", "acts");
       var eb = el("button", null, "直す"); eb.onclick = function () { editing = it; render(); };
       var db = el("button", "del", "消す"); db.onclick = function () {
