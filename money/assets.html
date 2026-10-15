@@ -177,6 +177,9 @@
       if (it.shares > 0) nm.appendChild(el("span", "tag", it.shares.toLocaleString("ja-JP") + "株" + (it.price ? " × " + won(it.price) : "")));
       r.appendChild(el("div", "amt" + (v ? "" : " zero"), v ? won(v) : (it.shares > 0 ? "1株の値段を入れる" : "金額を入れる")));
       if (t > 0 && v) { var sh = el("div", "share"), bar = el("i"); bar.style.width = (v / t * 100) + "%"; bar.style.background = c[2]; sh.appendChild(bar); r.appendChild(sh); }
+      if (it.cat === "fund" && !it.sym) r.appendChild(el("div", "note", "「直す」→「会社名で探す」で株を選ぶと、最新の値段で自動計算します。"));
+      else if (it.sym && !(it.shares > 0)) r.appendChild(el("div", "note", "株の数を入れると、最新の値段で金額を計算します。"));
+      else if (it.sym && it.shares > 0) r.appendChild(el("div", "note", "最新の値段で自動計算（" + it.sym + "）"));
       var acts = el("div", "acts");
       var eb = el("button", null, "直す"); eb.onclick = function () { editing = it; render(); };
       var db = el("button", "del", "消す"); db.onclick = function () {
