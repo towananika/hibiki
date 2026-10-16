@@ -96,38 +96,55 @@
   .arrow { font-size: 20px; font-weight: 700; }
   .tag { display:inline-block; font-size:13px; padding:2px 10px; border-radius:999px; background:var(--wood-soft); color:var(--wood); }
   .tag.hi { background: var(--wood-soft); color: var(--red); }
+  .bars { margin: 8px 0 0; }
+  .bar { margin: 12px 0; }
+  .bar .lab { display: flex; justify-content: space-between; gap: 8px; font-size: 15px; }
+  .bar .lab b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar .lab small { color: var(--muted); font-weight: normal; margin-left: 4px; }
+  .bar .track { height: 12px; background: var(--wood-soft); border-radius: 999px; overflow: hidden; margin-top: 4px; }
+  .bar .fill { height: 100%; background: var(--wood); border-radius: 999px; }
 </style>
 </head>
 <body>
 <main>
   <header>
     <p class="kicker">とわなにか ・ 週間レポート</p>
-    <h1>2026年10月10日</h1>
+    <h1>2026年10月17日</h1>
     <p class="lead">毎週土曜の朝に更新します。<a class="back" href="reports/">過去のレポート</a> ・ <a class="back" href="./">ホーム</a></p>
   </header>
 
   <section class="card">
     <p class="kicker">ひとことで</p>
-    <p class="big">金利は高め。<br>年内はもう一段上がりそう、<br>2〜3年後に少し下がる。</p>
+    <p class="big">金利は高め。<br>12月にもう一段上がる見方が強い。<br>2〜3年後に少し下がる。</p>
   </section>
 
   <section class="card">
     <h2>今の金利は高い？安い？</h2>
     <table>
       <tr><th></th><th>今</th><th>ふつう</th><th>判定</th></tr>
-      <tr><td>米国</td><td>5.22% ↘</td><td>1〜3%</td><td><span class="tag hi">高い</span></td></tr>
+      <tr><td>米国</td><td>5.07% ↘</td><td>1〜3%</td><td><span class="tag hi">高い</span></td></tr>
       <tr><td>韓国</td><td>3.00%</td><td>2%前後</td><td><span class="tag hi">やや高い</span></td></tr>
       <tr><td>日本</td><td>1.25%</td><td>0%前後</td><td><span class="tag hi">高い</span></td></tr>
     </table>
-    <p class="src">米国は10年債（先週5.28%から少し下がった）、韓国と日本は政策金利。「ふつう」は2010年代の水準。</p>
+    <p class="src">米国は10年債（先週5.23%から下がった）、韓国と日本は政策金利。「ふつう」は2010年代の水準。</p>
   </section>
 
   <section class="card">
     <h2>これから上がる？下がる？</h2>
     <table>
-      <tr><td>半年〜1年</td><td class="arrow up">↗</td><td>横ばい〜少し上がる。米国は12月にもう一度上げる見方が強い。韓国は10/22は据え置きの見方</td></tr>
+      <tr><td>半年〜1年</td><td class="arrow up">↗</td><td>横ばい〜少し上がる。米国は12月にもう一度上げる見方。韓国は10/22の会議で据え置きか小さく上げるか</td></tr>
       <tr><td>2〜3年</td><td class="arrow good">↘</td><td>少し下がる。ただ0%近くには戻らない</td></tr>
     </table>
+  </section>
+
+  <section class="card">
+    <h2>市場の予想</h2>
+    <div class="bars">
+      <div class="bar"><div class="lab"><span>米国 10月 据え置き</span><b>87%<small>±0</small></b></div><div class="track"><div class="fill" style="width:87%"></div></div></div>
+      <div class="bar"><div class="lab"><span>米国 12月 0.25%上げ</span><b>77%<small>▼1</small></b></div><div class="track"><div class="fill" style="width:77%"></div></div></div>
+      <div class="bar"><div class="lab"><span>2026年に利下げなし</span><b>97%<small>±0</small></b></div><div class="track"><div class="fill" style="width:97%"></div></div></div>
+    </div>
+    <p class="src">お金をかけた人たちの予想（Polymarket、10/17朝）。小さい数字は先週からの差。外れることもあります。</p>
   </section>
 
   <section class="card">
@@ -135,22 +152,22 @@
     <ol class="steps">
       <li><b>青年バチモク（2.5%）は持ったまま。</b>基準金利より安い借金です</li>
       <li><b>新しく預けるお金は1〜2年の定期預金。</b>高い金利を今のうちに取ります</li>
-      <li><b>株は毎月同じ額を少しずつ。</b>米国株は最高値の近く。まとめて買わない</li>
+      <li><b>株は毎月同じ額を少しずつ。</b>金利が上がる前後は揺れやすい。まとめて買わない</li>
     </ol>
   </section>
 
   <section class="card">
     <h2>先週との比較</h2>
-    <p>前回（10/9）から1日なので、当たり外れはまだ言えません。米国の10年債は5.28%→5.22%と少し下がりましたが、「高め」は変わらず。見立てはそのままです。</p>
+    <p>先週は「横ばい〜少し上がる」。米国の10年債は5.23%→5.07%と下がり、1週間では外れ気味です。ただ、市場は今も12月の利上げを77%と見ていて、流れは変わっていません。見立てはそのままです。</p>
   </section>
 
   <section class="card">
     <h2>健康と関係</h2>
-    <p>今日は入居の日。引っ越しの週は思ったより疲れます。夜9時で食べ終えて、まず眠ること。<br>新しい部屋の写真を、大切な人に1枚送ってみましょう。</p>
+    <p>新しい部屋で1週間。疲れが出るころです。朝の光を5分あびて、体を部屋になじませましょう。<br>今週は、ひとりだけでいいので「元気？」と自分から送ってみましょう。</p>
   </section>
 
   <footer>
-    見立ては私の判断で、投資の勧めではありません。出典：<a href="https://fred.stlouisfed.org/series/DGS10" style="color:var(--wood)">FRB 10年債</a>（10/8）、韓銀（8/27 利上げ、9月物価2.9%）、日銀（9/18）、米FF金利 3.75〜4.00%
+    見立ては私の判断で、投資の勧めではありません。出典：米10年債（10/15、Mortgage News Daily）、韓銀（基準金利3.00%、10/22会議）、日銀（9/18）、Polymarket（10/17）
   </footer>
 </main>
 </body>
