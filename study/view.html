@@ -199,7 +199,7 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     a.innerHTML = "▶ あそんで覚える・Claude に聞く<small>" + PLAY[n][1] + "・クイズ・質問バー（claude.ai で開く）</small>"; t.after(a); }
   var dc = n.match(/^ch(\d+)$/);
   if (dc) {
-    var DIGITAL_NOTES = { 7: "AI", 8: "ブロックチェーン" }, nav = document.createElement("div"); nav.className = "toc lec";
+    var DIGITAL_NOTES = { 7: "AI", 8: "ブロックチェーン", 9: "ゲーム", 10: "メディア", 11: "共有", 12: "移動", 13: "利益", 14: "仕事", 15: "格差" }, nav = document.createElement("div"); nav.className = "toc lec";
     nav.innerHTML = Object.keys(DIGITAL_NOTES).map(function (k) { return '<a href="?n=ch' + k + '"' + (+k === +dc[1] ? ' aria-current="page"' : '') + '>' + k + '講 ' + DIGITAL_NOTES[k] + '</a>'; }).join('');
     doc.insertBefore(nav, doc.firstChild);
   }

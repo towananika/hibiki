@@ -22,7 +22,7 @@
   function done(key, n) { return key === 'dig' ? !!read(DIGITAL, {})[n - 1] : !!state.done[key + ':' + n]; }
   function completedTo(c) { var n = 0, max = state.totals[c.key] || 15; while (n < max && done(c.key, n + 1)) n++; return n; }
   function link(key, n) {
-    if (key === 'dig') return 'digital.html#c' + (n - 1);
+    if (key === 'dig') return n >= 7 && n <= 15 ? 'view.html?n=ch' + n : 'digital.html#c' + (n - 1);
     if (key === 'macro' && n >= 8 && n <= 15) return 'view.html?n=macro' + n;
     if (key === 'trad' && n === 7) return 'view.html?n=tradition7';
     if (key === 'money' && n === 8) return 'view.html?n=money8';
