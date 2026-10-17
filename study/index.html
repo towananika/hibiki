@@ -29,6 +29,37 @@
   .due b { font-size:20px; }
   .sj.soon { opacity:.78; }
   .ev { display:inline-block; margin-top:6px; font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 10px; cursor:pointer; border:0; font-family:inherit; }
+  .plan { margin-top:16px; padding:16px; border:1px solid var(--border); border-top:4px solid var(--blue); border-radius:20px; background:var(--surface); }
+  .plan-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
+  .plan h2 { font-size:20px; margin:0; color:var(--blue); }
+  .plan h3 { font-size:15px; margin:0 0 8px; }
+  .plan-note { font-size:13px; color:var(--muted); line-height:1.7; }
+  .plan button, .plan select, .plan input { font:inherit; }
+  .plan button { border:1px solid var(--blue); border-radius:10px; background:var(--blue-soft); color:var(--blue); padding:9px 11px; cursor:pointer; min-height:44px; }
+  .plan button:focus-visible, .plan input:focus-visible, .plan select:focus-visible, .plan a:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
+  .plan select { width:100%; padding:10px; border:1px solid var(--border); border-radius:10px; color:var(--text); background:var(--bg); min-height:44px; }
+  .plan-week-label { display:block; font-size:13px; margin-bottom:6px; }
+  #plan-summary { font-size:14px; color:var(--sage); font-weight:600; }
+  .plan-course { border-top:1px solid var(--border); padding:12px 0; }
+  .plan-lessons { display:flex; flex-wrap:wrap; gap:8px; }
+  .plan-lesson { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:2px 10px; border:1px solid var(--border); border-radius:10px; }
+  .plan-lesson label { display:flex; align-items:center; gap:6px; min-height:44px; cursor:pointer; }
+  .plan input[type=checkbox] { width:20px; height:20px; accent-color:var(--sage); }
+  .plan-lesson:has(input:checked) { background:var(--sage-soft); }
+  .plan-lesson a { color:var(--blue); padding:12px 0; font-size:13px; }
+  .plan-lesson small { color:var(--muted); font-size:11px; }
+  .plan-inputs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .plan-inputs label, .plan-override { display:block; font-size:12px; line-height:1.6; }
+  .plan-inputs input, .plan-override input { display:block; box-sizing:border-box; width:100%; min-width:0; margin-top:4px; padding:8px; min-height:44px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); }
+  .plan fieldset { min-width:0; margin:12px 0; border:1px solid var(--border); border-radius:12px; padding:10px; }
+  .plan legend { font-size:14px; font-weight:600; }
+  .plan-include { display:flex; align-items:center; gap:6px; font-size:13px; margin-bottom:8px; }
+  .plan-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .plan-actions button[type=submit] { color:#fff; background:var(--blue); }
+  .plan-override { margin:12px 0; }
+  #plan-carry details { border-top:1px solid var(--border); margin-top:16px; padding-top:12px; }
+  #plan-carry summary { cursor:pointer; color:var(--red); padding:8px 0; font-size:14px; }
+  #plan-error, #plan-week-error, #plan-status { color:var(--red); font-size:13px; }
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; line-height:1.7; }
 </style>
 </head>
@@ -39,6 +70,7 @@
   <p class="sub">受けている科目を、1つずつ</p>
 
   <div class="due" id="due"></div>
+  <section class="plan" id="weekly-plan" aria-label="週別の学習プラン"></section>
   <div id="subjects"></div>
 
   <a class="sj" href="words.html">
@@ -91,8 +123,13 @@
     document.getElementById("due").innerHTML = left >= 0
       ? '形成評価の期限 <b>12月13日</b>まで、あと <b>' + left + '</b> 日' : '形成評価の期間は終わりました';
   }
+  window.addEventListener("studyprogress", render);
+  window.addEventListener("storage", function (e) { if (e.key === "hibiki-study-digital-v1") render(); });
+  window.addEventListener("pageshow", render);
   render();
 })();
 </script>
+<script src="plan.js"></script>
+<script src="plan-ui.js"></script>
 </body>
 </html>

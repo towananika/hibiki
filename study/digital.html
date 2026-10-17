@@ -199,7 +199,16 @@ document.getElementById("list").addEventListener("click", function (ev) {
   if (b.dataset.o != null) document.getElementById("c" + b.dataset.o).classList.toggle("open");
   if (b.dataset.r != null) { var S = load(); S[b.dataset.r] = S[b.dataset.r] ? 0 : Date.now(); save(S); paint(); }
 });
+function openLinkedChapter() {
+  if (!/^#c(?:[0-9]|1[0-4])$/.test(location.hash)) return;
+  var chapter = document.querySelector(location.hash);
+  if (chapter) { chapter.classList.add("open"); chapter.scrollIntoView(); }
+}
+window.addEventListener("hashchange", openLinkedChapter);
+window.addEventListener("pageshow", paint);
+window.addEventListener("storage", function (e) { if (e.key === KEY) paint(); });
 paint();
+openLinkedChapter();
 </script>
 <script src="words.js"></script>
 </body>

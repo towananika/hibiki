@@ -6,6 +6,7 @@
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）
 - `health/` 健康、`relations/` 愛と関係、`home/` 住まい（入居チェック）
 - `study/` 勉強（7章は `study/ch7.html` にくわしく。放送大学「デジタル経済の理解」全15章、進み具合は `hibiki-study-digital-v1`。貨幣金融論8講は `study/view.html?n=money8`、上級マクロ経済論8〜15講は `study/view.html?n=macro8`〜`macro15`）
+- `study/` の週別プラン：形成評価期間8/17〜12/13を基準に、各15講・週1講の目安を表示（公式講割りではない）。科目・週ごとの予定と完了状況を調整できる（`hibiki-study-plan-v1`）。
 - 世界の宗教8講「仏教」：`study/view.html?n=religion8`（四聖諦・五蘊・八正道を、身近な例と図で学ぶ）
 - `timeline/` これまでの道（人生タイムライン）。できごとは `private/timeline.json`（暗号）、本人が足した分は `hibiki-timeline-v1`
 
