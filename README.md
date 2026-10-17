@@ -9,6 +9,7 @@
 - `study/` の週別プラン：形成評価期間8/17〜12/13を基準に、各15講・週1講の目安を表示（公式講割りではない）。科目・週ごとの予定と完了状況を調整できる（`hibiki-study-plan-v1`）。
 - 世界の宗教8講「仏教」：`study/view.html?n=religion8`（四聖諦・五蘊・八正道を、身近な例と図で学ぶ）
 - `timeline/` これまでの道（人生タイムライン）。できごとは `private/timeline.json`（暗号）、本人が足した分は `hibiki-timeline-v1`
+- `about/` 私について（ほかのAIに貼る説明書）。中身は `private/about.json`（暗号、平文は共有フォルダの `hibiki/about-me.md`）。全文コピーと🔒を除いたコピー
 
 ## 端末どうしの同期
 - `sync.js` を各記録ページの `<head>` で読む。`hibiki-` で始まる localStorage を鍵ごとに新しいほうでそろえる。
