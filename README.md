@@ -22,3 +22,5 @@
 - 個人的な数字は `private/<name>.json` に、ひびきの公開鍵（`private/owner.pub.json`）で暗号にして置く。読めるのはログインした端末だけ。
 - 暗号にする: `node tools/seal.mjs <平文.json> <name>`。平文はリポジトリに置かない（共有フォルダ economy/private/）。
 - 秘密鍵は合言葉から作った鍵で包んで同期（`hibiki-keywrap`）。公開鍵は Worker の `/owner` に置かれる。
+
+- デジタル経済8講：`study/view.html?n=ch8`（ブロックチェーン・信頼・スマートコントラクト・CBDC）。

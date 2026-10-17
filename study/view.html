@@ -197,6 +197,12 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   for (var m = 8; m <= 15; m++) PLAY["macro" + m] = [MACRO, "上がる？下がる？ゲーム"];
   if (PLAY[n] && t) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n][0]; a.target = "_blank"; a.rel = "noopener";
     a.innerHTML = "▶ あそんで覚える・Claude に聞く<small>" + PLAY[n][1] + "・クイズ・質問バー（claude.ai で開く）</small>"; t.after(a); }
+  var dc = n.match(/^ch(\d+)$/);
+  if (dc) {
+    var DIGITAL_NOTES = { 7: "AI", 8: "ブロックチェーン" }, nav = document.createElement("div"); nav.className = "toc lec";
+    nav.innerHTML = Object.keys(DIGITAL_NOTES).map(function (k) { return '<a href="?n=ch' + k + '"' + (+k === +dc[1] ? ' aria-current="page"' : '') + '>' + k + '講 ' + DIGITAL_NOTES[k] + '</a>'; }).join('');
+    doc.insertBefore(nav, doc.firstChild);
+  }
   // 上級マクロ経済論は 8〜15講をならべて、となりの講へ行けるようにする
   var mm = n.match(/^macro(\d+)$/);
   if (mm) { var LEC = { 8:"消費", 9:"投資", 10:"労働", 11:"お金", 12:"一般均衡", 13:"均衡の波", 14:"不均衡の波", 15:"成長" }, row = document.createElement("div"); row.className = "toc lec";
