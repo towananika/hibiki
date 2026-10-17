@@ -11,7 +11,7 @@
 <script src="../sync.js"></script>
 <meta name="theme-color" content="#74886d">
 <style>
-  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --blue-soft:#dde6ee; --red:#a8553f; }
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#706959; --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --blue-soft:#dde6ee; --red:#a8553f; }
   @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --sage:#9db394; --sage-soft:#26301f; --blue:#8fb0cf; --blue-soft:#222d37; --red:#d98a72; } }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
@@ -23,8 +23,8 @@
   .ic { flex:none; width:48px; height:48px; border-radius:14px; display:grid; place-items:center; color:#fff; font-size:22px; font-weight:700; }
   .t { flex:1; min-width:0; } .t b { display:block; font-size:17px; } .t small { color:var(--muted); font-size:12px; display:block; }
   .chev { color:var(--muted); font-size:20px; }
-  .due { margin-top:12px; padding:12px 14px; border-radius:16px; background:var(--sage-soft); font-size:14px; line-height:1.6; }
-  .due b { font-size:20px; }
+  .due { margin-top:16px; padding:10px 0; border-bottom:1px solid var(--border); color:var(--muted); font-size:13px; line-height:1.6; }
+  .due b { font-size:14px; color:var(--text); }
   .ev { display:inline-block; margin-top:6px; font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 10px; cursor:pointer; border:0; font-family:inherit; }
 
   .plan h3 { font-size:15px; margin:0 0 8px; }
@@ -33,28 +33,35 @@
   .plan button { border:1px solid var(--blue); border-radius:10px; background:var(--blue-soft); color:var(--blue); padding:9px 11px; cursor:pointer; min-height:44px; }
   .plan button:focus-visible, .plan input:focus-visible, .plan select:focus-visible, .plan a:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
   .plan-course { border-top:1px solid var(--border); padding:12px 0; }
-  .plan-lessons { display:flex; flex-wrap:wrap; gap:8px; }
-  .plan-lesson { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:2px 10px; border:1px solid var(--border); border-radius:10px; }
+  .plan-lessons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .plan-lesson { display:flex; flex-direction:column; align-items:stretch; gap:0; padding:4px 10px; border:1px solid var(--border); border-radius:10px; }
   .plan-lesson label { display:flex; align-items:center; gap:6px; min-height:44px; cursor:pointer; }
   .plan input[type=checkbox] { width:20px; height:20px; accent-color:var(--sage); }
   .plan-lesson:has(input:checked) { background:var(--sage-soft); }
-  .plan-lesson a { color:var(--blue); padding:12px 0; font-size:13px; }
+  .plan-lesson a { color:var(--blue); padding:8px 0; font-size:13px; }
   .plan-lesson small { color:var(--muted); font-size:11px; }
+  .subject-card { display:grid; grid-template-columns:32px minmax(0,1fr); gap:10px; padding:16px; border-radius:14px; margin-top:10px; }
+  .subject-card .ic { width:32px; height:32px; font-size:16px; border-radius:9px; background:var(--blue-soft); color:var(--blue); }
+  .subject-card .t { display:contents; }
+  .subject-card .course-link b { font-size:16px; line-height:1.5; }
+  [data-subject-graph] { grid-column:1/-1; }
   .course-link { display:flex; align-items:center; gap:8px; color:inherit; text-decoration:none; min-height:32px; }
   .course-link b { flex:1; min-width:0; }
   .subject-card .chev { font-size:18px; }
-  .course-graph { display:block; width:100%; border:0; background:none; color:var(--muted); padding:7px 0 0; text-align:left; font:inherit; cursor:pointer; min-height:44px; }
+  .course-graph { display:block; width:100%; border:0; background:none; color:var(--muted); padding:0; text-align:left; font:inherit; cursor:pointer; min-height:44px; }
   .course-graph:focus-visible, .course-link:focus-visible { outline:3px solid var(--blue); outline-offset:3px; border-radius:4px; }
-  .chart-track { display:flex; gap:3px; height:6px; }
+  .chart-track { display:flex; gap:3px; height:10px; }
   .chart-segment { flex:1; min-width:0; background:var(--border); border-radius:2px; }
   .chart-segment.is-done { background:var(--sage); }
   .chart-segment.is-goal { background:var(--blue); }
   .chart-segment.is-goal.is-done { background:var(--sage); outline:1px solid var(--blue); outline-offset:1px; }
-  .chart-caption { display:block; font-size:11px; text-align:right; margin-top:6px; color:var(--blue); }
-  .study-legend { display:flex; justify-content:flex-end; gap:12px; margin:12px 0 0; color:var(--muted); font-size:11px; }
+  .chart-caption { display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:12px; margin-bottom:9px; color:var(--blue); }
+  .chart-caption.is-complete { color:var(--sage); }
+  .chart-action { color:var(--muted); font-size:11px; font-weight:400; }
+  .study-legend { display:flex; justify-content:flex-start; flex-wrap:wrap; gap:14px; margin:14px 0; color:var(--muted); font-size:11px; }
   .study-legend span { display:inline-flex; align-items:center; gap:4px; }
   .study-legend i { width:8px; height:6px; border-radius:2px; }
-  .legend-done { background:var(--sage); } .legend-goal { background:var(--blue); }
+  .legend-done { background:var(--sage); } .legend-goal { background:var(--blue); } .legend-both { background:var(--sage); outline:1px solid var(--blue); outline-offset:1px; }
   .study-records > summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--muted); cursor:pointer; list-style:none; }
   .study-records > summary::-webkit-details-marker { display:none; }
   .study-records > summary::after { content:'＋'; font-size:16px; }
@@ -80,7 +87,7 @@
   <p class="sub">受けている科目を、1つずつ</p>
 
   <div class="due" id="due"></div>
-  <p class="study-legend"><span><i class="legend-done" aria-hidden="true"></i>完了</span><span><i class="legend-goal" aria-hidden="true"></i><span id="goal-legend">今週</span></span></p>
+  <p class="study-legend"><span><i class="legend-done" aria-hidden="true"></i>完了</span><span><i class="legend-goal" aria-hidden="true"></i><span id="goal-legend">今週</span></span><span><i class="legend-both" aria-hidden="true"></i>今週・完了</span></p>
   <div id="subjects"></div>
   <div class="plan" id="study-progress"></div>
   <details class="study-records"><summary>形成評価の記録</summary><div id="eval-list"></div></details>
@@ -111,7 +118,7 @@
     document.getElementById("subjects").innerHTML = SUBJECTS.map(function (x) {
       var tag = x.href ? "a" : "div", h = x.href ? ' href="' + x.href + '"' : "";
       return '<article class="sj subject-card" data-subject="' + x.k + '">' +
-        '<span class="ic" style="background:' + x.c + '">' + x.ch + '</span>' +
+        '<span class="ic">' + x.ch + '</span>' +
         '<div class="t"><' + tag + ' class="course-link"' + h + '><b>' + esc(x.name) + '</b>' +
         (x.href ? '<span class="chev" aria-hidden="true">›</span>' : '') + '</' + tag + '>' +
         '<div data-subject-graph="' + x.k + '"></div></div></article>';

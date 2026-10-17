@@ -57,7 +57,8 @@
       var goal = targets.length ? '第' + targets.join('・') + c.unit : (enabled ? (week.items.length ? '予定なし' : '復習') : '計画の対象外');
       var now = week.start <= P.today() && week.end >= P.today();
       var caption = targets.length ? (now ? '今週 ' : '選択した週 ') + goal : goal;
-      slot.innerHTML = '<button type="button" class="course-graph" data-chart-course="' + c.key + '" aria-label="' + c.name + '、' + total + c.unit + '中' + finished + c.unit + '完了。この週は' + goal + '。学習記録を開く"><span class="chart-track" aria-hidden="true">' + segments.join('') + '</span><span class="chart-caption">' + caption + '</span></button>';
+      var complete = targets.length > 0 && targets.every(function (n) { return done(c.key, n); });
+      slot.innerHTML = '<button type="button" class="course-graph" data-chart-course="' + c.key + '" aria-label="' + c.name + '、' + total + c.unit + '中' + finished + c.unit + '完了。この週は' + goal + '。学習記録を開く"><span class="chart-caption' + (complete ? ' is-complete' : '') + '"><b>' + caption + (complete ? ' ✓ 完了' : '') + '</b><span class="chart-action">記録する ›</span></span><span class="chart-track" aria-hidden="true">' + segments.join('') + '</span></button>';
     });
   }
   host.innerHTML = '<dialog id="progress-dialog" aria-labelledby="progress-title"><div class="progress-heading"><h2 id="progress-title"></h2><button type="button" id="progress-close">閉じる</button></div><p class="plan-note">学習した講にチェックを入れます。</p><div id="progress-list"></div><p id="plan-status" role="status"></p></dialog>';
