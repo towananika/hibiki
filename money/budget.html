@@ -46,6 +46,27 @@
   .btns { display:flex; gap:8px; justify-content:flex-end; }
   .empty { color:var(--muted); font-size:14px; padding:8px 0; }
   .foot { text-align:center; margin-top:8px; }
+  .stack { display:flex; height:14px; border-radius:7px; overflow:hidden; margin-top:12px; background:var(--wood-soft); }
+  .stack i { display:block; height:100%; }
+  .s-house { background:var(--wood); } .s-life { background:var(--sage); } .s-care { background:var(--blue); } .s-free { background:var(--border); }
+  .legend { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); margin-top:6px; }
+  .legend span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:4px; vertical-align:middle; }
+  .lg-house::before { background:var(--wood); } .lg-life::before { background:var(--sage); } .lg-care::before { background:var(--blue); } .lg-free::before { background:var(--border); }
+  .need h2 { margin-bottom:4px; }
+  .need .grp { font-size:12px; color:var(--muted); font-weight:600; margin:14px 0 2px; }
+  .need .r { display:grid; grid-template-columns:1fr auto; gap:2px 8px; padding:8px 0; border-top:1px solid var(--border); font-size:14px; }
+  .need .r .rng { text-align:right; font-variant-numeric:tabular-nums; }
+  .need .r small { grid-column:1 / 3; font-size:12px; color:var(--muted); }
+  .need .r small b { font-weight:600; }
+  .need .r.low small b { color:var(--blue); } .need .r.ok small b { color:var(--sage); } .need .r.high small b { color:var(--red); }
+  .memo { grid-column:1 / 3; font-size:13px; color:var(--wood); background:var(--wood-soft); border-radius:8px; padding:6px 10px; }
+  form.memo-form { grid-column:1 / 3; display:grid; gap:8px; }
+  form.memo-form textarea { font:inherit; font-size:14px; min-height:64px; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); width:100%; resize:vertical; }
+  .trk { grid-column:1 / 3; position:relative; height:12px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin-top:4px; }
+  .trk .band { position:absolute; top:0; bottom:0; background:var(--sage-soft); outline:1px solid var(--sage); }
+  .trk .fill { position:absolute; left:0; top:4px; bottom:4px; border-radius:4px; background:var(--wood); }
+  .need .r.low .fill { background:var(--blue); } .need .r.ok .fill { background:var(--sage); } .need .r.high .fill { background:var(--red); }
+  .need .tot { display:flex; justify-content:space-between; font-weight:600; border-top:2px solid var(--border); padding-top:10px; margin-top:6px; }
 </style>
 </head>
 <body>
@@ -62,7 +83,11 @@
     </div>
     <div class="meter"><i id="mbar" style="width:0%"></i></div>
     <div class="note" id="mnote"></div>
+    <div class="stack" id="stack"></div>
+    <div class="legend"><span class="lg-house">住まい</span><span class="lg-life">生活費</span><span class="lg-care">保険・つきあい・その他</span><span class="lg-free">残り</span></div>
   </div>
+
+  <div class="card need" id="need"></div>
 
   <div class="card" id="cap">
     <h2>住まい代はいくらまで？</h2>
@@ -77,7 +102,7 @@
   <div class="card" id="cout"></div>
 
   <p class="note" style="text-align:center">「目安」は、一人暮らしでよく言われる割合（手取りに対する%）です。人によって合う額は違うので、参考として見てください。残りは貯金・自由に使うお金に回します。</p>
-  <div class="foot"><button id="reset">はじめの形にもどす</button></div>
+  <div class="foot"><button id="cpy">メモをまとめてコピー</button>　<button id="reset">はじめの形にもどす</button></div>
 </main>
 <script>
 (function () {
@@ -102,7 +127,7 @@
     return defaults();
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
-  var S = load(), editing = null; // editing: {type:'income'|'expense', id|null}
+  var S = load(), editing = null, memoOpen = null; // editing: {type:'income'|'expense', id|null}; memoOpen: 開いているメモの項目id
   function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
   function man(n) { return n >= 10000 ? "（約" + (Math.round(n / 1000) / 10).toLocaleString("ja-JP") + "万ウォン）" : ""; }
   // 手取りに対する目安の割合（一人暮らしの一般的な目安。人によって違う）
@@ -122,8 +147,71 @@
     v.textContent = won(cap) + man(cap);
     n.textContent = house ? "いまの住まい代は " + won(house) + "（上限の " + Math.round(house / cap * 100) + "%）。" + (house > cap ? "上限より多めです。" : "上限の中です。") : "「住まい」に金額を入れると、上限との比べが出ます。";
   }
+  // 普通に暮らすための目安（月・ウォン）。手取り月240万・ソウルの一人暮らしを前提にした見立て。
+  // 下限より少ないのは「節約しすぎ」のサイン、上限より多いのは見直しの目安。
+  var NEED = [
+    { g: "住まい", n: "住まい（家賃・返済・管理費）", lo: 400000, hi: 450000, re: /住/ },
+    { g: "生活費", n: "食費（会社の食費支援は別に数える）", lo: 300000, hi: 500000, re: /食/ },
+    { g: "生活費", n: "光熱費（電気・ガス・水道）", lo: 50000, hi: 100000, re: /光熱/ },
+    { g: "生活費", n: "通信費（携帯・ネット）", lo: 30000, hi: 50000, re: /通信/ },
+    { g: "生活費", n: "日用品", lo: 30000, hi: 50000, re: /日用/ },
+    { g: "生活費", n: "交通費（スクーター：電気・点検の積立）", lo: 20000, hi: 40000, re: /交通/ },
+    { g: "備え・つきあい", n: "保険・医療", lo: 50000, hi: 60000, re: /保険/ },
+    { g: "備え・つきあい", n: "健康・運動・休み・趣味", lo: 50000, hi: 100000, re: /休|趣味|運動|健康/ },
+    { g: "備え・つきあい", n: "好きな人たちとのつきあい", lo: 50000, hi: 100000, re: /つきあい|人/ },
+    { g: "備え・つきあい", n: "身の回り（服・美容）", lo: 20000, hi: 40000, re: /服|身の回り/ }
+  ];
+  function curOf(re) { return S.expense.reduce(function (t, x) { return re.test(x.name) ? t + (+x.amt || 0) : t; }, 0); }
+  function renderNeed() {
+    var box = document.getElementById("need"), lo = 0, hi = 0, groups = {}, order = [];
+    box.textContent = "";
+    box.appendChild(el("h2", null, "普通に暮らす目安（月）"));
+    box.appendChild(el("p", "note", "節約しすぎないための、下限と上限です。下限より少ないときは、必要なものを足りていない可能性があります。"));
+    NEED.forEach(function (x) {
+      if (!groups[x.g]) { groups[x.g] = []; order.push(x.g); }
+      groups[x.g].push(x); lo += x.lo; hi += x.hi;
+    });
+    order.forEach(function (g) {
+      box.appendChild(el("div", "grp", g));
+      groups[g].forEach(function (x) {
+        var cur = curOf(x.re), st = !cur ? "" : cur < x.lo ? "low" : cur > x.hi ? "high" : "ok";
+        var r = el("div", "r " + st);
+        r.appendChild(el("div", "name", x.n));
+        r.appendChild(el("div", "rng", won(x.lo) + "〜" + won(x.hi)));
+        // 目安の帯（うすい緑）に、いまの額（色の棒）を重ねる。どちらも同じ目盛り
+        var max = Math.max(x.hi * 1.4, cur * 1.1), trk = el("div", "trk");
+        var band = el("i", "band"); band.style.left = (x.lo / max * 100) + "%"; band.style.width = ((x.hi - x.lo) / max * 100) + "%";
+        var fill = el("i", "fill"); fill.style.width = (cur / max * 100) + "%";
+        trk.appendChild(band); trk.appendChild(fill); r.appendChild(trk);
+        var s = el("small", null, cur ? "いま " + won(cur) + "　" : "いまは未入力　");
+        var lab = { low: "少なめ（使ってよい）", ok: "目安の中", high: "目安より多め" }[st];
+        if (lab) s.appendChild(el("b", null, lab));
+        r.appendChild(s); box.appendChild(r);
+      });
+    });
+    box.appendChild(el("div", "tot", "合計の目安　" + won(lo) + "〜" + won(hi)));
+    box.appendChild(el("p", "note", "この額に、貯金（所得の" + (S.saveRate || 20) + "%）を足すと、残りが自由に使えるお金です。食費の目安は、会社の食費支援（月50万ウォン）が別にあるとして置いています。"));
+  }
+  function renderStack() {
+    var box = document.getElementById("stack"), inc = sum(S.income);
+    box.textContent = "";
+    if (!inc) return;
+    var house = 0, life = 0, care = 0;
+    S.expense.forEach(function (x) {
+      var a = +x.amt || 0;
+      if (/住/.test(x.name)) house += a;
+      else if (/食|光熱|通信|日用|交通/.test(x.name)) life += a;
+      else care += a;
+    });
+    var free = Math.max(0, inc - house - life - care);
+    [["s-house", house], ["s-life", life], ["s-care", care], ["s-free", free]].forEach(function (p) {
+      if (!p[1]) return;
+      var b = el("i", p[0]); b.style.width = (p[1] / inc * 100) + "%"; box.appendChild(b);
+    });
+  }
   function renderSummary() {
     renderCap();
+    renderStack();
     var i = sum(S.income), o = sum(S.expense), l = i - o;
     document.getElementById("tin").textContent = won(i);
     document.getElementById("tout").textContent = won(o);
@@ -164,6 +252,22 @@
     return f;
   }
 
+  // メモ：特殊な事情（引っ越し・家族の用事・病院など）を書いておく。この端末と同期した端末にだけ残る
+  function memoForm(it) {
+    var f = el("form", "memo-form"), t = el("textarea"); t.value = it.memo || ""; t.maxLength = 300; t.placeholder = "例：この月は引っ越しで費用が増える／通院が月2回ある など";
+    var b = el("div", "btns"), c = el("button", null, "閉じる"); c.type = "button"; var s = el("button", "main", "保存"); s.type = "submit";
+    c.onclick = function () { memoOpen = null; render(); };
+    b.appendChild(c); b.appendChild(s); f.appendChild(t); f.appendChild(b);
+    f.onsubmit = function (e) { e.preventDefault(); it.memo = t.value.trim(); memoOpen = null; save(); render(); };
+    return f;
+  }
+  function copyMemos() {
+    var lines = [];
+    S.expense.concat(S.income).forEach(function (x) { if (x.memo) lines.push(x.name + "：" + x.memo); });
+    var txt = lines.length ? lines.join("\n") : "（メモはまだありません）";
+    try { navigator.clipboard.writeText(txt); document.getElementById("cpy").textContent = "コピーしました"; } catch (e) { window.prompt("メモをコピーしてください", txt); }
+  }
+
   function section(type, root, title, total) {
     root.textContent = "";
     var h = el("div", "head"); h.appendChild(el("h2", null, title + "　" + won(total)));
@@ -195,20 +299,37 @@
         if (!confirm("「" + it.name + "」を消しますか？")) return;
         S[type] = S[type].filter(function (x) { return x.id !== it.id; }); save(); render();
       };
-      acts.appendChild(eb); acts.appendChild(db); r.appendChild(acts); root.appendChild(r);
+      var mb = el("button", null, it.memo ? "メモ（あり）" : "メモ");
+      mb.onclick = function () { memoOpen = memoOpen === it.id ? null : it.id; render(); };
+      acts.appendChild(eb); acts.appendChild(db); acts.appendChild(mb); r.appendChild(acts);
+      if (it.memo && memoOpen !== it.id) r.appendChild(el("div", "memo", it.memo));
+      if (memoOpen === it.id) r.appendChild(memoForm(it));
+      root.appendChild(r);
     });
   }
 
   function render() {
     renderSummary();
+    renderNeed();
     section("income", document.getElementById("cin"), "所得（入ってくるお金）", sum(S.income));
     section("expense", document.getElementById("cout"), "費用（出ていくお金）", sum(S.expense));
   }
   document.getElementById("srate").onchange = function () { S.saveRate = +this.value; save(); renderCap(); };
+  document.getElementById("cpy").onclick = copyMemos;
   document.getElementById("reset").onclick = function () {
     if (!confirm("入れた内容を消して、はじめの形にもどします。いいですか？")) return;
     S = defaults(); editing = null; save(); render();
   };
+  // 住まいの保証金とローンの条件は、暗号で置いた private/housing.json から1回だけ取りこむ（メモと月の利息）
+  if (window.HibikiSync) HibikiSync.open("housing").then(function (D) {
+    if (!D) return;
+    try { if (localStorage.getItem("hibiki-budget-housing-seeded")) return; localStorage.setItem("hibiki-budget-housing-seeded", "1"); } catch (e) {}
+    var it = S.expense.filter(function (x) { return /住/.test(x.name); })[0];
+    if (!it || it.memo) return;
+    var monthly = Math.round(D.deposit * D.loanRatio * D.rate / 100 / 12);
+    it.memo = D.memo + "月の利息は約" + won(monthly) + "（自動計算）。";
+    save(); render();
+  });
   render();
 })();
 </script>
