@@ -20,3 +20,8 @@
 - ひびきさんが勉強ページで言葉を選ぶと、`hibiki-words-v1` に保存される（`study/words.js`）。一覧は `study/words.html`。
 - 答えは `study/glossary.json` に「言葉: 意味」で足す。足すと、一覧と選んだ時にすぐ出る。
 - 新しい教材を書くときは、難しい漢字・用語を先に glossary.json に入れておく。
+
+## ゲームと質問バーの版（claude.ai）
+- `view.html` の `PLAY` に名前と claude.ai のページを入れると、ノートの上に「あそんで覚える」ボタンが出る。
+- そのページは `/mnt/project-files/hibiki/study/chat/` の `template.html` に md を埋めて作る（`python3 build.py notes/xxx.md out.html` → Artifact で公開）。GitHub Pages は静的で Claude を呼べないため、claude.ai のページに置く。
+- 質問とこたえは、そのページの db の `asks` に残る。「ノートに足して」を押したもの（`improve: true`）を読んで md を直し、同じページを公開しなおす。
