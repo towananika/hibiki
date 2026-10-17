@@ -26,15 +26,12 @@
   .due { margin-top:12px; padding:12px 14px; border-radius:16px; background:var(--sage-soft); font-size:14px; line-height:1.6; }
   .due b { font-size:20px; }
   .ev { display:inline-block; margin-top:6px; font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 10px; cursor:pointer; border:0; font-family:inherit; }
-  .plan { margin-top:12px; }
+
   .plan h3 { font-size:15px; margin:0 0 8px; }
   .plan-note { font-size:13px; color:var(--muted); line-height:1.7; }
   .plan button, .plan select, .plan input { font:inherit; }
   .plan button { border:1px solid var(--blue); border-radius:10px; background:var(--blue-soft); color:var(--blue); padding:9px 11px; cursor:pointer; min-height:44px; }
   .plan button:focus-visible, .plan input:focus-visible, .plan select:focus-visible, .plan a:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
-  .plan select { width:100%; padding:10px; border:1px solid var(--border); border-radius:10px; color:var(--text); background:var(--bg); min-height:44px; }
-  .plan-week-label { display:block; font-size:13px; margin:14px 0 6px; }
-  #plan-summary { font-size:14px; color:var(--sage); font-weight:600; }
   .plan-course { border-top:1px solid var(--border); padding:12px 0; }
   .plan-lessons { display:flex; flex-wrap:wrap; gap:8px; }
   .plan-lesson { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:2px 10px; border:1px solid var(--border); border-radius:10px; }
@@ -43,18 +40,6 @@
   .plan-lesson:has(input:checked) { background:var(--sage-soft); }
   .plan-lesson a { color:var(--blue); padding:12px 0; font-size:13px; }
   .plan-lesson small { color:var(--muted); font-size:11px; }
-  .plan-inputs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-  .plan-inputs label, .plan-override { display:block; font-size:12px; line-height:1.6; }
-  .plan-inputs input, .plan-override input { display:block; box-sizing:border-box; width:100%; min-width:0; margin-top:4px; padding:8px; min-height:44px; border:1px solid var(--border); border-radius:8px; background:var(--bg); color:var(--text); }
-  .plan fieldset { min-width:0; margin:12px 0; border:1px solid var(--border); border-radius:12px; padding:10px; }
-  .plan legend { font-size:14px; font-weight:600; }
-  .plan-include { display:flex; align-items:center; gap:6px; font-size:13px; margin-bottom:8px; }
-  .plan-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
-  .plan-actions button[type=submit] { color:#fff; background:var(--blue); }
-  .plan-override { margin:12px 0; }
-  #plan-carry details { border-top:1px solid var(--border); margin-top:16px; padding-top:12px; }
-  #plan-carry summary { cursor:pointer; color:var(--red); padding:8px 0; font-size:14px; }
-  #plan-error, #plan-week-error, #plan-status { color:var(--red); font-size:13px; }
   .course-link { display:flex; align-items:center; gap:8px; color:inherit; text-decoration:none; min-height:32px; }
   .course-link b { flex:1; min-width:0; }
   .subject-card .chev { font-size:18px; }
@@ -70,13 +55,20 @@
   .study-legend span { display:inline-flex; align-items:center; gap:4px; }
   .study-legend i { width:8px; height:6px; border-radius:2px; }
   .legend-done { background:var(--sage); } .legend-goal { background:var(--blue); }
-  #plan-details > summary, .study-records > summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--muted); cursor:pointer; list-style:none; }
-  #plan-details > summary::-webkit-details-marker, .study-records > summary::-webkit-details-marker { display:none; }
-  #plan-details > summary::after, .study-records > summary::after { content:'＋'; font-size:16px; }
-  #plan-details[open] > summary::after, .study-records[open] > summary::after { content:'−'; }
-  .plan-expanded { border-top:1px solid var(--border); padding-top:4px; }
+  .study-records > summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--muted); cursor:pointer; list-style:none; }
+  .study-records > summary::-webkit-details-marker { display:none; }
+  .study-records > summary::after { content:'＋'; font-size:16px; }
+  .study-records[open] > summary::after { content:'−'; }
   #eval-list { display:grid; gap:8px; padding-bottom:12px; }
   #eval-list .ev { margin:0; padding:10px; text-align:left; min-height:44px; }
+  #progress-dialog { width:calc(100% - 32px); max-width:480px; max-height:85dvh; overflow:auto; border:1px solid var(--border); border-radius:18px; padding:20px; background:var(--surface); color:var(--text); }
+  #progress-dialog::backdrop { background:rgba(0,0,0,.4); }
+  #progress-title { font-size:20px; margin:0; }
+  #progress-list h3 { display:none; }
+  .progress-heading { display:flex; align-items:center; gap:12px; position:sticky; top:-20px; background:var(--surface); padding:8px 0; }
+  #progress-title { flex:1; }
+  #progress-close { flex-shrink:0; }
+  #plan-status { color:var(--red); font-size:13px; }
   #plan-status:empty { display:none; }
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; line-height:1.7; }
 </style>
@@ -90,7 +82,7 @@
   <div class="due" id="due"></div>
   <p class="study-legend"><span><i class="legend-done" aria-hidden="true"></i>完了</span><span><i class="legend-goal" aria-hidden="true"></i><span id="goal-legend">今週</span></span></p>
   <div id="subjects"></div>
-  <div class="plan" id="weekly-plan"></div>
+  <div class="plan" id="study-progress"></div>
   <details class="study-records"><summary>形成評価の記録</summary><div id="eval-list"></div></details>
 
   <a class="sj" href="words.html">
