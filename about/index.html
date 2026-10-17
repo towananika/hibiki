@@ -54,9 +54,11 @@ function show(D) {
   MD = D.md;
   box.innerHTML = '<div class="btns">' +
     '<button class="main" id="all"><b>全文コピー</b><span>自分用のAIに。お金・人間関係も含む</span></button>' +
-    '<button id="safe"><b>🔒 を除いてコピー</b><span>信頼できない場所に貼るとき</span></button></div>' +
+    '<button id="safe"><b>🔒 を除いてコピー</b><span>信頼できない場所に貼るとき</span></button>' +
+    '<button id="url"><b>AI用URLをコピー</b><span>個人情報を抜いた公開版。URLを渡せばAIが自分で読める</span></button></div>' +
     '<div class="msg" id="msg"></div><p class="lock" style="font-size:12px;margin:4px 0 0">更新: ' + (D.at || "") + '</p>';
   document.getElementById("all").onclick = function () { copy(MD, "全文"); };
+  document.getElementById("url").onclick = function () { copy(new URL("ai.txt", location.href).href, "AI用URL"); };
   document.getElementById("safe").onclick = function () { copy(strip(MD), "🔒 を除いた文"); };
   var parts = MD.split(/\n(?=## )/).slice(1);
   var s = document.getElementById("secs"); s.style.display = "block";
