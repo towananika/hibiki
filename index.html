@@ -43,6 +43,20 @@
   .more .ic { background:var(--blue-soft); } .more svg { stroke:var(--blue); }
   #pri { background:var(--wood); color:#fff; border-radius:20px; padding:16px 18px; text-decoration:none; margin:14px 0 0; }
   #pri small { opacity:.85; font-size:12px; } #pri b { display:block; font-size:20px; margin:2px 0; } #pri span { font-size:13px; opacity:.95; }
+  [hidden] { display:none !important; }
+  .site-search { margin-top:20px; }
+  .site-search label { display:block; font-size:13px; color:var(--muted); margin-bottom:7px; }
+  .search-field { display:flex; gap:8px; align-items:center; padding:4px 6px 4px 12px; border:1px solid var(--border); border-radius:13px; background:var(--surface); }
+  .search-field:focus-within { outline:2px solid var(--blue); outline-offset:2px; }
+  .search-field input { width:100%; min-width:0; min-height:44px; font:inherit; font-size:16px; border:0; outline:0; color:var(--text); background:transparent; }
+  .search-field input::-webkit-search-cancel-button { display:none; }
+  .search-field button { flex-shrink:0; min-height:44px; border:0; border-radius:9px; padding:0 10px; font:inherit; font-size:13px; cursor:pointer; color:var(--blue); background:var(--blue-soft); }
+  .search-field button:focus-visible, .search-result:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+  #search-status { font-size:13px; color:var(--muted); line-height:1.7; margin:10px 0; }
+  #search-status:empty { display:none; }
+  .search-result { display:block; padding:14px; margin-top:8px; border:1px solid var(--border); border-radius:13px; background:var(--surface); color:var(--text); text-decoration:none; overflow-wrap:anywhere; }
+  .search-result strong { display:block; font-size:16px; line-height:1.5; }
+  .search-result span { display:block; margin-top:5px; font-size:13px; line-height:1.7; color:var(--muted); }
   footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
 </style>
 </head>
@@ -50,7 +64,13 @@
 <main>
   <h1>とわなにか</h1>
   <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
-  <a id="pri" href="priority/" style="display:none"></a>
+  <form id="site-search" class="site-search" role="search">
+    <label for="site-query">ページ・教材を探す</label>
+    <div class="search-field"><input id="site-query" type="search" placeholder="例：睡眠、生活費、仏教" autocomplete="off" aria-controls="search-results"><button id="search-clear" type="button" hidden>消す</button><button type="submit">検索</button></div>
+  </form>
+  <p id="search-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  <div id="search-results" aria-label="検索結果" hidden></div>
+  <div id="priority-slot"><a id="pri" href="priority/" style="display:none"></a></div>
   <div id="menu"></div>
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
@@ -91,5 +111,6 @@ if (window.HibikiSync) HibikiSync.open("priority").then(function (D) {
 });
 if (window.HibikiSync && HibikiSync.on()) document.getElementById("login").textContent = "ログイン中";
 </script>
+<script src="search/search.js"></script>
 </body>
 </html>
