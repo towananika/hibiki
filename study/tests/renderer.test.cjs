@@ -41,3 +41,37 @@ test('tables support explicit breaks; code keeps literal text and newlines',()=>
 test('hash text and separators cannot stall paragraph parsing',()=>{
  assert.equal(render('#話題\n続き\n---\n次'),'<p>#話題<br>続き</p>\n<p>次</p>');
 });
+test('four-choice questions keep explanations hidden until an answer',()=>{
+ const s=render('```quiz\nQ: どれ？\n1: 一\n2: 二\n3: 三\n4: 四\nC: 2\nE: 二が理由です。\n続きです。\n```');
+ assert.equal((s.match(/class="choice"/g)||[]).length,4);
+ assert.match(s,/class="q mcq" data-correct="1"/);
+ assert.match(s,/<legend>どれ？<\/legend>/);
+ assert.match(s,/<p class="explanation" hidden>二が理由です。<br>続きです。<\/p>/);
+ assert.match(s,/class="feedback" role="status" hidden/);
+});
+test('incomplete or invalid choices cannot present a false correct answer',()=>{
+ for(const data of ['1: 一\n2: 二\n4: 四\nC: 2\nE: 説明','1: 一\n2: 二\n3: 三\n4: 四\nC: 9\nE: 説明','1: 一\n2: 二\n3: 三\n4: 四\nC: 1']){
+  assert.match(render('```quiz\nQ: 問い\n'+data+'\n```'),/確認問題を読み込めませんでした/);
+ }
+});
+test('all existing lessons use valid authored choices immediately inside content sections',()=>{
+ const dir=path.join(__dirname,'../notes');let questions=0;
+ for(const name of fs.readdirSync(dir).filter(n=>n.endsWith('.md')&&n!=='README.md')){
+  const source=fs.readFileSync(path.join(dir,name),'utf8');
+  assert(!/^## .*確かめる問い/m.test(source),name);
+  const blocks=[...source.matchAll(/^```quiz\n([\s\S]*?)^```/gm)];
+  assert(blocks.length>0,name);
+  for(const match of blocks){
+   const choices=[...match[1].matchAll(/^([1-4]): (.+)$/gm)];
+   assert.equal(choices.length,4,name);
+   assert.deepEqual(choices.map(x=>x[1]),['1','2','3','4'],name);
+   assert.equal(new Set(choices.map(x=>x[2])).size,4,name);
+   assert.match(match[1],/^C: [1-4]$/m,name);assert.match(match[1],/^E: .+$/m,name);
+   const heading=[...source.slice(0,match.index).matchAll(/^## (.+)$/gm)].pop();
+   assert(heading&&!/まとめ|まず、この|資料との対応/.test(heading[1]),name);
+   assert(!render(match[0]).includes('読み込めませんでした'),name);
+   questions++;
+  }
+ }
+ assert(questions>=100);
+});

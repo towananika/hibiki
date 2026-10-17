@@ -59,7 +59,23 @@
   .q b { display:block; font-size:calc(18px*var(--k,1)); }
   .q button { margin-top:6px; border:1px solid var(--blue); background:none; color:var(--blue); font:inherit; font-size:calc(15px*var(--k,1)); padding:4px 12px; border-radius:999px; cursor:pointer; }
   .q p { display:none; margin:6px 0 0; font-size:calc(17px*var(--k,1)); background:var(--bg); border-radius:12px; padding:8px 12px; }
-  .q.open p { display:block; } .q.open button { display:none; }
+  .q:not(.mcq).open p { display:block; } .q:not(.mcq).open button { display:none; }
+  .mcq { margin-top:16px; padding-top:14px; }
+  .mcq .check-label { color:var(--blue); font-size:calc(14px*var(--k,1)); margin-bottom:6px; }
+  .mcq fieldset { border:0; margin:0; padding:0; min-width:0; }
+  .mcq legend { padding:0; font-weight:700; font-size:calc(18px*var(--k,1)); line-height:1.6; }
+  .mcq .choices { display:grid; gap:8px; margin:10px 0; }
+  .mcq .choice { display:flex; align-items:flex-start; gap:9px; text-align:left; border-radius:12px; padding:10px 12px; min-height:44px; margin:0; width:100%; color:var(--text); border-color:var(--border); background:var(--bg); line-height:1.6; overflow-wrap:anywhere; }
+  .mcq .choice span:first-child { color:var(--blue); flex:none; }
+  .mcq .choice:focus-visible, .mcq .retry:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
+  .mcq .choice:disabled { cursor:default; opacity:1; }
+  .mcq .choice.is-correct { border:2px solid var(--sage); }
+  .mcq .choice.is-wrong { border:2px solid var(--red); }
+  .q.mcq p:not([hidden]) { display:block; }
+  .mcq .feedback { font-weight:700; color:var(--blue); }
+  .mcq .explanation { line-height:1.7; }
+  .mcq .retry { min-height:44px; }
+  .mcq [hidden] { display:none !important; }
   .play { display:flex; align-items:center; gap:10px; margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:var(--wood); color:#fff; text-decoration:none; font-weight:700; font-size:calc(16px*var(--k,1)); }
   .play small { display:block; font-weight:400; opacity:.9; font-size:calc(13px*var(--k,1)); }
   .err { color:var(--muted); text-align:center; margin-top:40px; }
@@ -104,15 +120,29 @@ var BLOCK = {
   flow: function (t) {
     return '<div class="flow">' + t.trim().split(/\s*→\s*/).map(function (w) { return '<span>' + esc(w) + '</span>'; }).join("<i>→</i>") + '</div>';
   },
-  // Q: 問い / A: 答え（くり返し）
+  // 4択は Q / 1〜4 / C（正答番号）/ E（解説）。従来の Q / A も読める。
   quiz: function (t) {
-    var out = [], cur = null, part = "q";
+    var out = [], cur = null, part = "q", choice = -1;
     t.split("\n").forEach(function (l) {
-      if (/^Q[:：]/.test(l)) { cur = { q: l.replace(/^Q[:：]\s*/, ""), a: "" }; out.push(cur); part = "q"; }
-      else if (/^A[:：]/.test(l) && cur) { cur.a = l.replace(/^A[:：]\s*/, ""); part = "a"; }
-      else if (cur && l.trim()) cur[part] += "\n" + l.trim();
+      var opt = l.match(/^([1-4])[:：]\s*(.*)$/);
+      if (/^Q[:：]/.test(l)) { cur = { q: l.replace(/^Q[:：]\s*/, ""), a: "", options: [], correct: 0, explanation: "" }; out.push(cur); part = "q"; }
+      else if (!cur) return;
+      else if (opt) { choice = +opt[1] - 1; cur.options[choice] = opt[2]; part = "option"; }
+      else if (/^C[:：]/.test(l)) { cur.correct = +l.replace(/^C[:：]\s*/, ""); part = "correct"; }
+      else if (/^E[:：]/.test(l)) { cur.explanation = l.replace(/^E[:：]\s*/, ""); part = "explanation"; }
+      else if (/^A[:：]/.test(l)) { cur.a = l.replace(/^A[:：]\s*/, ""); part = "a"; }
+      else if (l.trim() && part !== "correct") {
+        if (part === "option") cur.options[choice] += "\n" + l.trim();
+        else cur[part] += "\n" + l.trim();
+      }
     });
-    return '<div class="quiz">' + out.map(function (x) { return '<div class="q"><b>' + lineText(x.q) + '</b><button>答えを見る</button><p>' + lineText(x.a) + '</p></div>'; }).join("") + '</div>';
+    return '<div class="quiz">' + out.map(function (x) {
+      if (!x.options.length) return '<div class="q"><b>' + lineText(x.q) + '</b><button>答えを見る</button><p>' + lineText(x.a) + '</p></div>';
+      if (x.options.length !== 4 || [0,1,2,3].some(function (i) { return !x.options[i] || !x.options[i].trim(); }) || !Number.isInteger(x.correct) || x.correct < 1 || x.correct > 4 || !x.explanation.trim()) return '<p class="err">確認問題を読み込めませんでした。</p>';
+      return '<div class="q mcq" data-correct="' + (x.correct - 1) + '"><div class="check-label">ここで確認・4択</div><fieldset><legend>' + lineText(x.q) + '</legend><div class="choices">' + x.options.map(function (option, i) {
+        return '<button type="button" class="choice" data-choice="' + i + '"><span>' + (i + 1) + '</span><span>' + lineText(option) + '</span></button>';
+      }).join("") + '</div></fieldset><p class="feedback" role="status" hidden></p><p class="explanation" hidden>' + lineText(x.explanation) + '</p><button type="button" class="retry" hidden>もう一度考える</button></div>';
+    }).join("") + '</div>';
   }
 };
 // 小さな md の読み方：見出し・段落・箇条書き・表・引用・太字・図ブロック
@@ -173,7 +203,24 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     row.innerHTML = Object.keys(LEC).map(function (k) { return '<a href="?n=macro' + k + '"' + (+k === +mm[1] ? ' aria-current="page"' : "") + '>' + k + '講 ' + LEC[k] + '</a>'; }).join("");
     doc.insertBefore(row, doc.firstChild); }
 }).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
-document.addEventListener("click", function (e) { var b = e.target.closest(".q button"); if (b) b.parentNode.classList.add("open"); });
+document.addEventListener("click", function (e) {
+  var b = e.target.closest(".q button"); if (!b) return;
+  var q = b.closest(".q");
+  if (!q.classList.contains("mcq")) { q.classList.add("open"); return; }
+  var choices = q.querySelectorAll(".choice"), feedback = q.querySelector(".feedback"), explanation = q.querySelector(".explanation"), retry = q.querySelector(".retry");
+  if (b.classList.contains("retry")) {
+    q.removeAttribute("data-answered");
+    choices.forEach(function (choice) { choice.disabled = false; choice.classList.remove("is-correct", "is-wrong"); });
+    feedback.hidden = true; feedback.textContent = ""; explanation.hidden = true; retry.hidden = true; choices[0].focus(); return;
+  }
+  if (!b.classList.contains("choice") || q.hasAttribute("data-answered")) return;
+  var correct = +q.dataset.correct, chosen = +b.dataset.choice;
+  q.setAttribute("data-answered", "true");
+  choices.forEach(function (choice, i) { choice.disabled = true; if (i === correct) choice.classList.add("is-correct"); });
+  if (chosen !== correct) b.classList.add("is-wrong");
+  feedback.textContent = chosen === correct ? "正解です。理由も確かめよう。" : "正解は「" + (correct + 1) + "」。説明を読んで確かめよう。";
+  feedback.hidden = false; explanation.hidden = false; retry.hidden = false;
+});
 </script>
 <script src="words.js"></script>
 </body>
