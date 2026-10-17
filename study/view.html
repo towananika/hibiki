@@ -29,6 +29,8 @@
   section { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 16px 14px; margin-top:14px; }
   h2 { font-size:calc(22px*var(--k,1)); margin:14px 0 6px; scroll-margin-top:12px; }
   h3 { font-size:calc(18px*var(--k,1)); color:var(--blue); margin:16px 0 4px; }
+  p, li, blockquote, th, td, .flow span, .eq span { overflow-wrap:anywhere; }
+  pre { max-width:100%; overflow-x:auto; }
   p, li { font-size:calc(18px*var(--k,1)); } ul, ol { padding-left:1.3em; margin:6px 0; } li { margin:3px 0; }
   strong { color:var(--text); background:linear-gradient(transparent 62%, rgba(91,122,153,.22) 0); }
   hr { display:none; }
@@ -104,19 +106,25 @@ var BLOCK = {
   },
   // Q: 問い / A: 答え（くり返し）
   quiz: function (t) {
-    var out = [], cur = null;
+    var out = [], cur = null, part = "q";
     t.split("\n").forEach(function (l) {
-      if (/^Q[:：]/.test(l)) { cur = { q: l.replace(/^Q[:：]\s*/, ""), a: "" }; out.push(cur); }
-      else if (/^A[:：]/.test(l) && cur) cur.a = l.replace(/^A[:：]\s*/, "");
+      if (/^Q[:：]/.test(l)) { cur = { q: l.replace(/^Q[:：]\s*/, ""), a: "" }; out.push(cur); part = "q"; }
+      else if (/^A[:：]/.test(l) && cur) { cur.a = l.replace(/^A[:：]\s*/, ""); part = "a"; }
+      else if (cur && l.trim()) cur[part] += "\n" + l.trim();
     });
-    return '<div class="quiz">' + out.map(function (x) { return '<div class="q"><b>' + esc(x.q) + '</b><button>答えを見る</button><p>' + esc(x.a) + '</p></div>'; }).join("") + '</div>';
+    return '<div class="quiz">' + out.map(function (x) { return '<div class="q"><b>' + lineText(x.q) + '</b><button>答えを見る</button><p>' + lineText(x.a) + '</p></div>'; }).join("") + '</div>';
   }
 };
 // 小さな md の読み方：見出し・段落・箇条書き・表・引用・太字・図ブロック
-function inl(t) { return esc(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>'); }
+// 教材に書いた改行と、属性のない br だけを改行として表示する。
+// その他のHTMLは文字として扱う。
+function lineText(t) {
+  return esc(String(t).replace(/(?: {2,}|\\)\n/g, "\n")).replace(/&lt;br\s*\/?&gt;/gi, "<br>").replace(/\n/g, "<br>");
+}
+function inl(t) { return lineText(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>'); }
 function cells(l) { return l.trim().replace(/^\||\|$/g, "").split("|").map(function (x) { return x.trim(); }); }
 function md(src) {
-  var L = src.replace(/\r/g, "").split("\n"), out = [], i = 0;
+  var L = src.replace(/\r\n?/g, "\n").split("\n"), out = [], i = 0;
   while (i < L.length) {
     var l = L[i];
     if (/^```/.test(l)) { var lang = l.slice(3).trim(), buf = []; i++; while (i < L.length && !/^```/.test(L[i])) buf.push(L[i++]); i++; out.push(BLOCK[lang] ? BLOCK[lang](buf.join("\n")) : "<pre>" + esc(buf.join("\n")) + "</pre>"); continue; }
@@ -125,10 +133,17 @@ function md(src) {
     if (/^\|/.test(l)) { var t = []; while (i < L.length && /^\|/.test(L[i])) t.push(L[i++]); var head = cells(t[0]), body = t.slice(2);
       out.push('<div class="tw"><table><thead><tr>' + head.map(function (c) { return "<th>" + inl(c) + "</th>"; }).join("") + "</tr></thead><tbody>" + body.map(function (r) { return "<tr>" + cells(r).map(function (c) { return "<td>" + inl(c) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div>"); continue; }
     if (/^\s*([-*]|\d+\.)\s/.test(l)) { var ol = /^\s*\d+\./.test(l), items = [];
-      while (i < L.length && /^\s*([-*]|\d+\.)\s/.test(L[i])) { var d = /^\s{2,}/.test(L[i]); items.push((d ? '<li style="margin-left:1.2em;list-style:circle">' : "<li>") + inl(L[i].replace(/^\s*([-*]|\d+\.)\s+/, "")) + "</li>"); i++; }
+      while (i < L.length && /^\s*([-*]|\d+\.)\s/.test(L[i])) {
+        var d = /^\s{2,}/.test(L[i]), item = [L[i++].replace(/^\s*([-*]|\d+\.)\s+/, "")];
+        while (i < L.length && /^\s{2,}\S/.test(L[i]) && !/^\s*([-*]|\d+\.)\s/.test(L[i]) && !/^\s*```/.test(L[i])) item.push(L[i++].trim());
+        items.push((d ? '<li style="margin-left:1.2em;list-style:circle">' : "<li>") + inl(item.join("\n")) + "</li>");
+      }
       out.push((ol ? "<ol>" : "<ul>") + items.join("") + (ol ? "</ol>" : "</ul>")); continue; }
-    if (/^>\s?/.test(l)) { out.push("<blockquote>" + inl(l.replace(/^>\s?/, "")) + "</blockquote>"); i++; continue; }
-    var p = []; while (i < L.length && L[i].trim() && !/^(#|```|\||>|\s*([-*]|\d+\.)\s)/.test(L[i])) p.push(L[i++]); out.push("<p>" + inl(p.join(" ")) + "</p>");
+    if (/^>\s?/.test(l)) {
+      var quote = []; while (i < L.length && /^>/.test(L[i])) quote.push(L[i++].replace(/^>\s?/, ""));
+      out.push("<blockquote>" + inl(quote.join("\n")) + "</blockquote>"); continue;
+    }
+    var p = []; while (i < L.length && L[i].trim() && !/^(#{1,3}\s|```|\||>|---\s*$|\s*([-*]|\d+\.)\s)/.test(L[i])) p.push(L[i++]); out.push("<p>" + inl(p.join("\n")) + "</p>");
   }
   return out.join("\n");
 }
