@@ -28,6 +28,10 @@
   .lec { margin-top:14px; } .lec a { color:var(--wood); background:var(--surface); border:1px solid var(--border); } .lec a[aria-current] { background:var(--wood); color:#fff; border-color:var(--wood); font-weight:700; }
   section { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 16px 14px; margin-top:14px; }
   h2 { font-size:calc(22px*var(--k,1)); margin:14px 0 6px; scroll-margin-top:12px; }
+  .video-more { margin-top:14px; border-top:1px solid var(--border); padding-top:10px; font-size:calc(15px*var(--k,1)); }
+  .video-more summary { cursor:pointer; color:var(--blue); }
+  .video-more a { display:inline-block; color:var(--blue); padding:8px 0; overflow-wrap:anywhere; }
+  .video-more small { display:block; color:var(--muted); }
   h3 { font-size:calc(18px*var(--k,1)); color:var(--blue); margin:16px 0 4px; }
   p, li, blockquote, th, td, .flow span, .eq span { overflow-wrap:anywhere; }
   pre { max-width:100%; overflow-x:auto; }
@@ -191,6 +195,27 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     (sec || doc).appendChild(el);
   });
   var t = doc.querySelector(".toc"); if (t) t.innerHTML = toc.join("");
+  // 動画を確認できていない場合も、未確認の動画を推薦せずテーマ検索へ案内する。
+  var title = doc.querySelector("h1");
+  var subject = title ? title.textContent.replace(/\s*\d+講.*$/, "").trim() : "";
+  var blockchainTopics = ["ブロックチェーン 台帳 信頼", "ブロックチェーン ハッシュ 電子署名", "ブロックチェーン 合意形成 PoW PoS", "ブロックチェーン 許可型 パブリック型", "ブロックチェーン オラクル問題 入力情報 真偽", "スマートコントラクト 仕組み", "CBDC 銀行預金 暗号資産 違い"];
+  Array.prototype.forEach.call(doc.querySelectorAll("section"), function (section, index) {
+    var heading = section.querySelector("h2");
+    if (!heading) return;
+    var topic = heading.textContent.replace(/^\d+[.．、]\s*/, "").trim();
+    if (/持ち帰る|まとめ|出典|参考|復習|覚えておく/.test(topic)) return;
+    var query = n === "ch8" && blockchainTopics[index] ? blockchainTopics[index] : subject + " " + topic;
+    var more = document.createElement("details"); more.className = "video-more";
+    var summary = document.createElement("summary"); summary.textContent = "動画で深める";
+    var link = document.createElement("a");
+    link.href = "https://www.youtube.com/results?search_query=" + encodeURIComponent(query + " 日本語 解説");
+    link.target = "_blank"; link.rel = "noopener noreferrer";
+    link.textContent = "YouTubeで検索 ↗";
+    link.setAttribute("aria-label", topic + "をYouTubeで検索（新しいタブ）");
+    var hint = document.createElement("small"); hint.textContent = "このテーマの日本語解説を探します。検索結果は講義の出典ではありません。";
+    more.appendChild(summary); more.appendChild(link); more.appendChild(hint); section.appendChild(more);
+  });
+
   // ゲームと質問バーのある版（claude.ai のページ）。作り方は /mnt/project-files/hibiki/study/chat/
   var MACRO = "https://claude.ai/artifact/JwgD4K9REUU99uP2QTMidM";
   var PLAY = { money8: ["https://claude.ai/artifact/XNJLBbXKYk6YucU5ZbLXUD", "銀行ゲーム"] };
