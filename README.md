@@ -4,7 +4,7 @@
 
 - `index.html` 入口。グループ分けのメニュー。ページを足すときは `GROUPS` に1行（`new:` で7日間NEW）
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）
-- `health/` 健康、`relations/` 愛と関係、`home/` 住まい（入居チェック）
+- `health/` 健康、`sleep/` 睡眠メモ（`hibiki-sleep-v1`）、`relations/` 愛と関係、`home/` 住まい（入居チェック）
 - `study/` 勉強（7章は `study/ch7.html` にくわしく。放送大学「デジタル経済の理解」全15章、進み具合は `hibiki-study-digital-v1`。貨幣金融論8講は `study/view.html?n=money8`、上級マクロ経済論8〜15講は `study/view.html?n=macro8`〜`macro15`）
 - 勉強ノートは説明の直後に4択の確認問題を表示。選ぶと正誤と理由が分かり、やり直せる。
 - `study/` の週別プラン：形成評価期間8/17〜12/13を基準に、各15講・週1講の目安を表示（公式講割りではない）。講座カード内のグラフで、完了は緑、今週の目安は青に表示。総講数や完了数の分数は一覧に表示しない。「予定と記録」を開くと、科目・週ごとの予定と完了状況を調整できる（`hibiki-study-plan-v1`）。
