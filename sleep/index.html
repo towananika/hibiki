@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>睡眠メモ — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a.back { color:var(--wood); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 12px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .taps { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tap { font:inherit; border:0; border-radius:16px; padding:18px 8px; cursor:pointer; color:#fff; font-size:17px; font-weight:700; }
+  .tap small { display:block; font-size:12px; font-weight:400; opacity:.9; }
+  .bed { background:var(--blue); } .wake { background:var(--wood); }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:12px; }
+  .row label { font-size:13px; color:var(--muted); white-space:nowrap; }
+  input { font:inherit; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); }
+  input[type=time] { width:112px; min-width:0; } #memo { width:100%; margin-top:12px; }
+  .cnt { display:flex; align-items:center; gap:10px; }
+  .cnt button { font:inherit; width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--sage-soft); color:var(--text); font-size:20px; cursor:pointer; }
+  .cnt b { font-size:22px; min-width:24px; text-align:center; }
+  .big { font-size:30px; font-weight:700; }
+  .muted { color:var(--muted); font-size:12px; }
+  .bars { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; align-items:end; height:130px; margin-top:8px; }
+  .bars div { line-height:1.6; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; font-size:11px; color:var(--muted); }
+  .bars i { display:block; width:100%; border-radius:6px 6px 0 0; background:var(--sage); }
+  .bars i.short { background:var(--red); }
+  .bars .dot { color:var(--red); height:14px; }
+  .goal { position:relative; }
+  .goal:after { content:""; position:absolute; left:0; right:0; bottom:calc(35px + 75.6px); border-top:1px dashed var(--wood); }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← 入口</a>
+  <h1>睡眠メモ</h1>
+
+  <div class="card">
+    <div class="taps">
+      <button class="tap bed" id="tBed">🌙 寝る<small id="sBed">いまの時刻</small></button>
+      <button class="tap wake" id="tWake">☀️ 起きた<small id="sWake">いまの時刻</small></button>
+    </div>
+    <div class="row"><label>寝た</label><input type="time" id="bed"><label>起きた</label><input type="time" id="wake"></div>
+    <div class="row"><label>夜中に起きた</label><div class="cnt"><button id="m">−</button><b id="up">0</b><button id="p">＋</button></div></div>
+    <input id="memo" maxlength="60" placeholder="ひとこと（夢・体調など）">
+    <div class="row"><span class="muted" id="day"></span><span><span class="big" id="hrs">−</span> 時間</span></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="margin-top:0"><b>この7日</b><span class="muted">平均 <b id="avg">−</b> 時間 ・ 点線＝7時間</span></div>
+    <div class="bars goal" id="bars"></div>
+  </div>
+</main>
+<script>
+var KEY = "hibiki-sleep-v1", WK = ["日","月","火","水","木","金","土"];
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+var S = load(); S.days = S.days || {};
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function pad(n) { return (n < 10 ? "0" : "") + n; }
+function ymd(d) { return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); }
+function hm(d) { return pad(d.getHours()) + ":" + pad(d.getMinutes()); }
+// 起きた日の日付で1日分。昼より前は「今朝」の記録
+var today = ymd(new Date());
+function cur() { return S.days[today] || (S.days[today] = { bed: "", wake: "", up: 0, memo: "" }); }
+function hours(r) {
+  if (!r || !r.bed || !r.wake) return null;
+  var b = r.bed.split(":"), w = r.wake.split(":");
+  var m = (w[0] * 60 + +w[1]) - (b[0] * 60 + +b[1]); if (m <= 0) m += 1440;
+  return Math.round(m / 6) / 10;
+}
+function draw() {
+  var r = S.days[today] || {};
+  bed.value = r.bed || ""; wake.value = r.wake || ""; up.textContent = r.up || 0; memo.value = r.memo || "";
+  var h = hours(r); hrs.textContent = h == null ? "−" : h;
+  day.textContent = today.slice(5).replace("-", "/") + " の朝";
+  var html = "", sum = 0, n = 0;
+  for (var i = 6; i >= 0; i--) {
+    var d = new Date(); d.setDate(d.getDate() - i);
+    var k = ymd(d), x = S.days[k], v = hours(x);
+    if (v != null) { sum += v; n++; }
+    html += '<div><span class="dot">' + (x && x.up ? "●".repeat(Math.min(x.up, 3)) : "") + '</span><i class="' + (v != null && v < 6 ? "short" : "") + '" style="height:' + (v == null ? 0 : Math.min(v, 10) * 10.8) + 'px"></i>' + (v == null ? "−" : v) + '<br>' + WK[d.getDay()] + '</div>';
+  }
+  bars.innerHTML = html; avg.textContent = n ? Math.round(sum / n * 10) / 10 : "−";
+}
+// 「寝る」は夜に押すので、翌朝の日付に入れる（夕方6時以降なら明日）
+tBed.onclick = function () {
+  var now = new Date(), d = new Date(now); if (now.getHours() >= 18) d.setDate(d.getDate() + 1);
+  var k = ymd(d); S.days[k] = S.days[k] || { bed: "", wake: "", up: 0, memo: "" }; S.days[k].bed = hm(now);
+  save(); sBed.textContent = hm(now) + " に記録"; draw();
+};
+tWake.onclick = function () { cur().wake = hm(new Date()); save(); sWake.textContent = hm(new Date()) + " に記録"; draw(); };
+bed.onchange = function () { cur().bed = bed.value; save(); draw(); };
+wake.onchange = function () { cur().wake = wake.value; save(); draw(); };
+p.onclick = function () { cur().up = (cur().up || 0) + 1; save(); draw(); };
+m.onclick = function () { cur().up = Math.max(0, (cur().up || 0) - 1); save(); draw(); };
+memo.onchange = function () { cur().memo = memo.value; save(); };
+window.addEventListener("storage", function () { S = load(); S.days = S.days || {}; draw(); });
+draw();
+</script>
+</body>
+</html>
