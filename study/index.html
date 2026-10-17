@@ -22,16 +22,11 @@
   .sj { display:flex; gap:14px; align-items:center; margin-top:14px; padding:16px; text-decoration:none; color:inherit; background:var(--surface); border:1px solid var(--border); border-radius:20px; }
   .ic { flex:none; width:48px; height:48px; border-radius:14px; display:grid; place-items:center; color:#fff; font-size:22px; font-weight:700; }
   .t { flex:1; min-width:0; } .t b { display:block; font-size:17px; } .t small { color:var(--muted); font-size:12px; display:block; }
-  .meter { height:6px; border-radius:3px; background:var(--border); margin-top:8px; overflow:hidden; } .meter i { display:block; height:100%; background:var(--sage); width:0; }
   .chev { color:var(--muted); font-size:20px; }
-  .new { font-size:11px; background:var(--wood); color:#fff; border-radius:999px; padding:1px 8px; margin-left:6px; vertical-align:2px; }
   .due { margin-top:12px; padding:12px 14px; border-radius:16px; background:var(--sage-soft); font-size:14px; line-height:1.6; }
   .due b { font-size:20px; }
-  .sj.soon { opacity:.78; }
   .ev { display:inline-block; margin-top:6px; font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 10px; cursor:pointer; border:0; font-family:inherit; }
-  .plan { margin-top:16px; padding:16px; border:1px solid var(--border); border-radius:20px; background:var(--surface); }
-  .plan-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
-  .plan h2 { font-size:17px; margin:0; color:var(--text); }
+  .plan { margin-top:12px; }
   .plan h3 { font-size:15px; margin:0 0 8px; }
   .plan-note { font-size:13px; color:var(--muted); line-height:1.7; }
   .plan button, .plan select, .plan input { font:inherit; }
@@ -60,26 +55,28 @@
   #plan-carry details { border-top:1px solid var(--border); margin-top:16px; padding-top:12px; }
   #plan-carry summary { cursor:pointer; color:var(--red); padding:8px 0; font-size:14px; }
   #plan-error, #plan-week-error, #plan-status { color:var(--red); font-size:13px; }
-  #plan-date { color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; }
-  #plan-chart { margin-top:10px; }
-  .plan .chart-row { display:block; width:100%; min-height:44px; padding:7px 0; border:0; border-radius:6px; background:none; text-align:left; color:var(--text); }
-  .chart-label { display:flex; align-items:baseline; justify-content:space-between; gap:12px; font-size:13px; line-height:1.4; }
-  .chart-name { min-width:0; }
-  .chart-goal { color:var(--blue); font-size:12px; text-align:right; }
-  .chart-track { display:flex; gap:3px; height:6px; margin-top:6px; }
+  .course-link { display:flex; align-items:center; gap:8px; color:inherit; text-decoration:none; min-height:32px; }
+  .course-link b { flex:1; min-width:0; }
+  .subject-card .chev { font-size:18px; }
+  .course-graph { display:block; width:100%; border:0; background:none; color:var(--muted); padding:7px 0 0; text-align:left; font:inherit; cursor:pointer; min-height:44px; }
+  .course-graph:focus-visible, .course-link:focus-visible { outline:3px solid var(--blue); outline-offset:3px; border-radius:4px; }
+  .chart-track { display:flex; gap:3px; height:6px; }
   .chart-segment { flex:1; min-width:0; background:var(--border); border-radius:2px; }
   .chart-segment.is-done { background:var(--sage); }
   .chart-segment.is-goal { background:var(--blue); }
   .chart-segment.is-goal.is-done { background:var(--sage); outline:1px solid var(--blue); outline-offset:1px; }
-  .chart-legend { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:10px 0 0; font-size:11px; color:var(--muted); }
-  .chart-legend span { display:inline-flex; align-items:center; gap:4px; }
-  .chart-legend i { display:inline-block; width:8px; height:6px; border-radius:2px; }
+  .chart-caption { display:block; font-size:11px; text-align:right; margin-top:6px; color:var(--blue); }
+  .study-legend { display:flex; justify-content:flex-end; gap:12px; margin:12px 0 0; color:var(--muted); font-size:11px; }
+  .study-legend span { display:inline-flex; align-items:center; gap:4px; }
+  .study-legend i { width:8px; height:6px; border-radius:2px; }
   .legend-done { background:var(--sage); } .legend-goal { background:var(--blue); }
-  #plan-details > summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--blue); cursor:pointer; list-style:none; }
-  #plan-details > summary::-webkit-details-marker { display:none; }
-  #plan-details > summary::after { content:'＋'; font-size:16px; }
-  #plan-details[open] > summary::after { content:'−'; }
+  #plan-details > summary, .study-records > summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--muted); cursor:pointer; list-style:none; }
+  #plan-details > summary::-webkit-details-marker, .study-records > summary::-webkit-details-marker { display:none; }
+  #plan-details > summary::after, .study-records > summary::after { content:'＋'; font-size:16px; }
+  #plan-details[open] > summary::after, .study-records[open] > summary::after { content:'−'; }
   .plan-expanded { border-top:1px solid var(--border); padding-top:4px; }
+  #eval-list { display:grid; gap:8px; padding-bottom:12px; }
+  #eval-list .ev { margin:0; padding:10px; text-align:left; min-height:44px; }
   #plan-status:empty { display:none; }
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; line-height:1.7; }
 </style>
@@ -91,8 +88,10 @@
   <p class="sub">受けている科目を、1つずつ</p>
 
   <div class="due" id="due"></div>
-  <section class="plan" id="weekly-plan" aria-label="週別の学習プラン"></section>
+  <p class="study-legend"><span><i class="legend-done" aria-hidden="true"></i>完了</span><span><i class="legend-goal" aria-hidden="true"></i><span id="goal-legend">今週</span></span></p>
   <div id="subjects"></div>
+  <div class="plan" id="weekly-plan"></div>
+  <details class="study-records"><summary>形成評価の記録</summary><div id="eval-list"></div></details>
 
   <a class="sj" href="words.html">
     <span class="ic" style="background:var(--wood)">言</span>
@@ -106,26 +105,28 @@
 (function () {
   // 受けている科目（2026年2学期・韓国の放送大学）。教材ができたら href を入れる
   var SUBJECTS = [
-    { k: "dig", name: "デジタル経済の理解", sub: "全15章", href: "digital.html", c: "var(--sage)", ch: "経" },
-    { k: "trad", name: "伝統社会と生活文化", sub: "7講「食と食生活文化」", href: "view.html?n=tradition7", c: "var(--blue)", ch: "食" },
-    { k: "money", name: "貨幣金融論", sub: "8講「お金はどう増える？」", href: "view.html?n=money8", c: "var(--red)", ch: "貨" },
-    { k: "macro", name: "上級マクロ経済論", sub: "8〜15講（消費から成長まで）", href: "view.html?n=macro8", c: "var(--wood)", ch: "マ", isNew: true },
-    { k: "rel", name: "世界の宗教", sub: "8講「仏教：苦しみを、どう軽くする？」", href: "view.html?n=religion8", c: "var(--blue)", ch: "宗", isNew: true },
-    { k: "open", name: "開かれた社会と21世紀", sub: "教材はこれから", c: "var(--wood)", ch: "社" }
+    { k: "dig", name: "デジタル経済の理解", href: "digital.html", c: "var(--sage)", ch: "経" },
+    { k: "trad", name: "伝統社会と生活文化", href: "view.html?n=tradition7", c: "var(--blue)", ch: "食" },
+    { k: "money", name: "貨幣金融論", href: "view.html?n=money8", c: "var(--red)", ch: "貨" },
+    { k: "macro", name: "上級マクロ経済論", href: "view.html?n=macro8", c: "var(--wood)", ch: "マ" },
+    { k: "rel", name: "世界の宗教", href: "view.html?n=religion8", c: "var(--blue)", ch: "宗" },
+    { k: "open", name: "開かれた社会と21世紀", c: "var(--wood)", ch: "社" }
   ];
   function jget(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
   function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
   function render() {
-    var dig = jget("hibiki-study-digital-v1", {}), n = 0, EV = jget("hibiki-study-eval-v1", {});
-    for (var k in dig) if (dig[k] && +k >= 0 && +k < 15) n++;
+    var EV = jget("hibiki-study-eval-v1", {});
     document.getElementById("subjects").innerHTML = SUBJECTS.map(function (x) {
-      var ev = EV[x.k], tag = x.href ? "a" : "div", h = x.href ? ' href="' + x.href + '"' : "";
-      return '<' + tag + ' class="sj' + (x.href ? "" : " soon") + '"' + h + '>' +
+      var tag = x.href ? "a" : "div", h = x.href ? ' href="' + x.href + '"' : "";
+      return '<article class="sj subject-card" data-subject="' + x.k + '">' +
         '<span class="ic" style="background:' + x.c + '">' + x.ch + '</span>' +
-        '<span class="t"><b>' + esc(x.name) + (x.isNew ? '<span class="new">NEW</span>' : '') + '</b><small>' + esc(x.sub) + '</small>' +
-        (x.k === "dig" ? '<span class="meter"><i style="width:' + (n / 15 * 100) + '%"></i></span><small>' + n + ' / 15章</small>' : '') +
-        '<button class="ev" data-k="' + x.k + '">形成評価 ' + (ev == null ? "—" : ev + "%") + '（直す）</button></span>' +
-        (x.href ? '<span class="chev">›</span>' : '') + '</' + tag + '>';
+        '<div class="t"><' + tag + ' class="course-link"' + h + '><b>' + esc(x.name) + '</b>' +
+        (x.href ? '<span class="chev" aria-hidden="true">›</span>' : '') + '</' + tag + '>' +
+        '<div data-subject-graph="' + x.k + '"></div></div></article>';
+    }).join("");
+    document.getElementById("eval-list").innerHTML = SUBJECTS.map(function (x) {
+      var ev = EV[x.k];
+      return '<button class="ev" data-k="' + x.k + '">' + esc(x.name) + '：' + (ev == null ? "未記録" : ev + "%") + '（直す）</button>';
     }).join("");
     [].forEach.call(document.querySelectorAll(".ev"), function (b) {
       b.onclick = function (e) {
@@ -143,6 +144,7 @@
     var end = new Date("2026-12-13T23:59:59+09:00"), left = Math.ceil((end - new Date()) / 864e5);
     document.getElementById("due").innerHTML = left >= 0
       ? '形成評価の期限 <b>12月13日</b>まで、あと <b>' + left + '</b> 日' : '形成評価の期間は終わりました';
+    window.dispatchEvent(new Event("studycardsrendered"));
   }
   window.addEventListener("studyprogress", render);
   window.addEventListener("storage", function (e) { if (e.key === "hibiki-study-digital-v1") render(); });
