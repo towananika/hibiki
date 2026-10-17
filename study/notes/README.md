@@ -24,4 +24,5 @@
 ## ゲームと質問バーの版（claude.ai）
 - `view.html` の `PLAY` に名前と claude.ai のページを入れると、ノートの上に「あそんで覚える」ボタンが出る。
 - そのページは `/mnt/project-files/hibiki/study/chat/` の `template.html` に md を埋めて作る（`python3 build.py notes/xxx.md out.html` → Artifact で公開）。GitHub Pages は静的で Claude を呼べないため、claude.ai のページに置く。
+- 上級マクロ経済論 8〜15講は1枚のページ（講えらび＋「上がる？下がる？」ゲーム＋クイズ＋質問バー）：`python3 build_macro.py <notes フォルダ> out.html` → https://claude.ai/artifact/JwgD4K9REUU99uP2QTMidM に同じファイルで公開しなおす。ゲームの問題は `macro-template.html` の `AR`。
 - 質問とこたえは、そのページの db の `asks` に残る。「ノートに足して」を押したもの（`improve: true`）を読んで md を直し、同じページを公開しなおす。

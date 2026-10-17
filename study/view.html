@@ -25,6 +25,7 @@
   h1 { font-size:calc(28px*var(--k,1)); line-height:1.4; margin:16px 0 8px; }
   .toc { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 4px; }
   .toc a { font-size:calc(14px*var(--k,1)); color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:4px 10px; text-decoration:none; }
+  .lec { margin-top:14px; } .lec a { color:var(--wood); background:var(--surface); border:1px solid var(--border); } .lec a[aria-current] { background:var(--wood); color:#fff; border-color:var(--wood); font-weight:700; }
   section { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 16px 14px; margin-top:14px; }
   h2 { font-size:calc(22px*var(--k,1)); margin:14px 0 6px; scroll-margin-top:12px; }
   h3 { font-size:calc(18px*var(--k,1)); color:var(--blue); margin:16px 0 4px; }
@@ -146,9 +147,16 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   });
   var t = doc.querySelector(".toc"); if (t) t.innerHTML = toc.join("");
   // ゲームと質問バーのある版（claude.ai のページ）。作り方は /mnt/project-files/hibiki/study/chat/
-  var PLAY = { money8: "https://claude.ai/artifact/XNJLBbXKYk6YucU5ZbLXUD" };
-  if (PLAY[n] && t) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n]; a.target = "_blank"; a.rel = "noopener";
-    a.innerHTML = "▶ あそんで覚える・Claude に聞く<small>銀行ゲーム・クイズ・質問バー（claude.ai で開く）</small>"; t.after(a); }
+  var MACRO = "https://claude.ai/artifact/JwgD4K9REUU99uP2QTMidM";
+  var PLAY = { money8: ["https://claude.ai/artifact/XNJLBbXKYk6YucU5ZbLXUD", "銀行ゲーム"] };
+  for (var m = 8; m <= 15; m++) PLAY["macro" + m] = [MACRO, "上がる？下がる？ゲーム"];
+  if (PLAY[n] && t) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n][0]; a.target = "_blank"; a.rel = "noopener";
+    a.innerHTML = "▶ あそんで覚える・Claude に聞く<small>" + PLAY[n][1] + "・クイズ・質問バー（claude.ai で開く）</small>"; t.after(a); }
+  // 上級マクロ経済論は 8〜15講をならべて、となりの講へ行けるようにする
+  var mm = n.match(/^macro(\d+)$/);
+  if (mm) { var LEC = { 8:"消費", 9:"投資", 10:"労働", 11:"お金", 12:"一般均衡", 13:"均衡の波", 14:"不均衡の波", 15:"成長" }, row = document.createElement("div"); row.className = "toc lec";
+    row.innerHTML = Object.keys(LEC).map(function (k) { return '<a href="?n=macro' + k + '"' + (+k === +mm[1] ? ' aria-current="page"' : "") + '>' + k + '講 ' + LEC[k] + '</a>'; }).join("");
+    doc.insertBefore(row, doc.firstChild); }
 }).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
 document.addEventListener("click", function (e) { var b = e.target.closest(".q button"); if (b) b.parentNode.classList.add("open"); });
 </script>
