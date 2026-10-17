@@ -11,8 +11,8 @@
 <script src="../sync.js"></script>
 <meta name="theme-color" content="#74886d">
 <style>
-  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --blue-soft:#dde6ee; }
-  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --sage:#9db394; --sage-soft:#26301f; --blue:#8fb0cf; --blue-soft:#222d37; } }
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --blue-soft:#dde6ee; --red:#a8553f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --sage:#9db394; --sage-soft:#26301f; --blue:#8fb0cf; --blue-soft:#222d37; --red:#d98a72; } }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
   main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
@@ -54,8 +54,8 @@
   // 受けている科目（2026年2学期・韓国の放送大学）。教材ができたら href を入れる
   var SUBJECTS = [
     { k: "dig", name: "デジタル経済の理解", sub: "全15章", href: "digital.html", c: "var(--sage)", ch: "経" },
-    { k: "trad", name: "伝統社会と生活文化", sub: "7講「食と食生活文化」", href: "view.html?n=tradition7", c: "var(--blue)", ch: "食", isNew: true },
-    { k: "money", name: "貨幣金融論", sub: "教材はこれから", c: "var(--wood)", ch: "貨" },
+    { k: "trad", name: "伝統社会と生活文化", sub: "7講「食と食生活文化」", href: "view.html?n=tradition7", c: "var(--blue)", ch: "食" },
+    { k: "money", name: "貨幣金融論", sub: "8講「お金はどう増える？」", href: "view.html?n=money8", c: "var(--red)", ch: "貨", isNew: true },
     { k: "macro", name: "上級マクロ経済論", sub: "教材はこれから", c: "var(--wood)", ch: "マ" },
     { k: "rel", name: "世界の宗教", sub: "教材はこれから", c: "var(--wood)", ch: "宗" },
     { k: "open", name: "開かれた社会と21世紀", sub: "教材はこれから", c: "var(--wood)", ch: "社" }
