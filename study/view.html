@@ -57,6 +57,8 @@
   .q button { margin-top:6px; border:1px solid var(--blue); background:none; color:var(--blue); font:inherit; font-size:calc(15px*var(--k,1)); padding:4px 12px; border-radius:999px; cursor:pointer; }
   .q p { display:none; margin:6px 0 0; font-size:calc(17px*var(--k,1)); background:var(--bg); border-radius:12px; padding:8px 12px; }
   .q.open p { display:block; } .q.open button { display:none; }
+  .play { display:flex; align-items:center; gap:10px; margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:var(--wood); color:#fff; text-decoration:none; font-weight:700; font-size:calc(16px*var(--k,1)); }
+  .play small { display:block; font-weight:400; opacity:.9; font-size:calc(13px*var(--k,1)); }
   .err { color:var(--muted); text-align:center; margin-top:40px; }
 </style>
 </head>
@@ -143,6 +145,10 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     (sec || doc).appendChild(el);
   });
   var t = doc.querySelector(".toc"); if (t) t.innerHTML = toc.join("");
+  // ゲームと質問バーのある版（claude.ai のページ）。作り方は /mnt/project-files/hibiki/study/chat/
+  var PLAY = { money8: "https://claude.ai/artifact/XNJLBbXKYk6YucU5ZbLXUD" };
+  if (PLAY[n] && t) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n]; a.target = "_blank"; a.rel = "noopener";
+    a.innerHTML = "▶ あそんで覚える・Claude に聞く<small>銀行ゲーム・クイズ・質問バー（claude.ai で開く）</small>"; t.after(a); }
 }).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
 document.addEventListener("click", function (e) { var b = e.target.closest(".q button"); if (b) b.parentNode.classList.add("open"); });
 </script>
