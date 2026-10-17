@@ -29,16 +29,16 @@
   .due b { font-size:20px; }
   .sj.soon { opacity:.78; }
   .ev { display:inline-block; margin-top:6px; font-size:12px; color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:0 10px; cursor:pointer; border:0; font-family:inherit; }
-  .plan { margin-top:16px; padding:16px; border:1px solid var(--border); border-top:4px solid var(--blue); border-radius:20px; background:var(--surface); }
+  .plan { margin-top:16px; padding:16px; border:1px solid var(--border); border-radius:20px; background:var(--surface); }
   .plan-heading { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
-  .plan h2 { font-size:20px; margin:0; color:var(--blue); }
+  .plan h2 { font-size:17px; margin:0; color:var(--text); }
   .plan h3 { font-size:15px; margin:0 0 8px; }
   .plan-note { font-size:13px; color:var(--muted); line-height:1.7; }
   .plan button, .plan select, .plan input { font:inherit; }
   .plan button { border:1px solid var(--blue); border-radius:10px; background:var(--blue-soft); color:var(--blue); padding:9px 11px; cursor:pointer; min-height:44px; }
   .plan button:focus-visible, .plan input:focus-visible, .plan select:focus-visible, .plan a:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
   .plan select { width:100%; padding:10px; border:1px solid var(--border); border-radius:10px; color:var(--text); background:var(--bg); min-height:44px; }
-  .plan-week-label { display:block; font-size:13px; margin-bottom:6px; }
+  .plan-week-label { display:block; font-size:13px; margin:14px 0 6px; }
   #plan-summary { font-size:14px; color:var(--sage); font-weight:600; }
   .plan-course { border-top:1px solid var(--border); padding:12px 0; }
   .plan-lessons { display:flex; flex-wrap:wrap; gap:8px; }
@@ -60,6 +60,27 @@
   #plan-carry details { border-top:1px solid var(--border); margin-top:16px; padding-top:12px; }
   #plan-carry summary { cursor:pointer; color:var(--red); padding:8px 0; font-size:14px; }
   #plan-error, #plan-week-error, #plan-status { color:var(--red); font-size:13px; }
+  #plan-date { color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; }
+  #plan-chart { margin-top:10px; }
+  .plan .chart-row { display:block; width:100%; min-height:44px; padding:7px 0; border:0; border-radius:6px; background:none; text-align:left; color:var(--text); }
+  .chart-label { display:flex; align-items:baseline; justify-content:space-between; gap:12px; font-size:13px; line-height:1.4; }
+  .chart-name { min-width:0; }
+  .chart-goal { color:var(--blue); font-size:12px; text-align:right; }
+  .chart-track { display:flex; gap:3px; height:6px; margin-top:6px; }
+  .chart-segment { flex:1; min-width:0; background:var(--border); border-radius:2px; }
+  .chart-segment.is-done { background:var(--sage); }
+  .chart-segment.is-goal { background:var(--blue); }
+  .chart-segment.is-goal.is-done { background:var(--sage); outline:1px solid var(--blue); outline-offset:1px; }
+  .chart-legend { display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin:10px 0 0; font-size:11px; color:var(--muted); }
+  .chart-legend span { display:inline-flex; align-items:center; gap:4px; }
+  .chart-legend i { display:inline-block; width:8px; height:6px; border-radius:2px; }
+  .legend-done { background:var(--sage); } .legend-goal { background:var(--blue); }
+  #plan-details > summary { min-height:44px; display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--blue); cursor:pointer; list-style:none; }
+  #plan-details > summary::-webkit-details-marker { display:none; }
+  #plan-details > summary::after { content:'＋'; font-size:16px; }
+  #plan-details[open] > summary::after { content:'−'; }
+  .plan-expanded { border-top:1px solid var(--border); padding-top:4px; }
+  #plan-status:empty { display:none; }
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; line-height:1.7; }
 </style>
 </head>
