@@ -132,18 +132,18 @@
   function loadWeather() {
     var city = sel.value, c = cities[city]; box.textContent = "天気を取得しています…";
     try { localStorage.setItem("hibiki-weather-city-v1", city); } catch (e) {}
-    var url = "https://api.open-meteo.com/v1/forecast?latitude="+c[0]+"&longitude="+c[1]+"&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone="+encodeURIComponent(c[2]);
+    var url = "https://api.open-meteo.com/v1/forecast?latitude="+c[0]+"&longitude="+c[1]+"&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone="+encodeURIComponent(c[2]);
     fetch(url).then(function(r){if(!r.ok)throw Error("network");return r.json();}).then(function(d){
       if (sel.value !== city) return;
       if (!d.current || !d.daily || !d.daily.temperature_2m_max) throw Error("data");
-      var w=desc(d.current.weather_code), temp=Math.round(d.current.temperature_2m);
+      var w=desc(d.current.weather_code), temp=Math.round(d.current.temperature_2m), feel=Math.round(d.current.apparent_temperature), wind=Math.round(d.current.wind_speed_10m);
       var hi=Math.round(d.daily.temperature_2m_max[0]),lo=Math.round(d.daily.temperature_2m_min[0]),rain=d.daily.precipitation_probability_max[0];
       box.textContent="";
       var line=document.createElement("div");line.className="weather-main";
       var icon=document.createElement("span");icon.className="weather-icon";icon.textContent=w[0];
       var degree=document.createElement("span");degree.className="weather-temp";degree.textContent=temp+"℃";
-      var label=document.createElement("span");label.textContent=w[1];line.append(icon,degree,label);
-      var detail=document.createElement("div");detail.className="weather-detail";detail.textContent="最高 "+hi+"℃ / 最低 "+lo+"℃ · 降水確率 "+(rain == null?"—":rain+"%");
+      var label=document.createElement("span");label.textContent=w[1];label.textContent=(rain>=50?"🌂 雨に注意 · ":"")+w[1];line.append(icon,degree,label);
+      var detail=document.createElement("div");detail.className="weather-detail";detail.textContent="雨 "+(rain == null?"—":rain+"%")+" · 体感 "+feel+"℃ · 風 "+wind+"km/h · 最高 "+hi+"℃ / 最低 "+lo+"℃";
       box.append(line,detail);
     }).catch(function(){if(sel.value===city)box.textContent="天気を取得できませんでした。地域を選び直すと再試行できます。";});
   }
