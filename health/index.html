@@ -49,6 +49,7 @@
   .g { display:flex; justify-content:space-between; align-items:baseline; font-size:14px; }
   .g b { font-size:17px; font-variant-numeric:tabular-nums; }
   .note { font-size:12px; color:var(--muted); margin:12px 0 0; }
+  .wx-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.wx-head select{max-width:130px;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font:inherit;font-size:13px}.wx-rain{font-size:21px;font-weight:700;line-height:1.5;margin:12px 0 5px}.wx-feel{font-size:15px;line-height:1.7;margin:5px 0}.wx-meta{font-size:13px;line-height:1.7;color:var(--muted);margin:7px 0 0}
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
 </style>
 </head>
@@ -57,6 +58,7 @@
   <div class="top"><a class="brand" href="../">← とわなにか</a><span class="date" id="date"></span></div>
   <h1>健康</h1>
 
+  <section class="card" aria-labelledby="wx-title"><div class="wx-head"><strong id="wx-title">今日の天気と体感</strong><select id="wx-city" aria-label="天気の地域"><option value="seoul">ソウル</option><option value="tokyo">東京</option><option value="osaka">大阪</option><option value="busan">釜山</option></select></div><div id="wx-result" role="status" aria-live="polite">天気を読み込んでいます…</div><p class="wx-meta">Open-Meteo の予報。体感は目安です。GPSは使いません。</p></section>
   <section class="card">
     <p class="label"><span>今日（タップで記録）</span><b id="count"></b></p>
     <div class="today" id="today"></div>
@@ -88,6 +90,31 @@
 </main>
 
 <script>
+(function(){
+  var cities={seoul:[37.5665,126.978,"Asia/Seoul"],tokyo:[35.6762,139.6503,"Asia/Tokyo"],osaka:[34.6937,135.5023,"Asia/Tokyo"],busan:[35.1796,129.0756,"Asia/Seoul"]};
+  var sel=document.getElementById("wx-city"),out=document.getElementById("wx-result");
+  try{var saved=localStorage.getItem("hibiki-weather-city-v1");if(cities[saved])sel.value=saved;}catch(e){}
+  function show(){
+    var city=sel.value,c=cities[city];out.textContent="天気を読み込んでいます…";
+    try{localStorage.setItem("hibiki-weather-city-v1",city);}catch(e){}
+    var url="https://api.open-meteo.com/v1/forecast?latitude="+c[0]+"&longitude="+c[1]+"&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&hourly=precipitation_probability&daily=precipitation_probability_max,temperature_2m_max,temperature_2m_min&forecast_days=2&timezone="+encodeURIComponent(c[2]);
+    fetch(url).then(function(r){if(!r.ok)throw Error("network");return r.json();}).then(function(d){
+      if(sel.value!==city)return;
+      if(!d.current||!d.daily||!d.hourly)throw Error("data");
+      var time=d.current.time.slice(0,13),values=[];
+      d.hourly.time.forEach(function(t,i){if(t>=time&&t<d.hourly.time[Math.min(d.hourly.time.length-1,d.hourly.time.indexOf(time+":00")+12)])values.push(d.hourly.precipitation_probability[i]);});
+      var near=values.length?Math.max.apply(null,values):null,day=d.daily.precipitation_probability_max[0];
+      var rainy=d.current.weather_code>=51&&d.current.weather_code<=99;
+      var rain=rainy?"☔ 今は雨・雪の可能性":near>=70?"☔ この先は雨に注意":near>=40?"🌂 傘を持つと安心":near>=20?"🌥️ 雨の可能性は低め":"☀️ 雨の心配は小さめ";
+      var temp=Math.round(d.current.temperature_2m),feel=Math.round(d.current.apparent_temperature),wind=d.current.wind_speed_10m;
+      var sense=feel<=5?"かなり寒い体感":feel<=12?"肌寒い体感":feel<=18?"少しひんやりする体感":feel<=25?"過ごしやすい体感":"暑く感じそう";
+      var windNote=wind>=25?"風が強く、体感が下がりそう":wind>=10?"風があると寒く感じやすい":wind>=4?"少し風がある":"風は穏やか";
+      out.textContent="";
+      [["wx-rain",rain],["wx-feel",sense+"。"+windNote+"。"],["wx-meta","気温 "+temp+"℃ · 体感 "+feel+"℃ · 風速 "+Math.round(wind)+"km/h"],["wx-meta","今後約12時間の最大降水確率 "+(near==null?"—":near+"%")+" · 今日の最大 "+(day==null?"—":day+"%")],["wx-meta","最高 "+Math.round(d.daily.temperature_2m_max[0])+"℃ / 最低 "+Math.round(d.daily.temperature_2m_min[0])+"℃"]].forEach(function(row){var p=document.createElement("p");p.className=row[0];p.textContent=row[1];out.appendChild(p);});
+    }).catch(function(){if(sel.value===city)out.textContent="天気を取得できませんでした。地域を選び直すと再試行できます。";});
+  }
+  sel.addEventListener("change",show);show();
+})();
 var HABITS = [
   { k: "sleep", s: "睡眠", name: "よく寝た", sub: "7時間以上", ic: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>' },
   { k: "walk", s: "歩く",  name: "歩いた",   sub: "7,000歩",   ic: '<circle cx="13" cy="4" r="2"/><path d="M10 21l2-6-2-3 2-4 3 3h3M8 12l2-4"/>' },
