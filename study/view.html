@@ -248,12 +248,13 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   // 上級マクロ経済論は 8〜15講をならべて、となりの講へ行けるようにする
   var SERIES = { macro: { 8:"消費", 9:"投資", 10:"労働", 11:"お金", 12:"一般均衡", 13:"均衡の波", 14:"不均衡の波", 15:"成長" }, tradition: { 7:"食の暮らし", 8:"訴え状" } };
   SERIES.money = { 8:"お金の増える仕組み", 9:"お金の増え方" };
-  var mm = n.match(/^(macro|tradition|money)(\d+)$/);
+  SERIES.religion = { 8:"仏教", 9:"ジャイナ教・シク教・バハイ信仰" };
+  var mm = n.match(/^(macro|tradition|money|religion)(\d+)$/);
   if (mm) { var LEC = SERIES[mm[1]], row = document.createElement("div"); row.className = "toc lec";
     row.innerHTML = Object.keys(LEC).map(function (k) { return '<a href="?n=' + mm[1] + k + '"' + (+k === +mm[2] ? ' aria-current="page"' : "") + '>' + k + '講 ' + LEC[k] + '</a>'; }).join("");
     doc.insertBefore(row, doc.firstChild); }
   // ゲーム（サイトの中で遊べる4択。問題は games/<科目>.json）
-  if (mm && mm[1] !== "money") fetch("games/" + mm[1] + ".json", { cache:"no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (G) {
+  if (mm && /^(macro|tradition)$/.test(mm[1])) fetch("games/" + mm[1] + ".json", { cache:"no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (G) {
     var list = G && G[mm[2]]; if (!list || !list.length) return;
     var DIRS = ["ふえる・上がる ↑", "へる・下がる ↓", "変わらない →", "どちらもある ？"], XK = "hibiki-" + mm[1] + "-xp", xp = 0;
     try { xp = +localStorage.getItem(XK) || 0; } catch (e) {}
