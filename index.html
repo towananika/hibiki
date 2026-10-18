@@ -43,6 +43,13 @@
   .more .ic { background:var(--blue-soft); } .more svg { stroke:var(--blue); }
   #pri { background:var(--wood); color:#fff; border-radius:20px; padding:16px 18px; text-decoration:none; margin:14px 0 0; }
   #pri small { opacity:.85; font-size:12px; } #pri b { display:block; font-size:20px; margin:2px 0; } #pri span { font-size:13px; opacity:.95; }
+  .quick-title { font-size:13px; font-weight:600; color:var(--muted); margin:20px 4px 8px; letter-spacing:.05em; }
+  .quick-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+  .quick-link { display:flex; flex-direction:column; gap:4px; padding:14px; min-height:92px; border-radius:16px; border:1px solid var(--border); background:var(--surface); color:var(--text); text-decoration:none; }
+  .quick-link strong { font-size:16px; }
+  .quick-link span { color:var(--muted); font-size:12px; line-height:1.5; }
+  .quick-link:focus-visible { outline:2px solid var(--blue); outline-offset:2px; }
+  @media (hover:hover) { .quick-link:hover { border-color:var(--wood); } }
   [hidden] { display:none !important; }
   .site-search { margin-top:20px; }
   .site-search label { display:block; font-size:13px; color:var(--muted); margin-bottom:7px; }
@@ -71,6 +78,15 @@
   <p id="search-status" role="status" aria-live="polite" aria-atomic="true"></p>
   <div id="search-results" aria-label="検索結果" hidden></div>
   <div id="priority-slot"><a id="pri" href="priority/" style="display:none"></a></div>
+  <section aria-label="今日の入口">
+    <h2 class="quick-title">今日の入口</h2>
+    <nav class="quick-grid" aria-label="よく使うページ">
+      <a class="quick-link" href="health/"><strong>健康</strong><span>今日の体調を確認</span></a>
+      <a class="quick-link" href="sleep/"><strong>睡眠</strong><span>寝る・起きたを記録</span></a>
+      <a class="quick-link" href="dreams/"><strong>夢日記</strong><span>思いつきを1行残す</span></a>
+      <a class="quick-link" href="study/"><strong>勉強</strong><span>続きから学ぶ</span></a>
+    </nav>
+  </section>
   <div id="menu"></div>
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
