@@ -24,7 +24,7 @@
     if (key === 'dig') return n >= 7 && n <= 15 ? 'view.html?n=ch' + n : 'digital.html#c' + (n - 1);
     if (key === 'macro' && n >= 8 && n <= 15) return 'view.html?n=macro' + n;
     if (key === 'trad' && n === 7) return 'view.html?n=tradition7';
-    if (key === 'money' && n === 8) return 'view.html?n=money8';
+    if (key === 'money' && n >= 8 && n <= 9) return 'view.html?n=money' + n;
     if (key === 'open' && n === 8) return 'view.html?n=open8';
     if (key === 'rel' && n === 8) return 'view.html?n=religion8';
     return '';
