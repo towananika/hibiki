@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>首都圏・暮らしの経済価値 — とわなにか</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzxG2gQ6GQzvMZkLhK3vP4bU=" crossorigin="">
+<style>
+:root{--bg:#f5f1e9;--surface:#fbf9f4;--text:#2b2924;--muted:#736c60;--border:#ded6c8}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--surface:#242119;--text:#ede8dd;--muted:#b5a997;--border:#484034}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:760px;margin:auto;padding:20px 14px 40px}a{color:inherit}h1{font-size:23px;margin:12px 0 3px}p{margin:6px 0 12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:17px;padding:14px;margin:12px 0}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}label{font-size:12px;color:var(--muted);display:block}select,input{width:100%;min-height:40px;font:inherit;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:9px;padding:7px}
+#map{height: min(64vh,560px);min-height:360px;border-radius:15px;overflow:hidden;background:#ddd}
+.legend{display:flex;gap:3px;margin:10px 0 2px}.legend span{flex:1;height:12px;border-radius:2px}.legend-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+.note{font-size:12px;color:var(--muted)}#detail{min-height:60px}button{font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:9px;border-radius:9px}
+@media(max-width:390px){.controls{grid-template-columns:1fr}}
+</style></head><body><main>
+<a href="../">← とわなにか</a><h1>首都圏・暮らしの経済価値</h1>
+<p class="note">ソウル通勤を想定。緑は経済的余力が大きい地域、赤は小さい地域。データ不足は必ず灰色です。</p>
+<section class="card controls">
+<div><label for="metric">評価項目</label><select id="metric"><option value="net">総合的な経済余力</option><option value="housing">住居費の負担</option><option value="commute">通勤の時間・交通費</option><option value="jobs">就業機会へのアクセス</option></select></div>
+<div><label for="office">通勤先</label><select id="office"><option value="central">光化門・市庁</option><option value="gangnam">江南</option><option value="yeouido">汝矣島</option><option value="gasan">九老・加山</option></select></div>
+<div><label for="income">月間手取り収入（万₩）</label><input id="income" type="number" min="0" value="350"></div>
+<div><label for="hour">時間の価値（₩/時）</label><input id="hour" type="number" min="0" value="12000"></div>
+</section>
+<div id="map" aria-label="首都圏の地図"></div>
+<div class="legend"><span style="background:#bd5a57"></span><span style="background:#e4a277"></span><span style="background:#e5d8a5"></span><span style="background:#a5cba9"></span><span style="background:#468c65"></span><span style="background:#929292"></span></div>
+<div class="legend-label"><span>余裕が少ない</span><span>余裕が大きい</span><span>灰色：データなし</span></div>
+<section class="card" id="detail" aria-live="polite">地域をタップすると、根拠となる数値を表示します。</section>
+<section class="card"><b>地域データを読み込む</b><p class="note">GeoJSON（行政洞・法定洞・駅徒歩圏などの境界）を選択。読み込んだデータはこの端末の画面内だけで扱い、公開リポジトリには保存しません。</p>
+<input id="geo" type="file" accept=".geojson,.json,application/geo+json,application/json">
+<p id="status" class="note">境界・住居費・通勤時間・求人データは未接続です。現在、未評価地域は灰色として扱います。数値は推測で補いません。</p>
+<p class="note">GeoJSONの各feature.propertiesに name と、評価に応じて rent_manwon, transport_manwon, commute_minutes, job_access_score を設定します。通勤先別は commute_minutes_central / _gangnam / _yeouido / _gasan が優先されます。月22日通勤、往復時間を計算。総合評価には住居費・交通費・通勤時間の全項目が必要です。求人アクセスは独立指標で、総合純便益には混ぜません。</p></section>
+<p class="note">注意：この地図は分析基盤です。実測データのない地域に緑・赤を割り当てません。色の区切りは比較用の暫定値であり、豊かさや就職成功を保証するものではありません。地図背景：© OpenStreetMap contributors。</p>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+(function(){
+var status=document.getElementById('status'), detail=document.getElementById('detail');
+if(!window.L){status.textContent='地図ライブラリを読み込めませんでした。ネットワークを確認してください。';return;}
+var map=L.map('map',{zoomControl:true}).setView([37.49,126.99],9);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap contributors'}).addTo(map);
+var geoLayer=null, features=null;
+var colors=['#bd5a57','#e4a277','#e5d8a5','#a5cba9','#468c65'];
+function numeric(p,key){var v=p[key];return v!==null&&v!==undefined&&v!==''&&Number.isFinite(Number(v))?Number(v):null;}
+function evaluation(p){
+var metric=document.getElementById('metric').value,office=document.getElementById('office').value;
+var rent=numeric(p,'rent_manwon'),fare=numeric(p,'transport_manwon'),mins=numeric(p,'commute_minutes_'+office);
+if(mins===null)mins=numeric(p,'commute_minutes');
+var jobs=numeric(p,'job_access_score'),income=Number(document.getElementById('income').value),hour=Number(document.getElementById('hour').value);
+var time=mins===null?null:mins*2*22/60*hour/10000;
+var value=metric==='housing'?(rent===null?null:-rent):metric==='commute'?(time===null||fare===null?null:-(time+fare)):metric==='jobs'?jobs:(rent===null||fare===null||time===null?null:income-rent-fare-time);
+var breaks=metric==='housing'?[-150,-110,-80,-55]:metric==='commute'?[-90,-65,-45,-25]:metric==='jobs'?[20,40,60,80]:[100,150,200,250];
+var rank=value===null?null:breaks.reduce(function(n,b){return n+(value>=b?1:0);},0);
+return {rank:rank,value:value,rent:rent,fare:fare,mins:mins,time:time,jobs:jobs};
+}
+function draw(){
+if(!features)return;
+if(geoLayer)map.removeLayer(geoLayer);
+geoLayer=L.geoJSON(features,{style:function(f){var e=evaluation(f.properties||{});return {color:'#fff',weight:0.65,fillColor:e.rank===null?'#929292':colors[e.rank],fillOpacity:0.66};},onEachFeature:function(f,l){
+l.on('click',function(){var p=f.properties||{},e=evaluation(p),name=String(p.name||p.adm_nm||p.EMD_KOR_NM||'名称未設定');
+detail.textContent='';
+var title=document.createElement('b');title.textContent=name;detail.appendChild(title);
+var lines=e.rank===null?['評価：データ不足（灰色）']:['評価：5段階中 '+(e.rank+1),'指標値：'+Math.round(e.value*10)/10];
+[['住居費',e.rent,'万₩/月'],['交通費',e.fare,'万₩/月'],['片道通勤',e.mins,'分'],['時間費用',e.time,'万₩/月'],['求人アクセス指標',e.jobs,'点']].forEach(function(v){lines.push(v[0]+'：'+(v[1]===null?'未取得':(Math.round(v[1]*10)/10)+v[2]));});
+lines.forEach(function(s){var p=document.createElement('p');p.className='note';p.textContent=s;detail.appendChild(p);});
+});}});
+}
+['metric','office','income','hour'].forEach(function(id){document.getElementById(id).addEventListener('change',draw);});
+document.getElementById('geo').addEventListener('change',function(ev){
+var file=ev.target.files&&ev.target.files[0];if(!file)return;
+if(file.size>15000000){status.textContent='15MB以下のGeoJSONを選んでください。';return;}
+file.text().then(function(s){var obj=JSON.parse(s);if(!obj||!['FeatureCollection','Feature'].includes(obj.type))throw Error('GeoJSON形式ではありません');
+features=obj;draw();if(geoLayer&&geoLayer.getBounds().isValid())map.fitBounds(geoLayer.getBounds(),{padding:[12,12]});
+var count=obj.type==='FeatureCollection'?obj.features.length:1;status.textContent=count+'地域を読み込みました。必要な値が欠ける地域は灰色です。';
+}).catch(function(){status.textContent='読み込みに失敗しました。GeoJSON形式を確認してください。';});
+});
+})();
+</script></body></html>
