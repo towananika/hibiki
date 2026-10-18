@@ -13,24 +13,58 @@ main{max-width:760px;margin:auto;padding:20px 14px 40px}a{color:inherit}h1{font-
 .legend{display:flex;gap:3px;margin:10px 0 2px}.legend span{flex:1;height:12px;border-radius:2px}.legend-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
 .note{font-size:12px;color:var(--muted)}#detail{min-height:60px}button{font:inherit;border:1px solid var(--border);background:var(--surface);color:var(--text);padding:9px;border-radius:9px}
 @media(max-width:390px){.controls{grid-template-columns:1fr}}
+
+/* Full-screen map app layout */
+html,body{height:100%;overflow:hidden}
+body{background:#e9ebe8}
+main{position:relative;max-width:none;width:100%;height:100dvh;padding:0;margin:0;overflow:hidden}
+#map{position:absolute;inset:0;width:100%;height:100%;min-height:0;border-radius:0;z-index:0;background:#dce3dc}
+.leaflet-container{font-family:inherit}
+.app-top{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:500;pointer-events:none;padding:12px;display:flex;justify-content:center}
+.app-top-inner{width:min(100%,520px);pointer-events:auto;background:rgba(251,249,244,.96);border:1px solid rgba(120,120,110,.16);box-shadow:0 3px 20px #0002;border-radius:18px;padding:11px 13px}
+.app-heading{display:flex;align-items:center;gap:9px}
+.app-heading a{font-size:19px;text-decoration:none;line-height:1}
+.app-heading h1{font-size:16px;margin:0;flex:1}
+.app-heading .info{font-size:11px;color:#756e62}
+.app-top .controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.app-top label{font-size:10px}
+.app-top select{min-height:35px;padding:4px 7px;font-size:13px;background:#f5f1e9}
+.app-top .advanced{display:none}
+.app-top details[open] .advanced{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.app-top details summary{font-size:11px;color:#736c60;cursor:pointer;list-style:none;margin-top:5px}
+.app-top details summary:after{content:" ⚙"}
+.app-bottom{position:absolute;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);left:12px;right:12px;z-index:500;display:grid;justify-items:center;gap:8px;pointer-events:none}
+.app-bottom>*{pointer-events:auto;width:min(100%,520px)}
+.app-bottom .legend-wrap{background:rgba(251,249,244,.97);border-radius:13px;padding:8px 12px;box-shadow:0 2px 14px #0002}
+.app-bottom .legend{margin:0;gap:3px}.app-bottom .legend span{height:9px}
+.app-bottom .legend-label{margin-top:3px;font-size:10px}
+#detail{margin:0;max-height:22vh;overflow:auto;padding:10px 12px;font-size:12px;box-shadow:0 2px 14px #0002}
+#detail p{display:inline-block;margin:2px 9px 2px 0;font-size:11px}
+.data-panel{margin:0}
+.data-panel summary{cursor:pointer;font-size:12px;font-weight:600}
+.data-panel .card{margin:5px 0 0;max-height:24vh;overflow:auto;font-size:12px;padding:10px}
+.data-panel .note{font-size:11px}
+#geo{font-size:12px;min-height:35px}
+.leaflet-top.leaflet-left{top:145px}
+@media(max-width:390px){.app-top .controls{grid-template-columns:1fr 1fr}}
 </style></head><body><main>
-<a href="../">← とわなにか</a><h1>首都圏・暮らしの経済価値</h1>
-<p class="note">ソウル通勤を想定。緑は経済的余力が大きい地域、赤は小さい地域。データ不足は必ず灰色です。</p>
-<section class="card controls">
-<div><label for="metric">評価項目</label><select id="metric"><option value="net">総合的な経済余力</option><option value="housing">住居費の負担</option><option value="commute">通勤の時間・交通費</option><option value="jobs">就業機会へのアクセス</option></select></div>
-<div><label for="office">通勤先</label><select id="office"><option value="central">光化門・市庁</option><option value="gangnam">江南</option><option value="yeouido">汝矣島</option><option value="gasan">九老・加山</option></select></div>
-<div><label for="income">月間手取り収入（万₩）</label><input id="income" type="number" min="0" value="350"></div>
-<div><label for="hour">時間の価値（₩/時）</label><input id="hour" type="number" min="0" value="12000"></div>
-</section>
 <div id="map" aria-label="首都圏の地図"></div>
-<div class="legend"><span style="background:#bd5a57"></span><span style="background:#e4a277"></span><span style="background:#e5d8a5"></span><span style="background:#a5cba9"></span><span style="background:#468c65"></span><span style="background:#929292"></span></div>
-<div class="legend-label"><span>余裕が少ない</span><span>余裕が大きい</span><span>灰色：データなし</span></div>
-<section class="card" id="detail" aria-live="polite">地域をタップすると、根拠となる数値を表示します。</section>
-<section class="card"><b>地域データを読み込む</b><p class="note">GeoJSON（行政洞・法定洞・駅徒歩圏などの境界）を選択。読み込んだデータはこの端末の画面内だけで扱い、公開リポジトリには保存しません。</p>
-<input id="geo" type="file" accept=".geojson,.json,application/geo+json,application/json">
-<p id="status" class="note">境界・住居費・通勤時間・求人データは未接続です。現在、未評価地域は灰色として扱います。数値は推測で補いません。</p>
-<p class="note">GeoJSONの各feature.propertiesに name と、評価に応じて rent_manwon, transport_manwon, commute_minutes, job_access_score を設定します。通勤先別は commute_minutes_central / _gangnam / _yeouido / _gasan が優先されます。月22日通勤、往復時間を計算。総合評価には住居費・交通費・通勤時間の全項目が必要です。求人アクセスは独立指標で、総合純便益には混ぜません。</p></section>
-<p class="note">注意：この地図は分析基盤です。実測データのない地域に緑・赤を割り当てません。色の区切りは比較用の暫定値であり、豊かさや就職成功を保証するものではありません。地図背景：© OpenStreetMap contributors。</p>
+<header class="app-top"><div class="app-top-inner">
+<div class="app-heading"><a href="../" aria-label="戻る">‹</a><h1>首都圏・暮らしの経済価値</h1><span class="info">● 未集計</span></div>
+<div class="controls">
+<div><label for="metric">表示</label><select id="metric"><option value="net">経済的な余裕</option><option value="housing">住居費</option><option value="commute">通勤負担</option><option value="jobs">仕事へのアクセス</option></select></div>
+<div><label for="office">通勤先</label><select id="office"><option value="central">光化門・市庁</option><option value="gangnam">江南</option><option value="yeouido">汝矣島</option><option value="gasan">九老・加山</option></select></div>
+</div>
+<details><summary>計算条件を調整</summary><div class="advanced">
+<div><label for="income">手取り（月・万₩）</label><input id="income" type="number" min="0" value="350"></div>
+<div><label for="hour">時間価値（₩/時）</label><input id="hour" type="number" min="0" value="12000"></div>
+</div></details>
+</div></header>
+<div class="app-bottom">
+<div class="legend-wrap"><div class="legend"><span style="background:#bd5a57"></span><span style="background:#e4a277"></span><span style="background:#e5d8a5"></span><span style="background:#a5cba9"></span><span style="background:#468c65"></span><span style="background:#929292"></span></div><div class="legend-label"><span>余裕が少ない</span><span>余裕が大きい</span><span>灰色：データなし</span></div></div>
+<section class="card" id="detail" aria-live="polite">地域をタップすると内訳を表示します。実データ未接続のため、現時点では評価を表示しません。</section>
+<details class="data-panel"><summary class="card" style="text-align:center">データを読み込む・説明を見る</summary><section class="card"><input id="geo" type="file" accept=".geojson,.json,application/geo+json,application/json"><p id="status" class="note">地域別の実データは未接続です。未評価は灰色にします。</p><p class="note">GeoJSONの properties に name、rent_manwon、transport_manwon、commute_minutes、job_access_score を指定。通勤先別は commute_minutes_central / _gangnam / _yeouido / _gasan を優先します。月22日・往復で計算。全項目が揃わない総合評価は灰色。求人アクセスは独立指標です。</p><p class="note">地図 © OpenStreetMap contributors。色は計算条件に依存し、実際の豊かさを保証しません。</p></section></details>
+</div>
 </main>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <script>
