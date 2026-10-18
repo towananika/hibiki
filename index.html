@@ -57,6 +57,17 @@
   .search-result { display:block; padding:14px; margin-top:8px; border:1px solid var(--border); border-radius:13px; background:var(--surface); color:var(--text); text-decoration:none; overflow-wrap:anywhere; }
   .search-result strong { display:block; font-size:16px; line-height:1.5; }
   .search-result span { display:block; margin-top:5px; font-size:13px; line-height:1.7; color:var(--muted); }
+  .intent-panel { margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:20px; background:var(--surface); }
+  .intent-panel h2 { margin:0 0 4px; font-size:18px; }
+  .intent-hint { margin:0 0 12px; color:var(--muted); font-size:13px; }
+  .intent-tabs { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+  .intent-tab { min-height:64px; padding:12px; border-radius:13px; border:1px solid var(--border); background:var(--bg); color:var(--text); text-align:left; font:inherit; font-weight:600; cursor:pointer; }
+  .intent-tab[aria-pressed="true"] { border:2px solid var(--sage); background:var(--sage-soft); }
+  .intent-tab:focus-visible, .intent-link:focus-visible, #all-toggle:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+  .intent-links { display:grid; gap:8px; margin-top:14px; }
+  .intent-link { display:flex; justify-content:space-between; gap:8px; padding:12px 14px; border-radius:12px; background:var(--bg); color:var(--text); text-decoration:none; font-size:15px; }
+  .intent-link span { color:var(--muted); }
+  .all-toggle { display:block; width:100%; margin:20px 0 4px; padding:13px; border:1px solid var(--border); border-radius:13px; background:var(--surface); color:var(--text); font:inherit; font-weight:600; cursor:pointer; text-align:left; }
   footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
 </style>
 </head>
@@ -64,6 +75,17 @@
 <main>
   <h1>とわなにか</h1>
   <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
+  <section class="intent-panel" aria-labelledby="intent-title">
+    <h2 id="intent-title">今日は何をしたい？</h2>
+    <p class="intent-hint">目的を選ぶと、必要な入口だけが出てきます。</p>
+    <div class="intent-tabs" role="group" aria-label="今日の目的">
+      <button type="button" class="intent-tab" data-intent="record" aria-pressed="true">✎ 記録する</button>
+      <button type="button" class="intent-tab" data-intent="review" aria-pressed="false">◷ 振り返る</button>
+      <button type="button" class="intent-tab" data-intent="think" aria-pressed="false">◇ 考える</button>
+      <button type="button" class="intent-tab" data-intent="rest" aria-pressed="false">☾ ひと休み</button>
+    </div>
+    <nav id="intent-links" class="intent-links" aria-label="目的に合わせたページ"></nav>
+  </section>
   <form id="site-search" class="site-search" role="search">
     <label for="site-query">ページ・教材を探す</label>
     <div class="search-field"><input id="site-query" type="search" placeholder="例：睡眠、生活費、仏教" autocomplete="off" aria-controls="search-results"><button id="search-clear" type="button" hidden>消す</button><button type="submit">検索</button></div>
@@ -71,7 +93,8 @@
   <p id="search-status" role="status" aria-live="polite" aria-atomic="true"></p>
   <div id="search-results" aria-label="検索結果" hidden></div>
   <div id="priority-slot"><a id="pri" href="priority/" style="display:none"></a></div>
-  <div id="menu"></div>
+  <button id="all-toggle" class="all-toggle" type="button" aria-expanded="false" aria-controls="menu">すべての機能を見る　⌄</button>
+  <div id="menu" hidden></div>
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
 <script>
@@ -97,6 +120,38 @@ var GROUPS = [
   { n: "道具", pages: [
     { key: "more", name: "道具箱", note: "間合い：計算ツール", href: "../tool/", icon: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18"/>' } ]}
 ];
+// ▲
+var INTENTS = {
+  record: ["health/", "sleep/", "money/budget.html", "dreams/"],
+  review: ["health/", "money/vehicle.html", "money/budget.html", "timeline/"],
+  think: ["priority/", "study/", "money/", "about/"],
+  rest: ["sleep/", "dreams/", "relations/"]
+};
+function renderIntent(kind) {
+  var pages = GROUPS.reduce(function (all, group) { return all.concat(group.pages); }, []);
+  var root = document.getElementById("intent-links"); root.textContent = "";
+  INTENTS[kind].forEach(function (href) {
+    var p = pages.filter(function (v) { return v.href === href; })[0];
+    var a = document.createElement("a"); a.className = "intent-link"; a.href = href;
+    a.textContent = p ? p.name : "いま、これを";
+    var arrow = document.createElement("span"); arrow.textContent = "›"; a.appendChild(arrow); root.appendChild(a);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll(".intent-tab"), function (b) {
+    b.setAttribute("aria-pressed", String(b.getAttribute("data-intent") === kind));
+  });
+  try { localStorage.setItem("hibiki-home-intent-v1", kind); } catch (e) {}
+}
+Array.prototype.forEach.call(document.querySelectorAll(".intent-tab"), function (b) {
+  b.addEventListener("click", function () { renderIntent(b.getAttribute("data-intent")); });
+});
+var initialIntent = "record";
+try { var savedIntent = localStorage.getItem("hibiki-home-intent-v1"); if (INTENTS[savedIntent]) initialIntent = savedIntent; } catch (e) {}
+renderIntent(initialIntent);
+document.getElementById("all-toggle").addEventListener("click", function () {
+  var menu = document.getElementById("menu"), expanded = this.getAttribute("aria-expanded") === "true";
+  menu.hidden = expanded; this.setAttribute("aria-expanded", String(!expanded));
+  this.textContent = expanded ? "すべての機能を見る　⌄" : "すべての機能を閉じる　⌃";
+});
 // ▲
 var NOW = Date.now();
 document.getElementById("menu").innerHTML = GROUPS.map(function (g) {
