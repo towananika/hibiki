@@ -93,6 +93,18 @@
     <div class="note">購入費は、使う年数で割って「月割り」にします。</div>
   </div>
 
+  <div class="card">
+    <h2>年間保険料</h2>
+    <p class="note">契約期間で月額換算します。金額は端末の記録に保存します。</p>
+    <div class="grid2">
+      <label>支払額（ウォン）<input id="insurance-amount" type="number" min="0" step="1"></label>
+      <label>保険開始日<input id="insurance-start" type="date"></label>
+      <label>契約期間（か月）<input id="insurance-months" type="number" min="1" max="120" value="12"></label>
+    </div>
+    <div class="kv"><span>月額換算</span><b id="insurance-monthly">—</b></div>
+    <button class="main" type="button" id="insurance-save">保険料を保存</button>
+    <span id="insurance-status" class="note" role="status"></span>
+  </div>
   <div class="card" id="list"></div>
 </main>
 <script>
@@ -103,6 +115,26 @@
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.recs) return s; } catch (e) {} return { purchase: 0, bought: "", years: 5, km: 0, recs: [] }; }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   var S = load(), editing;
+  function insuranceMonthly() {
+    var i = S.insurance;
+    return i && i.amount >= 0 && i.months > 0 ? i.amount / i.months : 0;
+  }
+  function insuranceSettings() {
+    var i = S.insurance || {};
+    var a = document.getElementById("insurance-amount"), d = document.getElementById("insurance-start"), m = document.getElementById("insurance-months");
+    a.value = i.amount == null ? "" : i.amount;
+    d.value = i.start || "";
+    m.value = i.months || 12;
+    document.getElementById("insurance-monthly").textContent = i.amount == null ? "—" : won(insuranceMonthly());
+    document.getElementById("insurance-save").onclick = function () {
+      if (!a.value || !d.value || !m.value || +a.value < 0 || +m.value < 1 || +m.value > 120) {
+        document.getElementById("insurance-status").textContent = "金額・開始日・期間を確認してください。";
+        return;
+      }
+      S.insurance = { amount: Math.round(+a.value), start: d.value, months: Math.round(+m.value) };
+      save(); render(); document.getElementById("insurance-status").textContent = "保存しました。";
+    };
+  }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
   function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
   function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
@@ -116,14 +148,14 @@
   function calc() {
     var m = months(), rec = S.recs.reduce(function (t, r) { return t + (+r.amt || 0); }, 0);
     var per = S.years > 0 ? (+S.purchase || 0) / (S.years * 12) : 0;
-    var real = m ? rec / m : 0;
+    var real = m ? rec / m : 0, insurance = insuranceMonthly();
     var life = m ? (real + per) * m : 0;
-    return { m: m, rec: rec, real: real, per: per, total: real + per, perKm: S.km > 0 && life ? life / S.km : 0, yearKm: S.km > 0 && m ? S.km / (m / 12) : 0 };
+    return { m: m, rec: rec, real: real, insurance: insurance, per: per, total: real + per + insurance, perKm: S.km > 0 && life ? life / S.km : 0, yearKm: S.km > 0 && m ? S.km / (m / 12) : 0 };
   }
   function summary() {
     var c = calc(), kv = document.getElementById("kv"); kv.textContent = "";
     document.getElementById("mt").textContent = c.m || S.purchase ? won(c.total) : "—";
-    [["記録した費用の合計", won(c.rec)], ["記録の期間", c.m ? (Math.round(c.m * 10) / 10) + " か月" : "—"], ["実費の月平均（チャージ・点検・修理）", c.m ? won(c.real) : "—"], ["購入費の月割り", won(c.per)], ["1kmあたりの費用", c.perKm ? won(c.perKm) : "走行距離と買った日を入れる"], ["1年あたりの走行", c.yearKm ? Math.round(c.yearKm).toLocaleString("ja-JP") + " km" : "—"]].forEach(function (p) {
+    [["記録した費用の合計", won(c.rec)], ["記録の期間", c.m ? (Math.round(c.m * 10) / 10) + " か月" : "—"], ["実費の月平均（チャージ・点検・修理）", c.m ? won(c.real) : "—"], ["購入費の月割り", won(c.per)], ["保険料の月割り", won(c.insurance)], ["1kmあたりの費用", c.perKm ? won(c.perKm) : "走行距離と買った日を入れる"], ["1年あたりの走行", c.yearKm ? Math.round(c.yearKm).toLocaleString("ja-JP") + " km" : "—"]].forEach(function (p) {
       var r = el("div", "kv"); r.appendChild(el("span", null, p[0])); r.appendChild(el("b", null, p[1])); kv.appendChild(r);
     });
     var note = "";
@@ -172,7 +204,7 @@
       acts.appendChild(e); acts.appendChild(x); row.appendChild(acts); root.appendChild(row);
     });
   }
-  function render() { summary(); list(); }
+  function render() { summary(); insuranceSettings(); list(); }
   document.getElementById("apply").onclick = function () {
     var c = calc(), msg = document.getElementById("an");
     try {
