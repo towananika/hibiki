@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>勉強ノート — とわなにか</title>
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="practice.css">
 <script src="../sync.js"></script>
 <meta name="theme-color" content="#5b7a99">
 <style>
@@ -99,6 +100,8 @@
   <div class="top"><a href="../">とわなにか</a><span class="fz"><button id="fm" aria-label="文字を小さく">A−</button><button id="fp" aria-label="文字を大きく">A＋</button></span><a id="bk" href="./">‹ 勉強</a></div>
   <div id="doc"><p class="err">読みこみ中…</p></div>
 </main>
+<script src="practice-state.js"></script>
+<script src="practice.js"></script>
 <script>
 (function () {
   var KS = [0.9, 1, 1.15, 1.3, 1.5], KEY = "hibiki-view-k", i = 1;
@@ -204,11 +207,14 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     (sec || doc).appendChild(el);
   });
   var t = doc.querySelector(".toc"); if (t) t.innerHTML = toc.join("");
+  window.dispatchEvent(new Event("studylessonready"));
   // 動画を確認できていない場合も、未確認の動画を推薦せずテーマ検索へ案内する。
   var title = doc.querySelector("h1");
   var subject = title ? title.textContent.replace(/\s*\d+講.*$/, "").trim() : "";
   var blockchainTopics = ["ブロックチェーン 台帳 信頼", "ブロックチェーン ハッシュ 電子署名", "ブロックチェーン 合意形成 PoW PoS", "ブロックチェーン 許可型 パブリック型", "ブロックチェーン オラクル問題 入力情報 真偽", "スマートコントラクト 仕組み", "CBDC 銀行預金 暗号資産 違い"];
-  Array.prototype.forEach.call(doc.querySelectorAll("section"), function (section, index) {
+  Array.prototype.filter.call(doc.querySelectorAll("section"), function (section) {
+    return !section.matches('.practice-panel,.practice-result,.practice-review');
+  }).forEach(function (section, index) {
     var heading = section.querySelector("h2");
     if (!heading) return;
     var topic = heading.textContent.replace(/^\d+[.．、]\s*/, "").trim();
@@ -261,6 +267,7 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
       area.innerHTML = "<div class='from'>" + esc(it[0]) + "</div><div class='what'>" + esc(it[1]) + "</div><div class='ch4'>" + ch.map(function (c, k) { return "<button type='button' data-k='" + k + "'>" + esc(c) + "</button>"; }).join("") + "</div>";
       area.querySelectorAll(".ch4 button").forEach(function (b) { b.onclick = function () {
         var right = +b.dataset.k === it[2];
+        if (window.StudyPractice) StudyPractice.feedback(right);
         area.querySelectorAll(".ch4 button").forEach(function (x) { x.disabled = true; if (+x.dataset.k === it[2]) x.classList.add("ok"); });
         if (!right) b.classList.add("ng"); else { ok++; xp += 10; try { localStorage.setItem(XK, xp); } catch (e) {} }
         hud(); i++;
@@ -278,7 +285,9 @@ document.addEventListener("click", function (e) {
   if (b.classList.contains("retry")) {
     q.removeAttribute("data-answered");
     choices.forEach(function (choice) { choice.disabled = false; choice.classList.remove("is-correct", "is-wrong"); });
-    feedback.hidden = true; feedback.textContent = ""; explanation.hidden = true; retry.hidden = true; choices[0].focus(); return;
+    feedback.hidden = true; feedback.textContent = ""; explanation.hidden = true; retry.hidden = true;
+    var note = q.querySelector('.recall-note'); if (note) note.remove();
+    choices[0].focus(); return;
   }
   if (!b.classList.contains("choice") || q.hasAttribute("data-answered")) return;
   var correct = +q.dataset.correct, chosen = +b.dataset.choice;
@@ -287,6 +296,7 @@ document.addEventListener("click", function (e) {
   if (chosen !== correct) b.classList.add("is-wrong");
   feedback.textContent = chosen === correct ? "正解です。理由も確かめよう。" : "正解は「" + (correct + 1) + "」。説明を読んで確かめよう。";
   feedback.hidden = false; explanation.hidden = false; retry.hidden = false;
+  if (window.StudyPractice) StudyPractice.answer(q, chosen === correct);
 });
 </script>
 <script src="words.js"></script>

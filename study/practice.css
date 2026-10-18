@@ -1,0 +1,13 @@
+.practice-panel,.practice-result,.practice-review{font-size:calc(15px*var(--k,1))}
+.practice-panel p,.practice-result p,.practice-review>p{font-size:inherit}
+.practice-guide{color:var(--blue);margin:10px 0;font-weight:600}
+.practice-controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.practice-progress,.practice-next,.practice-storage{color:var(--muted)}
+.practice-panel button,.practice-result button,.practice-return{font:inherit;color:var(--blue);border:1px solid var(--blue);background:var(--blue-soft);border-radius:12px;min-height:44px;padding:8px 12px;margin:8px 0;cursor:pointer}
+.practice-panel button:disabled,.practice-result button:disabled{opacity:.6;cursor:default}
+.practice-panel button:focus-visible,.practice-result button:focus-visible,.practice-return:focus-visible{outline:3px solid var(--sage);outline-offset:3px}
+.practice-storage{font-size:calc(13px*var(--k,1))!important}
+#doc.practice-reviewing>:not(h1):not(.practice-panel):not(.practice-review):not(.lec){display:none!important}
+.practice-review[hidden]{display:none!important}
+.practice-review-status{color:var(--blue)}
+.mcq .recall-note{border-left:3px solid var(--sage);border-radius:0;font-size:calc(15px*var(--k,1))}
