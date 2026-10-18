@@ -31,7 +31,13 @@ window.StudyMaterials = {
   },
   "rel": {
     "8": "view.html?n=religion8",
-    "9": "view.html?n=religion9"
+    "9": "view.html?n=religion9",
+    "10": "view.html?n=religion10",
+    "11": "view.html?n=religion11",
+    "12": "view.html?n=religion12",
+    "13": "view.html?n=religion13",
+    "14": "view.html?n=religion14",
+    "15": "view.html?n=religion15"
   },
   "open": {
     "8": "view.html?n=open8"

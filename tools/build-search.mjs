@@ -13,10 +13,10 @@ const aliases = {
  ch9:'ゲーム ビデオゲーム 遊び 課金', ch10:'メディア 動画 音楽 配信 おすすめ', ch11:'共有 シェア シェアリング オープンソース',
  ch12:'移動 通勤 車 自動車 電気自動車 EV 自動運転 MaaS 渋滞', ch13:'GDP 無料 便利 価値 幸福 利益', ch14:'仕事 雇用 働く 自動化 AI 失業', ch15:'格差 不平等 デジタルデバイド 所得 資産',
  macro8:'消費 貯蓄 所得', macro9:'投資 設備投資', macro10:'労働 雇用 賃金', macro11:'貨幣 お金 金利', macro12:'一般均衡 市場', macro13:'景気 景気循環 均衡', macro14:'景気 不均衡 価格 給料', macro15:'経済成長 成長 技術',
- religion9:'ジャイナ教 じゃいな シク教 シーク教 しく バハイ信仰 バハイ教 ばはい 不殺生 アヒンサー マハーヴィーラ グル ナーナク バハーウッラー 宗教 比較', religion8:'仏教 ぶっきょう 執着 しゅうちゃく 無常 むじょう 苦しみ 四聖諦 八正道 死 生きる', open8:'村 まち 街づくり 町づくり 住民 自治 協力 コミュニティ ガバナンス', tradition7:'食べ物 料理 食生活 伝統文化', money8:'貨幣 金融 銀行', money9:'貨幣 金融 銀行 通貨乗数 通貨供給関数 本源通貨 現金預金比率 超過準備率 貯蓄性預金'
+ religion10:'中国 儒教 仁義礼智 道家 老子 道徳経 道教 上善若水', religion11:'日本 神道 カミ 神仏習合 神仏合一 創価学会 天理教 キリスト教', religion12:'韓国 東学 天道教 五つの義務 円仏教 四恩四要 三学八条 大倧教 北朝鮮', religion13:'先住民 神話 ワウィラク 姉妹 虹 大蛇 ヨルング ユピック タギシュ イヌイット セドナ', religion14:'新しい宗教 新宗教 ニューエイジ 大巡真理会 奇跡のコース ハレ クリシュナ ラエリアン エホバ モルモン', religion15:'宗教文化 アバター アヴァターラ ヴィシュヌ ガンディー アートマン 化身 受肉 映画', religion9:'ジャイナ教 じゃいな シク教 シーク教 しく バハイ信仰 バハイ教 ばはい 不殺生 アヒンサー マハーヴィーラ グル ナーナク バハーウッラー 宗教 比較', religion8:'仏教 ぶっきょう 執着 しゅうちゃく 無常 むじょう 苦しみ 四聖諦 八正道 死 生きる', open8:'村 まち 街づくり 町づくり 住民 自治 協力 コミュニティ ガバナンス', tradition7:'食べ物 料理 食生活 伝統文化', money8:'貨幣 金融 銀行', money9:'貨幣 金融 銀行 通貨乗数 通貨供給関数 本源通貨 現金預金比率 超過準備率 貯蓄性預金'
 };
 function plain(s) { return s.replace(/https?:\/\/[^\s)]+/g,'').replace(/[`*#>|]/g,'').replace(/\s+/g,' ').trim(); }
-for (const file of (await readdir(new URL('study/notes/', root))).sort()) {
+for (const file of (await readdir(new URL('study/notes/', root))).sort((a, b) => a.localeCompare(b, 'en', { numeric: true }))) {
  if (!/^(ch|macro|money|religion|tradition|open)\d+\.md$/.test(file)) continue;
  const id=file.slice(0,-3), text=await readFile(new URL('study/notes/'+file,root),'utf8');
  const title=plain(text.match(/^# (.+)/m)?.[1] || id);
