@@ -57,6 +57,16 @@
   .search-result { display:block; padding:14px; margin-top:8px; border:1px solid var(--border); border-radius:13px; background:var(--surface); color:var(--text); text-decoration:none; overflow-wrap:anywhere; }
   .search-result strong { display:block; font-size:16px; line-height:1.5; }
   .search-result span { display:block; margin-top:5px; font-size:13px; line-height:1.7; color:var(--muted); }
+  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
+  .weather-card { margin-top:18px; padding:15px 16px; border:1px solid var(--border); border-radius:18px; background:var(--surface); }
+  .weather-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .weather-head strong { font-size:15px; }
+  .weather-head select { max-width:130px; padding:8px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; font-size:13px; }
+  .weather-main { display:flex; align-items:center; gap:12px; margin-top:12px; }
+  .weather-icon { font-size:32px; line-height:1; }
+  .weather-temp { font-size:30px; font-weight:700; }
+  .weather-detail { color:var(--muted); font-size:13px; line-height:1.7; margin-top:7px; }
+  .weather-source { color:var(--muted); font-size:11px; margin-top:8px; }
   .intent-panel { margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:20px; background:var(--surface); }
   .intent-panel h2 { margin:0 0 4px; font-size:18px; }
   .intent-hint { margin:0 0 12px; color:var(--muted); font-size:13px; }
@@ -75,6 +85,11 @@
 <main>
   <h1>とわなにか</h1>
   <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
+  <section class="weather-card" aria-labelledby="weather-title">
+    <div class="weather-head"><strong id="weather-title">今日の天気</strong><label><span class="sr-only">天気の地域</span><select id="weather-city" aria-label="天気の地域"><option value="seoul">ソウル</option><option value="tokyo">東京</option><option value="osaka">大阪</option><option value="busan">釜山</option></select></label></div>
+    <div id="weather-content" role="status" aria-live="polite"><p class="weather-detail">天気を取得しています…</p></div>
+    <div class="weather-source">予報：Open-Meteo · 地域は端末に保存</div>
+  </section>
   <section class="intent-panel" aria-labelledby="intent-title">
     <h2 id="intent-title">今日は何をしたい？</h2>
     <p class="intent-hint">目的を選ぶと、必要な入口だけが出てきます。</p>
@@ -98,6 +113,42 @@
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
 <script>
+// 天気は公開予報のみ。位置情報を取得せず、選択した都市だけを保存。
+(function () {
+  var cities = { seoul:[37.5665,126.9780,"Asia/Seoul"], tokyo:[35.6762,139.6503,"Asia/Tokyo"], osaka:[34.6937,135.5023,"Asia/Tokyo"], busan:[35.1796,129.0756,"Asia/Seoul"] };
+  var sel = document.getElementById("weather-city"), box = document.getElementById("weather-content");
+  try { var saved = localStorage.getItem("hibiki-weather-city-v1"); if (cities[saved]) sel.value = saved; } catch (e) {}
+  function desc(code) {
+    if (code === 0) return ["☀️","快晴"];
+    if (code <= 3) return ["⛅","晴れ・くもり"];
+    if (code <= 48) return ["🌫️","霧"];
+    if (code <= 67) return ["🌧️","雨"];
+    if (code <= 77) return ["❄️","雪"];
+    if (code <= 82) return ["🌦️","にわか雨"];
+    if (code <= 86) return ["🌨️","にわか雪"];
+    if (code >= 95) return ["⛈️","雷雨"];
+    return ["☁️","くもり"];
+  }
+  function loadWeather() {
+    var city = sel.value, c = cities[city]; box.textContent = "天気を取得しています…";
+    try { localStorage.setItem("hibiki-weather-city-v1", city); } catch (e) {}
+    var url = "https://api.open-meteo.com/v1/forecast?latitude="+c[0]+"&longitude="+c[1]+"&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone="+encodeURIComponent(c[2]);
+    fetch(url).then(function(r){if(!r.ok)throw Error("network");return r.json();}).then(function(d){
+      if (sel.value !== city) return;
+      if (!d.current || !d.daily || !d.daily.temperature_2m_max) throw Error("data");
+      var w=desc(d.current.weather_code), temp=Math.round(d.current.temperature_2m);
+      var hi=Math.round(d.daily.temperature_2m_max[0]),lo=Math.round(d.daily.temperature_2m_min[0]),rain=d.daily.precipitation_probability_max[0];
+      box.textContent="";
+      var line=document.createElement("div");line.className="weather-main";
+      var icon=document.createElement("span");icon.className="weather-icon";icon.textContent=w[0];
+      var degree=document.createElement("span");degree.className="weather-temp";degree.textContent=temp+"℃";
+      var label=document.createElement("span");label.textContent=w[1];line.append(icon,degree,label);
+      var detail=document.createElement("div");detail.className="weather-detail";detail.textContent="最高 "+hi+"℃ / 最低 "+lo+"℃ · 降水確率 "+(rain == null?"—":rain+"%");
+      box.append(line,detail);
+    }).catch(function(){if(sel.value===city)box.textContent="天気を取得できませんでした。地域を選び直すと再試行できます。";});
+  }
+  sel.addEventListener("change",loadWeather);loadWeather();
+})();
 // ▼ ページを足すときはここに1行足す。new: 足した日（7日間「NEW」が出る）
 var GROUPS = [
   { n: "毎日", pages: [
