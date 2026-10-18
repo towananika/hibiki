@@ -82,6 +82,15 @@
   .mcq [hidden] { display:none !important; }
   .play { display:flex; align-items:center; gap:10px; margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:var(--wood); color:#fff; text-decoration:none; font-weight:700; font-size:calc(16px*var(--k,1)); }
   .play small { display:block; font-weight:400; opacity:.9; font-size:calc(13px*var(--k,1)); }
+  .game { border-color:var(--wood); }
+  .game .gh { display:flex; justify-content:space-between; align-items:center; font-size:calc(14px*var(--k,1)); color:var(--muted); margin-top:12px; }
+  .game .gh b { color:var(--wood); }
+  .game .what { font-size:calc(19px*var(--k,1)); font-weight:700; margin:6px 0; } .game .from { font-size:calc(13px*var(--k,1)); color:var(--muted); }
+  .game .ch4 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0; }
+  .game .ch4 button { border:1px solid var(--border); background:var(--bg); color:var(--text); font:inherit; font-size:calc(15px*var(--k,1)); padding:10px 6px; border-radius:12px; cursor:pointer; }
+  .game .ch4 button.ok { background:var(--sage); border-color:var(--sage); color:#fff; } .game .ch4 button.ng { border-color:var(--red); }
+  .game .why { background:var(--bg); border-radius:12px; padding:8px 12px; font-size:calc(15px*var(--k,1)); }
+  .game .nx { margin-top:8px; border:0; border-radius:999px; background:var(--wood); color:#fff; font:inherit; font-weight:700; padding:7px 16px; cursor:pointer; }
   .err { color:var(--muted); text-align:center; margin-top:40px; }
 </style>
 </head>
@@ -223,7 +232,7 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   var TRAD = "https://claude.ai/artifact/Hu2zBktAmv2FB6vzGMVB9n";
   PLAY.tradition7 = PLAY.tradition8 = [TRAD, "4択ゲーム"];
   if (PLAY[n] && t) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n][0]; a.target = "_blank"; a.rel = "noopener";
-    a.innerHTML = "▶ あそんで覚える・Claude に聞く<small>" + PLAY[n][1] + "・クイズ・質問バー（claude.ai で開く）</small>"; t.after(a); }
+    a.innerHTML = "▶ Claude に聞く<small>質問バー・Claude が作る問題（claude.ai で開く）</small>"; t.after(a); }
   var dc = n.match(/^ch(\d+)$/);
   if (dc) {
     var DIGITAL_NOTES = { 7: "AI", 8: "ブロックチェーン", 9: "ゲーム", 10: "メディア", 11: "共有", 12: "移動", 13: "利益", 14: "仕事", 15: "格差" }, nav = document.createElement("div"); nav.className = "toc lec";
@@ -236,6 +245,29 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   if (mm) { var LEC = SERIES[mm[1]], row = document.createElement("div"); row.className = "toc lec";
     row.innerHTML = Object.keys(LEC).map(function (k) { return '<a href="?n=' + mm[1] + k + '"' + (+k === +mm[2] ? ' aria-current="page"' : "") + '>' + k + '講 ' + LEC[k] + '</a>'; }).join("");
     doc.insertBefore(row, doc.firstChild); }
+  // ゲーム（サイトの中で遊べる4択。問題は games/<科目>.json）
+  if (mm) fetch("games/" + mm[1] + ".json", { cache:"no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (G) {
+    var list = G && G[mm[2]]; if (!list || !list.length) return;
+    var DIRS = ["ふえる・上がる ↑", "へる・下がる ↓", "変わらない →", "どちらもある ？"], XK = "hibiki-" + mm[1] + "-xp", xp = 0;
+    try { xp = +localStorage.getItem(XK) || 0; } catch (e) {}
+    var box = document.createElement("section"); box.className = "game"; box.innerHTML = "<h2>あそんで覚える</h2><div class='gh'><span>Lv <b class='lv'></b>（" + "XP <b class='xp'></b>）</span><span>正解 <b class='ok'>0</b> / " + list.length + "</span></div><div class='q4'></div>";
+    var anchor = doc.querySelector(".play") || doc.querySelector(".toc:not(.lec)"); anchor.after(box);
+    var q = list.slice().sort(function () { return Math.random() - .5; }), i = 0, ok = 0, area = box.querySelector(".q4");
+    function hud() { box.querySelector(".lv").textContent = Math.floor(xp / 50) + 1; box.querySelector(".xp").textContent = xp; box.querySelector(".ok").textContent = ok; }
+    function next() {
+      if (i >= q.length) { area.innerHTML = "<p class='what'>ぜんぶ終わり！ " + ok + " 問正解</p><button type='button' class='nx'>もう一周</button>"; area.querySelector("button").onclick = function () { i = 0; ok = 0; q.sort(function () { return Math.random() - .5; }); hud(); next(); }; return; }
+      var it = q[i], ch = it[4] || DIRS;
+      area.innerHTML = "<div class='from'>" + esc(it[0]) + "</div><div class='what'>" + esc(it[1]) + "</div><div class='ch4'>" + ch.map(function (c, k) { return "<button type='button' data-k='" + k + "'>" + esc(c) + "</button>"; }).join("") + "</div>";
+      area.querySelectorAll(".ch4 button").forEach(function (b) { b.onclick = function () {
+        var right = +b.dataset.k === it[2];
+        area.querySelectorAll(".ch4 button").forEach(function (x) { x.disabled = true; if (+x.dataset.k === it[2]) x.classList.add("ok"); });
+        if (!right) b.classList.add("ng"); else { ok++; xp += 10; try { localStorage.setItem(XK, xp); } catch (e) {} }
+        hud(); i++;
+        var w = document.createElement("div"); w.innerHTML = "<div class='why'>" + (right ? "正解！ +10 XP　" : "ざんねん。") + esc(it[3]) + "</div><button type='button' class='nx'>次へ</button>"; area.appendChild(w);
+        w.querySelector("button").onclick = next; }; });
+    }
+    hud(); next();
+  });
 }).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
 document.addEventListener("click", function (e) {
   var b = e.target.closest(".q button"); if (!b) return;
