@@ -48,7 +48,7 @@
       return '<div class="it"><div class="w">' + esc(x.w) + '</div><div class="ctx">' + esc(x.ctx) + '</div>' +
         (m ? '<div class="ans">' + esc(m) + '</div>' : '<div class="wait">答えを待っています</div>') +
         '<div class="acts"><a class="b" href="' + esc(x.src) + '">出てきた所へ</a><button data-id="' + x.id + '">消す</button></div></div>';
-    }).join("") : '<div class="empty">まだありません。<br>勉強ページで、知らない言葉を指でなぞると、下に「あとで聞く」が出ます。</div>';
+    }).join("") : '<div class="empty">まだありません。<br>勉強ページで、知らない言葉を選ぶと、近くに「あとで聞く」が出ます。</div>';
     document.getElementById("how").textContent = un.length ? "コピーした文を、このチャットに貼ってください。答えをつけて、ここに出るようにします。" : "";
     var cp = document.getElementById("cp");
     if (cp) cp.onclick = function () {
