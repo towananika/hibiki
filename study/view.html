@@ -220,6 +220,8 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   var MACRO = "https://claude.ai/artifact/JwgD4K9REUU99uP2QTMidM";
   var PLAY = { money8: ["https://claude.ai/artifact/XNJLBbXKYk6YucU5ZbLXUD", "銀行ゲーム"] };
   for (var m = 8; m <= 15; m++) PLAY["macro" + m] = [MACRO, "上がる？下がる？ゲーム"];
+  var TRAD = "https://claude.ai/artifact/Hu2zBktAmv2FB6vzGMVB9n";
+  PLAY.tradition7 = PLAY.tradition8 = [TRAD, "4択ゲーム"];
   if (PLAY[n] && t) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n][0]; a.target = "_blank"; a.rel = "noopener";
     a.innerHTML = "▶ あそんで覚える・Claude に聞く<small>" + PLAY[n][1] + "・クイズ・質問バー（claude.ai で開く）</small>"; t.after(a); }
   var dc = n.match(/^ch(\d+)$/);
@@ -229,9 +231,10 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     doc.insertBefore(nav, doc.firstChild);
   }
   // 上級マクロ経済論は 8〜15講をならべて、となりの講へ行けるようにする
-  var mm = n.match(/^macro(\d+)$/);
-  if (mm) { var LEC = { 8:"消費", 9:"投資", 10:"労働", 11:"お金", 12:"一般均衡", 13:"均衡の波", 14:"不均衡の波", 15:"成長" }, row = document.createElement("div"); row.className = "toc lec";
-    row.innerHTML = Object.keys(LEC).map(function (k) { return '<a href="?n=macro' + k + '"' + (+k === +mm[1] ? ' aria-current="page"' : "") + '>' + k + '講 ' + LEC[k] + '</a>'; }).join("");
+  var SERIES = { macro: { 8:"消費", 9:"投資", 10:"労働", 11:"お金", 12:"一般均衡", 13:"均衡の波", 14:"不均衡の波", 15:"成長" }, tradition: { 7:"食の暮らし", 8:"訴え状" } };
+  var mm = n.match(/^(macro|tradition)(\d+)$/);
+  if (mm) { var LEC = SERIES[mm[1]], row = document.createElement("div"); row.className = "toc lec";
+    row.innerHTML = Object.keys(LEC).map(function (k) { return '<a href="?n=' + mm[1] + k + '"' + (+k === +mm[2] ? ' aria-current="page"' : "") + '>' + k + '講 ' + LEC[k] + '</a>'; }).join("");
     doc.insertBefore(row, doc.firstChild); }
 }).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
 document.addEventListener("click", function (e) {
