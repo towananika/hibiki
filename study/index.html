@@ -53,6 +53,10 @@
   .chart-caption .week-tag { display:inline-block; color:var(--blue); }
   .chart-caption .done-tag { display:inline-block; margin-left:6px; padding:2px 7px; border-radius:999px; background:var(--sage-soft); color:var(--sage); font-weight:700; }
   .chart-segment.is-goal.is-done { outline-width:2px; }
+  .material-summary { color:var(--muted); font-size:11px; line-height:1.6; margin:3px 0 0; }
+  .material-state { display:inline-block; margin-left:6px; padding:1px 5px; border:1px solid var(--border); border-radius:5px; color:var(--muted); font-size:11px; }
+  .material-state.is-ready { color:var(--blue); border-color:var(--blue); }
+  .plan-lesson .material-ready { font-weight:600; }
   .chart-caption { display:block; font-size:11px; text-align:right; margin-top:6px; color:var(--blue); }
   .study-legend { display:flex; justify-content:flex-end; gap:12px; margin:12px 0 0; color:var(--muted); font-size:11px; }
   .study-legend span { display:inline-flex; align-items:center; gap:4px; }
@@ -148,6 +152,7 @@
 })();
 </script>
 <script src="plan.js"></script>
+<script src="materials.js"></script>
 <script src="plan-ui.js"></script>
 </body>
 </html>

@@ -30,3 +30,5 @@
 - ホームのサイト内検索：ページ・教材を関連語と本文から検索。ページの説明・キーワードは `search/pages.json`、教材は `study/notes/` から `node tools/build-search.mjs` で `search/index.json` を更新する。個人の記録や暗号化データは索引化しない。
 
 - 貨幣金融論9講：`study/view.html?n=money9`（通貨乗数・現金・準備金・貯蓄性預金・通貨供給関数を、やさしい説明と計算例で学ぶ）。
+
+- 教材の準備状況は講座カードと学習記録に表示（教材あり・準備中、デジタル経済の概要のみは要点のみ）。`study/materials.js` は `node tools/build-study-materials.mjs` または検索索引の更新で、実際のノートから生成する。学習完了とは別に管理。

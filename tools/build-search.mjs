@@ -1,3 +1,4 @@
+import './build-study-materials.mjs';
 // 公開用の説明・キーワードと学習ノートだけを索引化する。個人データは読まない。
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 const root = new URL('../', import.meta.url);

@@ -20,14 +20,18 @@
   if (!state || state.mode !== 'university' || !state.totals || !state.enabled || !state.first || !state.pace || !state.done || !Array.isArray(state.weeks)) state = fresh();
   function config() { return courses.map(function (c) { return { key: c.key, total: state.totals[c.key] || 15, first: state.first[c.key] || 1, pace: state.pace[c.key] || 1, enabled: state.enabled[c.key] !== false }; }); }
   function done(key, n) { return key === 'dig' ? !!read(DIGITAL, {})[n - 1] : !!state.done[key + ':' + n]; }
+  var materials = window.StudyMaterials || {};
+  function ready(key, n) { return !!(materials[key] && materials[key][n]); }
   function link(key, n) {
-    if (key === 'dig') return n >= 7 && n <= 15 ? 'view.html?n=ch' + n : 'digital.html#c' + (n - 1);
-    if (key === 'macro' && n >= 8 && n <= 15) return 'view.html?n=macro' + n;
-    if (key === 'trad' && n === 7) return 'view.html?n=tradition7';
-    if (key === 'money' && n >= 8 && n <= 9) return 'view.html?n=money' + n;
-    if (key === 'open' && n === 8) return 'view.html?n=open8';
-    if (key === 'rel' && n === 8) return 'view.html?n=religion8';
-    return '';
+    if (ready(key, n)) return materials[key][n];
+    return key === 'dig' && n >= 1 && n <= 15 ? 'digital.html#c' + (n - 1) : '';
+  }
+  function materialLabel(key, n) { return ready(key, n) ? '教材あり' : (key === 'dig' && n <= 15 ? '要点のみ' : '準備中'); }
+  function lessonRanges(numbers) {
+    var groups = [], start, end;
+    numbers.forEach(function (n) { if (start === undefined) start = end = n; else if (n === end + 1) end = n; else { groups.push(start === end ? '' + start : start + '〜' + end); start = end = n; } });
+    if (start !== undefined) groups.push(start === end ? '' + start : start + '〜' + end);
+    return groups.join('・');
   }
   function current() {
     var day = P.today(), i = state.weeks.findIndex(function (w) { return w.start <= day && w.end >= day; });
@@ -39,7 +43,7 @@
       if (!list.length) return '';
       return '<div class="plan-course" data-course-group="' + c.key + '"><h3>' + c.name + '</h3><div class="plan-lessons">' + list.map(function (x) {
         var href = link(x.key, x.n), id = prefix + '-' + x.key + '-' + x.n;
-        return '<div class="plan-lesson"><label for="' + id + '"><input id="' + id + '" type="checkbox" data-course="' + x.key + '" data-lesson="' + x.n + '"' + (done(x.key, x.n) ? ' checked' : '') + '>第' + x.n + c.unit + '</label>' + (href ? '<a href="' + href + '">ノート</a>' : '<small>講義で学ぶ</small>') + '</div>';
+        return '<div class="plan-lesson"><label for="' + id + '"><input id="' + id + '" type="checkbox" data-course="' + x.key + '" data-lesson="' + x.n + '"' + (done(x.key, x.n) ? ' checked' : '') + '>第' + x.n + c.unit + '</label>' + (href ? '<a class="' + (ready(x.key, x.n) ? 'material-ready' : '') + '" href="' + href + '">' + materialLabel(x.key, x.n) + ' ›</a>' : '<small>準備中</small>') + '</div>';
       }).join('') + '</div></div>';
     }).join('');
   }
@@ -57,8 +61,11 @@
       var goal = targets.length ? '第' + targets.join('・') + c.unit : (enabled ? (week.items.length ? '予定なし' : '復習') : '計画の対象外');
       var now = week.start <= P.today() && week.end >= P.today();
       var caption = targets.length ? (now ? '今週 ' : '選択した週 ') + goal : goal;
+      var available = Object.keys(materials[c.key] || {}).map(Number).sort(function (a,b) { return a-b; });
+      var summary = available.length ? '教材あり：第' + lessonRanges(available) + c.unit : '教材は準備中';
+      var status = targets.length ? targets.map(function (n) { return materialLabel(c.key, n); }).filter(function (x,i,a) { return a.indexOf(x) === i; }).join('・') : '';
       var complete = targets.length > 0 && targets.every(function (n) { return done(c.key, n); });
-      slot.innerHTML = '<button type="button" class="course-graph" data-chart-course="' + c.key + '" aria-label="' + c.name + '、' + total + c.unit + '中' + finished + c.unit + '完了。この週は' + goal + '。' + (complete ? 'この週の学習は完了。' : '') + '学習記録を開く"><span class="chart-track" aria-hidden="true">' + segments.join('') + '</span><span class="chart-caption">' + '<span class="week-tag">' + caption + '</span>' + (complete ? '<span class="done-tag">✓ 完了</span>' : '') + '</span></button>';
+      slot.innerHTML = '<button type="button" class="course-graph" data-chart-course="' + c.key + '" aria-label="' + c.name + '、' + total + c.unit + '中' + finished + c.unit + '完了。この週は' + goal + '。' + (complete ? 'この週の学習は完了。' : '') + summary + '。' + status + '。学習記録を開く"><span class="chart-track" aria-hidden="true">' + segments.join('') + '</span><span class="chart-caption">' + '<span class="week-tag">' + caption + '</span>' + (status ? '<span class="material-state' + (targets.every(function (n) { return ready(c.key,n); }) ? ' is-ready' : '') + '">' + status + '</span>' : '') + (complete ? '<span class="done-tag">✓ 完了</span>' : '') + '</span></button><p class="material-summary">' + summary + '</p>';
     });
   }
   host.innerHTML = '<dialog id="progress-dialog" aria-labelledby="progress-title"><div class="progress-heading"><h2 id="progress-title"></h2><button type="button" id="progress-close">閉じる</button></div><p class="plan-note">学習した講にチェックを入れます。</p><div id="progress-list"></div><p id="plan-status" role="status"></p></dialog>';
