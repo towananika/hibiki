@@ -17,8 +17,8 @@ details{font-size:11px;color:var(--muted);margin-top:4px}details summary{cursor:
 @media(min-width:600px){main{padding-top:18px;padding-bottom:18px}.area{font-size:13px}}
 </style></head><body><main>
 <header><a href="../" aria-label="戻る">‹</a><h1>首都圏の経済価値</h1><span class="sub">模式マップ</span></header>
-<div class="controls"><select id="metric" aria-label="評価項目"><option value="net">経済的な余裕</option><option value="land">土地価格（公示地価）</option><option value="commute">通勤負担</option><option value="jobs">仕事へのアクセス</option></select><select id="office" aria-label="通勤先"><option value="central">光化門・市庁へ</option><option value="gangnam">江南へ</option><option value="yeouido">汝矣島へ</option><option value="gasan">加山へ</option></select><select id="mode" aria-label="色の表示"><option value="real">実データのみ</option><option value="demo">配色イメージ（仮）</option></select></div>
-<div class="map"><div class="caption">首都圏の位置関係を簡略化した模式図・実際の境界ではありません</div><div class="blocks" id="blocks"></div></div>
+<div class="controls"><select id="metric" aria-label="評価項目"><option value="land">土地価格（公示地価）</option><option value="net">総合的な余裕（未集計）</option><option value="commute">通勤負担</option><option value="jobs">仕事へのアクセス</option></select><select id="office" aria-label="通勤先"><option value="central">光化門・市庁へ</option><option value="gangnam">江南へ</option><option value="yeouido">汝矣島へ</option><option value="gasan">加山へ</option></select><select id="mode" aria-label="色の表示"><option value="real">検証済みデータのみ</option></select></div>
+<div class="map"><div class="caption">模式図・色は検証済みデータのみ（現在は未集計）</div><div class="blocks" id="blocks"></div></div>
 <div class="legend"><span style="background:#bf5b58"></span><span style="background:#e5a17a"></span><span style="background:#e7d9aa"></span><span style="background:#a7cba8"></span><span style="background:#4e9068"></span><span style="background:#d3d8d4"></span></div>
 <div class="labels"><span>余裕が少ない</span><span>余裕が大きい</span><span>灰色：データなし</span></div>
 <div class="info"><strong id="name">地域をタップ</strong><span id="detail">未評価は灰色・地価の実データを待っています</span></div>
@@ -51,13 +51,12 @@ b.type='button';b.className='area';b.textContent=a.label.replace(/区$|市$|郡$
 b.title=a.name;b.style.gridColumn=pos[0];b.style.gridRow=pos[1];
 var item=data[a.name]||{},key=metric.value==='commute'&&item['commute_'+office.value]!=null?'commute_'+office.value:metric.value;
 var v=item[key],ok=typeof v==='number'&&Number.isFinite(v)&&!!item.source&&(metric.value!=='land'||(item.year===2026&&item.land_use==='residential'&&item.sample_count>0));if(metric.value==='land'&&ok)v=-v;
-if(mode.value==='demo'){b.style.background=colors[(pos[0]*3+pos[1]*2+i)%5];}
-else if(ok){var n=thresholds[metric.value].filter(function(t){return v>=t}).length;b.style.background=colors[n];}
-b.addEventListener('click',function(){grid.querySelectorAll('.area').forEach(function(x){x.classList.remove('selected')});b.classList.add('selected');document.getElementById('name').textContent=a.name;document.getElementById('detail').textContent=mode.value==='demo'?'色は仮の配色例・地域評価ではありません':(ok?'指標値：'+(metric.value==='land'?Math.abs(v).toLocaleString()+' ₩/㎡':v)+'・出典あり':'未検証・データなし');});
+if(ok){var n=thresholds[metric.value].filter(function(t){return v>=t}).length;b.style.background=colors[n];}
+b.addEventListener('click',function(){grid.querySelectorAll('.area').forEach(function(x){x.classList.remove('selected')});b.classList.add('selected');document.getElementById('name').textContent=a.name;document.getElementById('detail').textContent=(ok?'指標値：'+(metric.value==='land'?Math.abs(v).toLocaleString()+' ₩/㎡':v)+'・出典あり':'未検証・データなし');});
 grid.appendChild(b);
 });
 });
-document.getElementById('detail').textContent=mode.value==='demo'?'色は仮の配色例・地域評価ではありません':'実データ未接続の地域は灰色';
+document.getElementById('detail').textContent='検証済みデータがない地域は灰色';
 }
 metric.addEventListener('change',render);office.addEventListener('change',render);mode.addEventListener('change',render);
 document.getElementById('file').addEventListener('change',function(e){var f=e.target.files[0];if(!f)return;if(f.size>1000000){document.getElementById('fileStatus').textContent='1MB以下のファイルを選んでください';return;}f.text().then(function(t){var j=JSON.parse(t);if(!Array.isArray(j.areas))throw Error();var next={};j.areas.forEach(function(x){if(x&&typeof x.name==='string')next[x.name]=x;});data=next;render();document.getElementById('fileStatus').textContent='読み込み済み：'+Object.keys(data).length+'地域';}).catch(function(){document.getElementById('fileStatus').textContent='JSONを読み込めませんでした';});});
