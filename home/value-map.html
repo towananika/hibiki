@@ -6,8 +6,8 @@ header{display:flex;align-items:center;gap:9px;min-height:35px}header a{font-siz
 .controls{display:flex;gap:7px;margin:8px 0 8px}select{flex:1;min-width:0;background:white;border:1px solid #e2e7e2;border-radius:10px;font:inherit;font-size:12px;padding:9px 5px;color:var(--ink)}
 .map{position:relative;flex:1;min-height:0;background:#eef1ed;border-radius:17px;overflow:hidden;border:1px solid #e5e9e5}
 .caption{position:absolute;top:10px;left:12px;font-size:11px;color:#76847b;z-index:1}
-.blocks{position:absolute;inset:34px 8px 9px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));grid-template-rows:repeat(12,minmax(0,1fr));gap:3px}
-.area{border:1px solid #fff9;background:var(--gray);border-radius:6px;color:#39473e;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:600;font-size:clamp(9px,2.4vw,12px);line-height:1.25;padding:2px;cursor:pointer;box-shadow:0 1px 1px #00000008;overflow:hidden}
+.blocks{position:absolute;inset:30px 8px 8px;display:flex;flex-direction:column;gap:7px;overflow:auto;scrollbar-width:thin}.region{display:flex;flex-direction:column;min-height:0;flex:1}.region-title{font-size:11px;font-weight:700;color:#66746a;padding:0 2px 3px}.region-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:minmax(24px,1fr);gap:3px;flex:1}
+.area{border:1px solid #fff9;background:var(--gray);border-radius:6px;color:#39473e;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:600;font-size:clamp(8px,2.1vw,11px);line-height:1.25;padding:2px;cursor:pointer;box-shadow:0 1px 1px #00000008;overflow:hidden}
 .area:focus-visible{outline:3px solid #334d40;outline-offset:1px}.area.selected{outline:2px solid #344e40;outline-offset:0}
 .area small{display:block;font-size:9px;font-weight:400}
 .legend{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin:9px 0 3px}.legend span{height:10px;border-radius:3px}
@@ -16,37 +16,34 @@ header{display:flex;align-items:center;gap:9px;min-height:35px}header a{font-siz
 details{font-size:11px;color:var(--muted);margin-top:4px}details summary{cursor:pointer}details input{max-width:100%;margin-top:6px;font-size:11px}
 @media(min-width:600px){main{padding-top:18px;padding-bottom:18px}.area{font-size:13px}}
 </style></head><body><main>
-<header><a href="../" aria-label="戻る">‹</a><h1>首都圏の経済価値</h1><span class="sub">ブロック地図</span></header>
+<header><a href="../" aria-label="戻る">‹</a><h1>首都圏の経済価値</h1><span class="sub">市・区単位</span></header>
 <div class="controls"><select id="metric" aria-label="評価項目"><option value="net">経済的な余裕</option><option value="housing">住居費</option><option value="commute">通勤負担</option><option value="jobs">仕事へのアクセス</option></select><select id="office" aria-label="通勤先"><option value="central">光化門・市庁へ</option><option value="gangnam">江南へ</option><option value="yeouido">汝矣島へ</option><option value="gasan">加山へ</option></select></div>
-<div class="map"><div class="caption">位置関係の模式図・実際の境界ではありません</div><div class="blocks" id="blocks"></div></div>
+<div class="map"><div class="caption">市・区・郡ごとの比較ブロック（地理的な位置・形は表しません）</div><div class="blocks" id="blocks"></div></div>
 <div class="legend"><span style="background:#bf5b58"></span><span style="background:#e5a17a"></span><span style="background:#e7d9aa"></span><span style="background:#a7cba8"></span><span style="background:#4e9068"></span><span style="background:#d3d8d4"></span></div>
 <div class="labels"><span>余裕が少ない</span><span>余裕が大きい</span><span>灰色：データなし</span></div>
 <div class="info"><strong id="name">地域をタップ</strong><span id="detail">現在は実測データ未接続</span></div>
-<details><summary>データを読み込む・地図について</summary><div>JSONファイルを選ぶと色分けできます。形式：{"areas":[{"name":"麻浦","net":210,"housing":-65,"commute":-30,"jobs":70}]}。数値がない地域は灰色のまま。数値は利用者のデータのみで、架空の値は使いません。比較基準は暫定値です。</div><input type="file" id="file" accept=".json,application/json"><div id="fileStatus"></div></details>
+<details><summary>データを読み込む・地図について</summary><div>JSONファイルを選ぶと色分けできます。形式：{"areas":[{"name":"ソウル 麻浦区","net":210,"housing":-65,"commute":-30,"jobs":70}]}。数値がない地域は灰色のまま。数値は利用者のデータのみで、架空の値は使いません。比較基準は暫定値です。</div><input type="file" id="file" accept=".json,application/json"><div id="fileStatus"></div></details>
 </main><script>
 (function(){
-/* Approximate spatial placement only. NOT real boundaries or scores. */
-var areas=[
-['坡州',1,1,3,2],['金浦',1,4,3,2],['高陽',3,3,3,2],['議政府',4,7,3,2],['南楊州',5,10,3,2],
-['仁川西部',4,1,3,2],['仁川中心',6,1,3,2],['富平',6,4,2,2],['江西',6,6,2,2],['麻浦',6,8,2,2],['鍾路・中区',7,10,2,2],
-['永登浦',8,5,2,2],['龍山',8,7,2,2],['城東',9,9,2,2],['江東',9,11,2,2],
-['始興',9,1,2,2],['光明',10,3,2,2],['九老・加山',10,5,2,2],['冠岳',10,7,2,2],['江南',11,9,2,2],['松坡',11,11,2,2],
-['安山',11,1,2,2],['安養',12,4,1,2],['果川',12,6,1,2],['城南',12,8,1,2],['河南',12,11,1,2]
-];
-/* Clip to 12x12 grid, areas are approximate infographic blocks. */
+var groups=[{"title":"ソウル特別市","areas":[{"name":"ソウル特別市 鍾路区","label":"鍾路区"},{"name":"ソウル特別市 中区","label":"中区"},{"name":"ソウル特別市 龍山区","label":"龍山区"},{"name":"ソウル特別市 城東区","label":"城東区"},{"name":"ソウル特別市 広津区","label":"広津区"},{"name":"ソウル特別市 東大門区","label":"東大門区"},{"name":"ソウル特別市 中浪区","label":"中浪区"},{"name":"ソウル特別市 城北区","label":"城北区"},{"name":"ソウル特別市 江北区","label":"江北区"},{"name":"ソウル特別市 道峰区","label":"道峰区"},{"name":"ソウル特別市 蘆原区","label":"蘆原区"},{"name":"ソウル特別市 恩平区","label":"恩平区"},{"name":"ソウル特別市 西大門区","label":"西大門区"},{"name":"ソウル特別市 麻浦区","label":"麻浦区"},{"name":"ソウル特別市 陽川区","label":"陽川区"},{"name":"ソウル特別市 江西区","label":"江西区"},{"name":"ソウル特別市 九老区","label":"九老区"},{"name":"ソウル特別市 衿川区","label":"衿川区"},{"name":"ソウル特別市 永登浦区","label":"永登浦区"},{"name":"ソウル特別市 銅雀区","label":"銅雀区"},{"name":"ソウル特別市 冠岳区","label":"冠岳区"},{"name":"ソウル特別市 瑞草区","label":"瑞草区"},{"name":"ソウル特別市 江南区","label":"江南区"},{"name":"ソウル特別市 松坡区","label":"松坡区"},{"name":"ソウル特別市 江東区","label":"江東区"}]},{"title":"京畿道","areas":[{"name":"京畿道 水原市","label":"水原市"},{"name":"京畿道 城南市","label":"城南市"},{"name":"京畿道 高陽市","label":"高陽市"},{"name":"京畿道 龍仁市","label":"龍仁市"},{"name":"京畿道 富川市","label":"富川市"},{"name":"京畿道 安山市","label":"安山市"},{"name":"京畿道 安養市","label":"安養市"},{"name":"京畿道 南楊州市","label":"南楊州市"},{"name":"京畿道 華城市","label":"華城市"},{"name":"京畿道 平沢市","label":"平沢市"},{"name":"京畿道 議政府市","label":"議政府市"},{"name":"京畿道 始興市","label":"始興市"},{"name":"京畿道 坡州市","label":"坡州市"},{"name":"京畿道 光明市","label":"光明市"},{"name":"京畿道 金浦市","label":"金浦市"},{"name":"京畿道 軍浦市","label":"軍浦市"},{"name":"京畿道 広州市","label":"広州市"},{"name":"京畿道 利川市","label":"利川市"},{"name":"京畿道 楊州市","label":"楊州市"},{"name":"京畿道 烏山市","label":"烏山市"},{"name":"京畿道 九里市","label":"九里市"},{"name":"京畿道 安城市","label":"安城市"},{"name":"京畿道 抱川市","label":"抱川市"},{"name":"京畿道 義王市","label":"義王市"},{"name":"京畿道 河南市","label":"河南市"},{"name":"京畿道 驪州市","label":"驪州市"},{"name":"京畿道 東豆川市","label":"東豆川市"},{"name":"京畿道 果川市","label":"果川市"},{"name":"京畿道 加平郡","label":"加平郡"},{"name":"京畿道 楊平郡","label":"楊平郡"},{"name":"京畿道 漣川郡","label":"漣川郡"}]},{"title":"仁川広域市","areas":[{"name":"仁川広域市 中区","label":"中区"},{"name":"仁川広域市 東区","label":"東区"},{"name":"仁川広域市 弥鄒忽区","label":"弥鄒忽区"},{"name":"仁川広域市 延寿区","label":"延寿区"},{"name":"仁川広域市 南洞区","label":"南洞区"},{"name":"仁川広域市 富平区","label":"富平区"},{"name":"仁川広域市 桂陽区","label":"桂陽区"},{"name":"仁川広域市 西区","label":"西区"},{"name":"仁川広域市 江華郡","label":"江華郡"},{"name":"仁川広域市 甕津郡","label":"甕津郡"}]}];
 var colors=['#bf5b58','#e5a17a','#e7d9aa','#a7cba8','#4e9068'],data={};
 var grid=document.getElementById('blocks'),metric=document.getElementById('metric'),office=document.getElementById('office');
 var thresholds={net:[100,150,200,250],housing:[-150,-110,-80,-55],commute:[-90,-65,-45,-25],jobs:[20,40,60,80]};
 function render(){
 grid.textContent='';
-areas.forEach(function(a){
-var b=document.createElement('button');b.type='button';b.className='area';b.textContent=a[0];
-b.style.gridRow=a[1]+' / span '+a[3];b.style.gridColumn=a[2]+' / span '+a[4];
-var item=data[a[0]]||{},key=metric.value==='commute'&&item['commute_'+office.value]!=null?'commute_'+office.value:metric.value;
+groups.forEach(function(g){
+var region=document.createElement('section');region.className='region';
+var title=document.createElement('div');title.className='region-title';title.textContent=g.title;region.appendChild(title);
+var cells=document.createElement('div');cells.className='region-grid';
+g.areas.forEach(function(a){
+var b=document.createElement('button');b.type='button';b.className='area';b.textContent=a.label;
+var item=data[a.name]||{},key=metric.value==='commute'&&item['commute_'+office.value]!=null?'commute_'+office.value:metric.value;
 var v=item[key],ok=typeof v==='number'&&Number.isFinite(v);
 if(ok){var n=thresholds[metric.value].filter(function(t){return v>=t}).length;b.style.background=colors[n];}
-b.addEventListener('click',function(){grid.querySelectorAll('.area').forEach(function(x){x.classList.remove('selected')});b.classList.add('selected');document.getElementById('name').textContent=a[0];document.getElementById('detail').textContent=ok?('指標値：'+v+'（比較用）'):'データなし・未評価';});
-grid.appendChild(b);
+b.addEventListener('click',function(){grid.querySelectorAll('.area').forEach(function(x){x.classList.remove('selected')});b.classList.add('selected');document.getElementById('name').textContent=a.name;document.getElementById('detail').textContent=ok?('指標値：'+v+'（比較用）'):'データなし・未評価';});
+cells.appendChild(b);
+});
+region.appendChild(cells);grid.appendChild(region);
 });
 }
 metric.addEventListener('change',render);office.addEventListener('change',render);
