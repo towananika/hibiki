@@ -52,6 +52,8 @@
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
 
   .walks{display:grid;gap:10px}.walk{border:1px solid var(--border);border-radius:15px;padding:12px;background:var(--bg)}.walk-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.walk-head strong{font-size:14px}.walk-head small{color:var(--muted);font-size:12px}.walk p{font-size:12px;color:var(--muted);line-height:1.6;margin:6px 0 8px}.walk svg{display:block;width:100%;height:auto;border-radius:12px;background:var(--sage-soft)}.walk a{display:inline-block;margin-top:9px;color:var(--sage);font-size:13px;font-weight:600;text-decoration:none}.walk-intro{font-size:13px;line-height:1.7;color:var(--muted);margin:0 0 12px}.walk-note{font-size:11px;color:var(--muted);line-height:1.6;margin:12px 0 0}
+
+  .wx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.wx-field{display:grid;gap:4px;font-size:12px;color:var(--muted)}.wx-field select{width:100%;padding:11px 7px;border:1px solid var(--border);border-radius:11px;background:var(--bg);color:var(--text);font:inherit;font-size:14px}.wx-result{margin-top:12px;padding:13px;border-radius:13px;background:var(--sage-soft);line-height:1.7;font-size:14px}.wx-result b{display:block}.wx-link{display:inline-block;margin-top:10px;color:var(--sage);font-size:13px;font-weight:600}.wx-foot{font-size:11px;color:var(--muted);line-height:1.6;margin:10px 0 0}
 </style>
 </head>
 <body>
@@ -90,6 +92,17 @@
 </main>
 
 <script>
+
+
+function weatherAdvice(){
+ var t=document.getElementById("wx-temp").value,r=document.getElementById("wx-rain").value,w=document.getElementById("wx-wind").value,b=document.getElementById("wx-body").value;
+ var title="",msg="";
+ if(r==="heavy"||w==="strong"||b==="poor"){title="今日は屋内で休む・軽く動く";msg="無理して外を歩かず、休息や屋内での軽い運動を優先。";}
+ else if(r==="light"||w==="breezy"||t==="cold"||t==="hot"||b==="tired"){title="短めの住宅街コース（10〜15分）";msg="雨具・防寒・水分を用意。寒い、濡れる、疲れると感じたらすぐ帰る。";}
+ else{title="散歩しやすそう（20〜30分）";msg="01の住宅街コースから始め、気分がよければ02〜03も候補。";}
+ document.getElementById("wx-result").innerHTML="<b>"+title+"</b>"+msg;
+}
+["wx-temp","wx-rain","wx-wind","wx-body"].forEach(function(id){document.getElementById(id).addEventListener("change",weatherAdvice)});weatherAdvice();
 
 // 散歩シリーズ：地図は概念図。実際の経路・距離を示さない。
 var WALKS=[
