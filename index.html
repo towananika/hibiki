@@ -72,15 +72,16 @@
   footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
 
   .hier{margin-top:22px}.hier h2{font-size:19px;margin:0 0 7px}.hier-hint{font-size:12px;color:var(--muted);margin:0 0 13px}.tier-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tier-tab{border:1px solid var(--border);border-radius:15px;padding:15px 4px;background:var(--surface);color:var(--text);font:inherit;font-weight:700;font-size:16px;cursor:pointer}.tier-tab[aria-selected="true"]{border:2px solid var(--sage);background:var(--sage-soft)}.tier-mid{display:grid;gap:9px;margin-top:12px}.tier-group{border:1px solid var(--border);background:var(--surface);border-radius:15px;overflow:hidden}.tier-group summary{padding:14px 16px;font-size:15px;font-weight:650;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}.tier-group summary::-webkit-details-marker{display:none}.tier-group summary::after{content:"⌄";color:var(--muted)}.tier-group[open] summary::after{content:"⌃"}.tier-leaves{border-top:1px solid var(--border);padding:5px 12px 11px}.tier-leaf{display:block;padding:11px 6px;text-decoration:none;color:var(--text);border-bottom:1px solid var(--border)}.tier-leaf:last-child{border-bottom:0}.tier-leaf b{display:block;font-size:14px}.tier-leaf small{display:block;color:var(--muted);font-size:12px;margin-top:3px}.tier-tab:focus-visible,.tier-group summary:focus-visible,.tier-leaf:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  main{max-width:560px;padding-top:26px;padding-bottom:55px}h1{font-size:29px;letter-spacing:.025em}.sub{margin:8px 0 20px}.hier{margin-top:20px}.tier-tab{min-height:62px}.tier-leaf{line-height:1.45}.tier-leaf small{line-height:1.5}.map-entry{border-color:var(--border);background:var(--surface)}.map-entry .map-symbol{background:var(--sage-soft);color:var(--sage)}.site-search{margin-top:22px}.all-toggle{margin-top:20px}@media(max-width:360px){.tier-top{gap:5px}.tier-tab{font-size:14px;padding:12px 2px}.map-entry{gap:9px}}
 </style>
 <link rel="stylesheet" href="weather/weather.css">
 </head>
 <body>
 <main>
   <h1>とわなにか</h1>
-  <section class="simple-weather" data-weather id="home-weather" aria-label="天気予報"></section>
-  <a class="intent-link" href="productivity/">今日の一歩：今できることを選ぶ <span>›</span></a>
-  <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
+  <section class="simple-weather weather-compact" data-weather id="home-weather" aria-label="天気予報"></section>
+  
+  <p class="sub">健康・関係・経済を、ひとつずつ整える。</p>
   <section class="hier" aria-labelledby="hier-title">
     <h2 id="hier-title">暮らしの3つの柱</h2>
     <p class="hier-hint">上位を選ぶ → 中位を開く → 必要なページへ</p>
@@ -91,25 +92,14 @@
     </div>
     <div id="tier-middle" class="tier-mid" role="tabpanel" aria-label="中位カテゴリーとページ"></div>
   </section>
-  <a class="map-entry" href="bible/" style="margin-top:16px"><span class="map-symbol" aria-hidden="true">✦</span><span><strong>聖書を読む</strong><small>比喩・ギリシア語原文・韓国の日常</small></span><span class="arrow" aria-hidden="true">›</span></a>
-  <section class="intent-panel" aria-labelledby="intent-title">
-    <h2 id="intent-title">今日は何をしたい？</h2>
-    <p class="intent-hint">目的を選ぶと、必要な入口だけが出てきます。</p>
-    <div class="intent-tabs" role="group" aria-label="今日の目的">
-      <button type="button" class="intent-tab" data-intent="record" aria-pressed="true">✎ 記録する</button>
-      <button type="button" class="intent-tab" data-intent="review" aria-pressed="false">◷ 振り返る</button>
-      <button type="button" class="intent-tab" data-intent="think" aria-pressed="false">◇ 考える</button>
-      <button type="button" class="intent-tab" data-intent="rest" aria-pressed="false">☾ ひと休み</button>
-    </div>
-    <nav id="intent-links" class="intent-links" aria-label="目的に合わせたページ"></nav>
-  </section>
+  <a class="map-entry" href="bible/" style="margin-top:16px"><span class="map-symbol" aria-hidden="true">✦</span><span><strong>聖書を読む</strong><small>比喩・日本語で読む・韓国の日常</small></span><span class="arrow" aria-hidden="true">›</span></a>
   <form id="site-search" class="site-search" role="search">
     <label for="site-query">ページ・教材を探す</label>
     <div class="search-field"><input id="site-query" type="search" placeholder="例：睡眠、生活費、仏教" autocomplete="off" aria-controls="search-results"><button id="search-clear" type="button" hidden>消す</button><button type="submit">検索</button></div>
   </form>
   <p id="search-status" role="status" aria-live="polite" aria-atomic="true"></p>
   <div id="search-results" aria-label="検索結果" hidden></div>
-  <div id="priority-slot"><a id="pri" href="priority/" style="display:none"></a></div>
+  
   <button id="all-toggle" class="all-toggle" type="button" aria-expanded="false" aria-controls="menu">すべての機能を見る　⌄</button>
   <div id="menu" hidden></div>
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
@@ -130,7 +120,7 @@ var TREE={
   {name:"日々のお金",items:[["家計","収入と支出","money/budget.html"],["お金と自由","お金の全体像","money/"],["円とウォン","両替と仕組み","money/yen.html"]]},
   {name:"資産と制度",items:[["預金と投資","資産を整理","money/assets.html"],["使える制度","積立・税・支援","money/support.html"]]},
   {name:"住まいと移動",items:[["住まい","家と住まい代","home/"],["首都圏の経済価値マップ","地域を比較","home/value-map.html"],["乗り物の費用","移動コスト","money/vehicle.html"]]},
-  {name:"学びと道具",items:[["勉強","経済・金融など","study/"],["道具箱","計算ツール","../tool/"]]}
+  {name:"学びと道具",items:[["勉強","経済・金融など","study/"],["道具箱","計算ツール","tool/"]]}
  ]
 };
 function renderTree(kind){
@@ -182,26 +172,7 @@ var INTENTS = {
   think: ["priority/", "study/", "money/", "about/"],
   rest: ["sleep/", "dreams/", "relations/"]
 };
-function renderIntent(kind) {
-  var pages = GROUPS.reduce(function (all, group) { return all.concat(group.pages); }, []);
-  var root = document.getElementById("intent-links"); root.textContent = "";
-  INTENTS[kind].forEach(function (href) {
-    var p = pages.filter(function (v) { return v.href === href; })[0];
-    var a = document.createElement("a"); a.className = "intent-link"; a.href = href;
-    a.textContent = p ? p.name : "いま、これを";
-    var arrow = document.createElement("span"); arrow.textContent = "›"; a.appendChild(arrow); root.appendChild(a);
-  });
-  Array.prototype.forEach.call(document.querySelectorAll(".intent-tab"), function (b) {
-    b.setAttribute("aria-pressed", String(b.getAttribute("data-intent") === kind));
-  });
-  try { localStorage.setItem("hibiki-home-intent-v1", kind); } catch (e) {}
-}
-Array.prototype.forEach.call(document.querySelectorAll(".intent-tab"), function (b) {
-  b.addEventListener("click", function () { renderIntent(b.getAttribute("data-intent")); });
-});
-var initialIntent = "record";
-try { var savedIntent = localStorage.getItem("hibiki-home-intent-v1"); if (INTENTS[savedIntent]) initialIntent = savedIntent; } catch (e) {}
-renderIntent(initialIntent);
+
 document.getElementById("all-toggle").addEventListener("click", function () {
   var menu = document.getElementById("menu"), expanded = this.getAttribute("aria-expanded") === "true";
   menu.hidden = expanded; this.setAttribute("aria-expanded", String(!expanded));
@@ -215,12 +186,6 @@ document.getElementById("menu").innerHTML = GROUPS.map(function (g) {
     return '<a class="item ' + p.key + '" href="' + p.href + '"><span class="ic"><svg viewBox="0 0 24 24">' + p.icon + '</svg></span><span class="t"><b>' + p.name + '</b>' + (fresh ? '<em class="new">NEW</em>' : '') + '<span>' + p.note + '</span></span><span class="chev">›</span></a>';
   }).join("") + '</div>';
 }).join("");
-if (window.HBPRI) { var pr = document.getElementById("pri"), nx = HBPRI.next; pr.style.display = "block"; pr.innerHTML = "<small>いま、これを</small><b>" + nx.t + "</b><span>" + nx.st + "　›　優先の順番を見る</span>"; }
-if (window.HibikiSync) HibikiSync.open("priority").then(function (D) {
-  if (!D || !D.top || !D.top[0]) return;
-  var pr = document.getElementById("pri"); pr.style.display = "block";
-  pr.innerHTML = "<small>いま大事なこと</small><b>" + D.top[0].t + "</b><span>" + D.top[0].today + "　›　先にやる3つを見る</span>";
-});
 if (window.HibikiSync && HibikiSync.on()) document.getElementById("login").textContent = "ログイン中";
 </script>
 <script src="search/search.js"></script>
