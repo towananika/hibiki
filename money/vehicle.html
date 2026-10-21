@@ -74,9 +74,11 @@
   <h1>乗り物の費用</h1>
   <p class="lead">スクーターの「チャージ・点検・修理」を記録して、実際の月あたりの費用を出します。家計の交通費は「手当」（見込み）、ここは「実費」です。金額はこの端末とログインした端末にだけ残ります。</p>
 
+  <section class="card" id="ownership-analysis"><h2>購入からの振り返り</h2><p class="note" id="analysis-status">ログインすると、これまでの費用とバスとの比較が表示されます。</p><div id="analysis-body"></div></section>
+
   <div class="card">
-    <h2>月あたりの実際の費用</h2>
-    <div class="sum" style="margin-top:8px"><div class="out" style="grid-column:1/3"><small>合計（実費＋購入費の月割り）</small><b id="mt">—</b></div></div>
+    <h2>入力した明細からの月額目安</h2>
+    <div class="sum" style="margin-top:8px"><div class="out" style="grid-column:1/3"><small>合計（実費＋購入費・保険料の月割り）</small><b id="mt">—</b></div></div>
     <div id="kv" style="margin-top:8px"></div>
     <div class="note" id="mn"></div>
     <div style="margin-top:10px"><button class="main" id="apply" type="button">家計の交通費（手当）にする</button> <span class="note" id="an"></span></div>
@@ -95,13 +97,15 @@
 
   <div class="card">
     <h2>年間保険料</h2>
-    <p class="note">契約期間で月額換算します。金額は端末の記録に保存します。</p>
+    <p class="note">契約期間で月額換算します。実費の記録に含まれている場合は、下のチェックを入れて二重計上を防ぎます。</p>
     <div class="grid2">
       <label>支払額（ウォン）<input id="insurance-amount" type="number" min="0" step="1"></label>
       <label>保険開始日<input id="insurance-start" type="date"></label>
       <label>契約期間（か月）<input id="insurance-months" type="number" min="1" max="120" value="12"></label>
     </div>
     <div class="kv"><span>月額換算</span><b id="insurance-monthly">—</b></div>
+    <p id="insurance-period" class="note"></p>
+    <label style="display:flex;gap:8px;align-items:center;font-size:13px"><input id="insurance-included" type="checkbox">保険料は実費の記録に含まれている</label>
     <button class="main" type="button" id="insurance-save">保険料を保存</button>
     <span id="insurance-status" class="note" role="status"></span>
   </div>
@@ -113,11 +117,23 @@
   var TYPES = [["charge", "チャージ"], ["repair", "点検・修理"], ["other", "そのほか"]];
   function uid() { return "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && s.recs) return s; } catch (e) {} return { purchase: 0, bought: "", years: 5, km: 0, recs: [] }; }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); return true; } catch (e) { return false; } }
   var S = load(), editing;
   function insuranceMonthly() {
     var i = S.insurance;
-    return i && i.amount >= 0 && i.months > 0 ? i.amount / i.months : 0;
+    return i && Number.isFinite(+i.amount) && +i.amount >= 0 && Number.isFinite(+i.months) && +i.months > 0 ? +i.amount / +i.months : 0;
+  }
+  function insuranceEnd() {
+    var i = S.insurance;
+    if (!i || !/^\d{4}-\d{2}-\d{2}$/.test(i.start) || !(i.months > 0)) return "";
+    var parts = i.start.split("-").map(Number), months = +i.months;
+    var last = new Date(Date.UTC(parts[0], parts[1] - 1 + months + 1, 0)).getUTCDate();
+    return new Date(Date.UTC(parts[0], parts[1] - 1 + months, Math.min(parts[2], last)) - 864e5).toISOString().slice(0, 10);
+  }
+  function insuranceExpired() {
+    var end = insuranceEnd();
+    var day = new Intl.DateTimeFormat("sv-SE", { timeZone:"Asia/Seoul" }).format(new Date());
+    return end && end < day;
   }
   function insuranceSettings() {
     var i = S.insurance || {};
@@ -126,13 +142,17 @@
     d.value = i.start || "";
     m.value = i.months || 12;
     document.getElementById("insurance-monthly").textContent = i.amount == null ? "—" : won(insuranceMonthly());
+    document.getElementById("insurance-period").textContent = i.amount == null ? "" :
+      i.start + " 〜 " + insuranceEnd() + "（期間から計算した目安）" + (insuranceExpired() ? "。過去の契約です。総費用にはこの契約の月割りを参考額として含めています。更新後の保険料を確認してください。" : "。この契約の保険料を月割りしています。");
+    var included = document.getElementById("insurance-included"); included.checked = !!S.insuranceIncluded;
+    included.onchange = function () { S.insuranceIncluded = included.checked; save(); render(); };
     document.getElementById("insurance-save").onclick = function () {
-      if (!a.value || !d.value || !m.value || +a.value < 0 || +m.value < 1 || +m.value > 120) {
+      if (!a.value || !d.value || !m.value || !Number.isFinite(+a.value) || +a.value < 0 || !Number.isInteger(+m.value) || +m.value < 1 || +m.value > 120) {
         document.getElementById("insurance-status").textContent = "金額・開始日・期間を確認してください。";
         return;
       }
       S.insurance = { amount: Math.round(+a.value), start: d.value, months: Math.round(+m.value) };
-      save(); render(); document.getElementById("insurance-status").textContent = "保存しました。";
+      var saved = save(); render(); document.getElementById("insurance-status").textContent = saved ? "保存しました。" : "保存できませんでした。閉じる前に入力を控えてください。";
     };
   }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
@@ -149,13 +169,14 @@
     var m = months(), rec = S.recs.reduce(function (t, r) { return t + (+r.amt || 0); }, 0);
     var per = S.years > 0 ? (+S.purchase || 0) / (S.years * 12) : 0;
     var real = m ? rec / m : 0, insurance = insuranceMonthly();
-    var life = m ? (real + per) * m : 0;
-    return { m: m, rec: rec, real: real, insurance: insurance, per: per, total: real + per + insurance, perKm: S.km > 0 && life ? life / S.km : 0, yearKm: S.km > 0 && m ? S.km / (m / 12) : 0 };
+    var addedInsurance = S.insuranceIncluded ? 0 : insurance;
+    var life = m ? (real + per + addedInsurance) * m : 0;
+    return { m: m, rec: rec, real: real, insurance: insurance, per: per, total: real + per + addedInsurance, perKm: S.km > 0 && life ? life / S.km : 0, yearKm: S.km > 0 && m ? S.km / (m / 12) : 0 };
   }
   function summary() {
     var c = calc(), kv = document.getElementById("kv"); kv.textContent = "";
-    document.getElementById("mt").textContent = c.m || S.purchase ? won(c.total) : "—";
-    [["記録した費用の合計", won(c.rec)], ["記録の期間", c.m ? (Math.round(c.m * 10) / 10) + " か月" : "—"], ["実費の月平均（チャージ・点検・修理）", c.m ? won(c.real) : "—"], ["購入費の月割り", won(c.per)], ["保険料の月割り", won(c.insurance)], ["1kmあたりの費用", c.perKm ? won(c.perKm) : "走行距離と買った日を入れる"], ["1年あたりの走行", c.yearKm ? Math.round(c.yearKm).toLocaleString("ja-JP") + " km" : "—"]].forEach(function (p) {
+    document.getElementById("mt").textContent = c.m || S.purchase || (S.insurance && S.insurance.amount != null) ? won(c.total) + (insuranceExpired() ? "（保険は過去契約の参考額）" : "") : "—";
+    [["記録した費用の合計", won(c.rec)], ["記録の期間", c.m ? (Math.round(c.m * 10) / 10) + " か月" : "—"], ["実費の月平均（チャージ・点検・修理）", c.m ? won(c.real) : "—"], ["購入費の月割り", won(c.per)], [S.insuranceIncluded ? "保険料（月割り・実費に含むため加算なし）" : "保険料の月割り", won(c.insurance)], ["1kmあたりの費用", c.perKm ? won(c.perKm) : "走行距離と買った日を入れる"], ["1年あたりの走行", c.yearKm ? Math.round(c.yearKm).toLocaleString("ja-JP") + " km" : "—"]].forEach(function (p) {
       var r = el("div", "kv"); r.appendChild(el("span", null, p[0])); r.appendChild(el("b", null, p[1])); kv.appendChild(r);
     });
     var note = "";
@@ -229,8 +250,33 @@
     try { localStorage.setItem("hibiki-vehicle-seeded", "1"); } catch (e) {}
     save(); settings(); render();
   });
+  // 本人から提供された保険情報。手入力済みの契約は上書きしない。
+  if (window.HibikiSync) HibikiSync.open("vehicle-insurance").then(function (D) {
+    if (!D || !D.insurance) return;
+    try {
+      if (localStorage.getItem("hibiki-vehicle-insurance-seeded")) return;
+      if (!S.insurance) {
+        S.insurance = D.insurance;
+        if (!save()) return;
+      }
+      localStorage.setItem("hibiki-vehicle-insurance-seeded", "1");
+      render();
+    } catch (e) { /* 保存できなければ次回に取り込む。 */ }
+  }).catch(function () {});
+  window.addEventListener("vehicleanalysisready", function (event) {
+    var D = event.detail;
+    try {
+      if (!D || localStorage.getItem("hibiki-vehicle-analysis-applied-v1")) return;
+      S.purchase = D.purchase; S.bought = D.bought; S.km = Math.max(+S.km || 0, D.km);
+      S.insuranceIncluded = true;
+      if (!S.insurance || (S.insurance.amount === D.insurance.amount && S.insurance.start === "2025-06-15")) S.insurance = D.insurance;
+      if (save()) localStorage.setItem("hibiki-vehicle-analysis-applied-v1", "1");
+      settings(); render();
+    } catch (e) {}
+  });
   settings(); render();
 })();
 </script>
+<script src="vehicle-analysis.js"></script>
 </body>
 </html>
