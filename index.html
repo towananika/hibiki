@@ -77,6 +77,7 @@
 <body>
 <main>
   <h1>とわなにか</h1>
+  <a class="intent-link" href="productivity/">今日の一歩：今できることを選ぶ <span>›</span></a>
   <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
   <section class="hier" aria-labelledby="hier-title">
     <h2 id="hier-title">暮らしの3つの柱</h2>
@@ -150,6 +151,7 @@ renderTree(initialTier);
 // ▼ ページを足すときはここに1行足す。new: 足した日（7日間「NEW」が出る）
 var GROUPS = [
   { n: "毎日", pages: [
+    { key: "more", name: "今日の一歩", note: "5分から始める・仕事と収入のきっかけ", href: "productivity/", new: "2026-10-21", icon: '<path d="M4 12l5 5L20 6"/>' },
     { key: "health", name: "健康", note: "毎日4つをタップ", href: "health/", icon: '<path d="M3 12h4l2-5 4 10 2-5h6"/>' },
     { key: "health", name: "睡眠メモ", note: "寝る・起きたを1タップ", href: "sleep/", new: "2026-10-17", icon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>' },
     { key: "people", name: "愛と関係", note: "連絡・ありがとう・大切な人", href: "relations/", icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' } ]},
