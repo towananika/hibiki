@@ -3,11 +3,11 @@
 :root{--bg:#f5f1e9;--card:#fbf9f4;--text:#2b2924;--muted:#827969;--line:#e2dac8;--sage:#74886d;--soft:#e2e8dd}
 @media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--card:#242119;--text:#ede8dd;--muted:#afa595;--line:#38332a;--sage:#9db394;--soft:#26301f}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}main{max-width:540px;margin:auto;padding:28px 16px 50px}a{color:var(--sage)}.back{font-size:14px;text-decoration:none;font-weight:600}h1{font-size:29px;margin:22px 0 7px}.intro{font-size:14px;line-height:1.8;color:var(--muted);margin:0 0 22px}.note{border-left:3px solid var(--sage);padding:9px 12px;background:var(--soft);font-size:13px;line-height:1.8;border-radius:0 12px 12px 0}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.filters button{border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--text);padding:9px 15px;font:inherit;font-size:13px;cursor:pointer}.filters button[aria-pressed=true]{background:var(--sage);color:white}.entry{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:19px;margin:14px 0}.ref{font-size:12px;color:var(--sage);font-weight:700}.entry h2{font-size:21px;margin:7px 0 15px}.section{margin:16px 0}.tag{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em}.section p{font-size:15px;line-height:1.8;margin:6px 0}.original{font-size:17px;overflow-wrap:anywhere}.analogy{background:var(--soft);border-radius:12px;padding:12px}.caution{font-size:12px;color:var(--muted);line-height:1.7}footer{font-size:12px;color:var(--muted);line-height:1.7;margin-top:25px}[hidden]{display:none!important}
-</style></head><body><main><a class="back" href="../">← とわなにか</a><h1>聖書を読む</h1><p class="intro">比喩・原文・韓国の日常。日本語で、ゆっくり理解するためのノート。</p>
-<div class="note">「原文の抜粋」「日本語での意味」「比喩の読み方」「韓国を使った例え」を分けて表示しています。韓国風の例は説明のための創作であり、聖書本文や歴史的背景そのものではありません。</div>
+.detail{margin-top:13px;border-top:1px solid var(--line);padding-top:12px}.detail summary{cursor:pointer;color:var(--sage);font-size:14px;font-weight:700;padding:6px 0}.detail summary:focus-visible{outline:2px solid var(--sage);outline-offset:3px}.entry h2{margin-bottom:10px}.entry .analogy{margin-top:8px}.section.analogy p{font-size:16px}.detail .section{margin:13px 0}</style></head><body><main><a class="back" href="../">← とわなにか</a><h1>聖書を読む</h1><p class="intro">韓国の街や暮らしを舞台に、聖書の比喩を日本語で読む。気になるところだけ、タップして詳しく。</p>
+<div class="note">最初に見えるのは韓国の日常を使った例えです。「聖書の言葉と説明を見る」を開くと、日本語の聖書本文の意訳や比喩の説明を確認できます。韓国の場面は理解のための創作です。</div>
 <div class="filters" role="group" aria-label="比喩のテーマ"><button data-filter="all" aria-pressed="true">すべて</button><button data-filter="identity" aria-pressed="false">自分と役割</button><button data-filter="growth" aria-pressed="false">成長</button></div>
 <div id="entries"></div>
-<footer>原文は新約聖書のコイネー・ギリシア語から短く抜粋。日本語はこのページ独自の意訳で、既存の聖書翻訳からの引用ではありません。比喩の意味は前後の文脈や教派によって説明が異なることがあります。必要なら章全体を読んで確認してください。</footer>
+<footer>「原文の日本語訳」はこのページ独自の意訳で、既存の聖書翻訳からの引用ではありません。ギリシア語の文字は表示しません。比喩の意味は前後の文脈や教派によって説明が異なることがあります。必要なら章全体を読んで確認してください。</footer>
 </main><script>
 const data=[
 {cat:"identity",ref:"ヨハネによる福音書 10:9",title:"「わたしは門である」",original:"ἐγώ εἰμι ἡ θύρα",jp:"「わたしは門です」",reading:"門は、内と外をつなぐ入口のイメージです。イエスはこの章で羊と羊飼いのたとえを語っています。建物の門そのものを指す言葉ではありません。",korea:"ソウルの大きな駅に入口がいくつもあっても、どの入口から入るかで向かう場所が変わります。ここでは『入口』という身近な感覚を借りて、イエスの言葉を考えます。",caution:"駅の例は現代の説明用で、本文の『羊の門』の文化的背景とは異なります。"},
@@ -15,6 +15,20 @@ const data=[
 {cat:"growth",ref:"ヨハネによる福音書 15:5",title:"「ぶどうの木と枝」",original:"ἐγώ εἰμι ἡ ἄμπελος, ὑμεῖς τὰ κλήματα",jp:"「わたしはぶどうの木、あなたがたは枝です」",reading:"枝は木につながって育ち、実を結びます。この比喩は、イエスと弟子たちのつながりや、その関係から生まれる実りを表します。",korea:"京畿道の果樹園を思い浮かべてみてください。枝が木から水分や養分を受けるように、人もつながりによって支えられることがあります。",caution:"韓国の果樹園は現代的なたとえ。本文のぶどう栽培や当時の宗教的意味を置き換えるものではありません。"}
 ];
 function el(tag,cls,text){let n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
-function render(filter){let root=document.getElementById("entries");root.textContent="";data.filter(d=>filter==="all"||d.cat===filter).forEach(d=>{let article=el("article","entry");article.append(el("div","ref",d.ref),el("h2","",d.title));[["原文（ギリシア語・抜粋）",d.original,"original"],["日本語での意味（意訳）",d.jp,""],["比喩の読み方",d.reading,""],["韓国の日常に置き換えると",d.korea,"analogy"],["注意",d.caution,"caution"]].forEach(([label,value,cl])=>{let s=el("div","section "+cl);s.append(el("div","tag",label),el("p","",value));article.append(s)});root.append(article)})}
+function render(filter){
+ let root=document.getElementById("entries");root.textContent="";
+ data.filter(d=>filter==="all"||d.cat===filter).forEach(d=>{
+  let article=el("article","entry");
+  article.append(el("div","ref",d.ref),el("h2","",d.title));
+  let main=el("div","section analogy");
+  main.append(el("div","tag","韓国の日常で考えると"),el("p","",d.korea));article.append(main);
+  let details=el("details","detail");
+  details.append(el("summary","","聖書の言葉と比喩の説明を見る"));
+  [["原文の日本語訳（短い意訳）",d.jp,""],["比喩の意味と文脈",d.reading,""],["韓国風の例えについて",d.caution,"caution"]].forEach(([label,value,cl])=>{
+   let s=el("div","section "+cl);s.append(el("div","tag",label),el("p","",value));details.append(s);
+  });
+  article.append(details);root.append(article);
+ });
+}
 document.querySelectorAll("[data-filter]").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll("[data-filter]").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));render(b.dataset.filter)}));render("all");
 </script></body></html>
