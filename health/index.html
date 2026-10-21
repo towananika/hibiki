@@ -54,6 +54,7 @@
   .walks{display:grid;gap:10px}.walk{border:1px solid var(--border);border-radius:15px;padding:12px;background:var(--bg)}.walk-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.walk-head strong{font-size:14px}.walk-head small{color:var(--muted);font-size:12px}.walk p{font-size:12px;color:var(--muted);line-height:1.6;margin:6px 0 8px}.walk svg{display:block;width:100%;height:auto;border-radius:12px;background:var(--sage-soft)}.walk a{display:inline-block;margin-top:9px;color:var(--sage);font-size:13px;font-weight:600;text-decoration:none}.walk-intro{font-size:13px;line-height:1.7;color:var(--muted);margin:0 0 12px}.walk-note{font-size:11px;color:var(--muted);line-height:1.6;margin:12px 0 0}
 
   .wx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.wx-field{display:grid;gap:4px;font-size:12px;color:var(--muted)}.wx-field select{width:100%;padding:11px 7px;border:1px solid var(--border);border-radius:11px;background:var(--bg);color:var(--text);font:inherit;font-size:14px}.wx-result{margin-top:12px;padding:13px;border-radius:13px;background:var(--sage-soft);line-height:1.7;font-size:14px}.wx-result b{display:block}.wx-link{display:inline-block;margin-top:10px;color:var(--sage);font-size:13px;font-weight:600}.wx-foot{font-size:11px;color:var(--muted);line-height:1.6;margin:10px 0 0}
+.health-fold{margin-top:14px;border:1px solid var(--border);border-radius:18px;background:var(--surface);overflow:hidden}.health-fold>summary{cursor:pointer;list-style:none;padding:16px;font-size:16px;font-weight:700;display:flex;flex-direction:column;gap:4px}.health-fold>summary::-webkit-details-marker{display:none}.health-fold>summary::after{content:"開く ↓";color:var(--sage);font-size:12px;margin-top:3px}.health-fold[open]>summary::after{content:"閉じる ↑"}.health-fold>summary span{font-size:12px;font-weight:400;color:var(--muted)}.health-fold .simple-weather{margin:0 12px 12px}.health-fold:focus-within{outline-offset:2px}main{max-width:560px}.card{margin-top:12px}@media(max-width:360px){.card{padding:14px}.health-fold .simple-weather{margin:0 8px 8px}}
 </style>
 <link rel="stylesheet" href="../weather/weather.css">
 </head>
@@ -61,7 +62,7 @@
 <main>
   <div class="top"><a class="brand" href="../">← とわなにか</a><span class="date" id="date"></span></div>
   <h1>健康</h1>
-  <section class="simple-weather" data-weather id="walk-weather" aria-label="天気予報"></section>
+  <details class="health-fold" id="weather-details"><summary>天気・7日間の予報 <span>気温・風・雨・時間別</span></summary><section class="simple-weather" data-weather id="weather-forecast" aria-label="天気予報"></section></details>
 
   <section class="card">
     <p class="label"><span>今日（タップで記録）</span><b id="count"></b></p>
