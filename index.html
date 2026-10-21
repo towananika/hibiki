@@ -73,10 +73,12 @@
 
   .hier{margin-top:22px}.hier h2{font-size:19px;margin:0 0 7px}.hier-hint{font-size:12px;color:var(--muted);margin:0 0 13px}.tier-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tier-tab{border:1px solid var(--border);border-radius:15px;padding:15px 4px;background:var(--surface);color:var(--text);font:inherit;font-weight:700;font-size:16px;cursor:pointer}.tier-tab[aria-selected="true"]{border:2px solid var(--sage);background:var(--sage-soft)}.tier-mid{display:grid;gap:9px;margin-top:12px}.tier-group{border:1px solid var(--border);background:var(--surface);border-radius:15px;overflow:hidden}.tier-group summary{padding:14px 16px;font-size:15px;font-weight:650;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}.tier-group summary::-webkit-details-marker{display:none}.tier-group summary::after{content:"⌄";color:var(--muted)}.tier-group[open] summary::after{content:"⌃"}.tier-leaves{border-top:1px solid var(--border);padding:5px 12px 11px}.tier-leaf{display:block;padding:11px 6px;text-decoration:none;color:var(--text);border-bottom:1px solid var(--border)}.tier-leaf:last-child{border-bottom:0}.tier-leaf b{display:block;font-size:14px}.tier-leaf small{display:block;color:var(--muted);font-size:12px;margin-top:3px}.tier-tab:focus-visible,.tier-group summary:focus-visible,.tier-leaf:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 </style>
+<link rel="stylesheet" href="weather/weather.css">
 </head>
 <body>
 <main>
   <h1>とわなにか</h1>
+  <section class="simple-weather" data-weather id="home-weather" aria-label="天気予報"></section>
   <a class="intent-link" href="productivity/">今日の一歩：今できることを選ぶ <span>›</span></a>
   <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
   <section class="hier" aria-labelledby="hier-title">
@@ -221,5 +223,6 @@ if (window.HibikiSync) HibikiSync.open("priority").then(function (D) {
 if (window.HibikiSync && HibikiSync.on()) document.getElementById("login").textContent = "ログイン中";
 </script>
 <script src="search/search.js"></script>
+<script src="weather/weather.js"></script>
 </body>
 </html>
