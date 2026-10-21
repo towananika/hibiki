@@ -3,8 +3,17 @@
 :root{--bg:#f5f1e9;--card:#fbf9f4;--text:#2b2924;--muted:#827969;--line:#e2dac8;--sage:#74886d;--soft:#e2e8dd}
 @media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--card:#242119;--text:#ede8dd;--muted:#afa595;--line:#38332a;--sage:#9db394;--soft:#26301f}}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}main{max-width:540px;margin:auto;padding:28px 16px 50px}a{color:var(--sage)}.back{font-size:14px;text-decoration:none;font-weight:600}h1{font-size:29px;margin:22px 0 7px}.intro{font-size:14px;line-height:1.8;color:var(--muted);margin:0 0 22px}.note{border-left:3px solid var(--sage);padding:9px 12px;background:var(--soft);font-size:13px;line-height:1.8;border-radius:0 12px 12px 0}.filters{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.filters button{border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--text);padding:9px 15px;font:inherit;font-size:13px;cursor:pointer}.filters button[aria-pressed=true]{background:var(--sage);color:white}.entry{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:19px;margin:14px 0}.ref{font-size:12px;color:var(--sage);font-weight:700}.entry h2{font-size:21px;margin:7px 0 15px}.section{margin:16px 0}.tag{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em}.section p{font-size:15px;line-height:1.8;margin:6px 0}.original{font-size:17px;overflow-wrap:anywhere}.analogy{background:var(--soft);border-radius:12px;padding:12px}.caution{font-size:12px;color:var(--muted);line-height:1.7}footer{font-size:12px;color:var(--muted);line-height:1.7;margin-top:25px}[hidden]{display:none!important}
-.detail{margin-top:13px;border-top:1px solid var(--line);padding-top:12px}.detail summary{cursor:pointer;color:var(--sage);font-size:14px;font-weight:700;padding:6px 0}.detail summary:focus-visible{outline:2px solid var(--sage);outline-offset:3px}.entry h2{margin-bottom:10px}.entry .analogy{margin-top:8px}.section.analogy p{font-size:16px}.detail .section{margin:13px 0}</style></head><body><main><a class="back" href="../">← とわなにか</a><h1>聖書を読む</h1><p class="intro">韓国の街や暮らしを舞台に、聖書の比喩を日本語で読む。気になるところだけ、タップして詳しく。</p>
+.detail{margin-top:13px;border-top:1px solid var(--line);padding-top:12px}.detail summary{cursor:pointer;color:var(--sage);font-size:14px;font-weight:700;padding:6px 0}.detail summary:focus-visible{outline:2px solid var(--sage);outline-offset:3px}.entry h2{margin-bottom:10px}.entry .analogy{margin-top:8px}.section.analogy p{font-size:16px}.detail .section{margin:13px 0}
+.path-head{margin:24px 0 12px}.path-head h2{font-size:21px;margin:0 0 5px}.path-head p{font-size:13px;color:var(--muted);line-height:1.7;margin:0}.path-progress{height:9px;background:var(--line);border-radius:10px;overflow:hidden;margin:13px 0 5px}.path-progress i{display:block;height:100%;background:var(--sage);width:0;transition:width .2s}.path-status{font-size:12px;color:var(--muted)}.path-item{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin:10px 0}.path-top{display:flex;align-items:center;gap:10px}.path-no{display:grid;place-items:center;flex:none;width:32px;height:32px;border-radius:50%;background:var(--soft);color:var(--sage);font-weight:700;font-size:13px}.path-top b{font-size:15px}.path-top small{display:block;color:var(--muted);font-size:12px;margin-top:3px}.path-item p{font-size:14px;line-height:1.8;margin:11px 0}.path-item details{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}.path-item summary{color:var(--sage);font-weight:700;cursor:pointer;font-size:13px;padding:6px 0}.path-item .extra{font-size:13px;line-height:1.8}.path-done{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--muted)}.path-done input{accent-color:var(--sage);width:18px;height:18px}.path-link{font-size:13px;color:var(--sage);font-weight:700;text-decoration:none}.path-reset{border:0;background:transparent;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer}.path-section{scroll-margin-top:15px}
+</style></head><body><main><a class="back" href="../">← とわなにか</a><h1>聖書を読む</h1><p class="intro">韓国の街や暮らしを舞台に、聖書の比喩を日本語で読む。気になるところだけ、タップして詳しく。</p>
 <div class="note">最初に見えるのは韓国の日常を使った例えです。「聖書の言葉と説明を見る」を開くと、日本語の聖書本文の意訳や比喩の説明を確認できます。韓国の場面は理解のための創作です。</div>
+<section id="reading-path" class="path-section">
+<div class="path-head"><h2>はじめての聖書・8つの道</h2><p>韓国の日常の例えから入って、原文の日本語訳と文脈を少しずつ知る。1回5〜10分、好きな順番でも大丈夫。</p></div>
+<div class="path-progress" aria-label="学習の進み具合"><i id="path-bar"></i></div><div class="path-status" id="path-status" role="status"></div>
+<div id="path-items"></div>
+<button class="path-reset" id="path-reset" type="button">読了チェックをリセット</button>
+</section>
+<div class="path-head" id="dictionary"><h2>比喩の辞典</h2><p>気になった言葉から自由に調べる。</p></div>
 <div class="filters" role="group" aria-label="比喩のテーマ"><button data-filter="all" aria-pressed="true">すべて</button><button data-filter="identity" aria-pressed="false">自分と役割</button><button data-filter="growth" aria-pressed="false">成長</button></div>
 <div id="entries"></div>
 <footer>「原文の日本語訳」はこのページ独自の意訳で、既存の聖書翻訳からの引用ではありません。ギリシア語の文字は表示しません。比喩の意味は前後の文脈や教派によって説明が異なることがあります。必要なら章全体を読んで確認してください。</footer>
@@ -14,6 +23,34 @@ const data=[
 {cat:"identity",ref:"マタイによる福音書 5:14",title:"「あなたがたは世の光」",original:"Ὑμεῖς ἐστε τὸ φῶς τοῦ κόσμου",jp:"「あなたがたは世界の光です」",reading:"光は、暗いところを照らして周囲から見えるようにするイメージです。続く箇所では、良い行いを通して神がたたえられることが語られます。",korea:"雨の夜、漢江沿いの道に街灯があると、足元が見えやすくなります。人の親切や行動も、誰かの道を少し明るくすることがあります。",caution:"街灯は理解を助ける例であり、本文に漢江が登場するわけではありません。"},
 {cat:"growth",ref:"ヨハネによる福音書 15:5",title:"「ぶどうの木と枝」",original:"ἐγώ εἰμι ἡ ἄμπελος, ὑμεῖς τὰ κλήματα",jp:"「わたしはぶどうの木、あなたがたは枝です」",reading:"枝は木につながって育ち、実を結びます。この比喩は、イエスと弟子たちのつながりや、その関係から生まれる実りを表します。",korea:"京畿道の果樹園を思い浮かべてみてください。枝が木から水分や養分を受けるように、人もつながりによって支えられることがあります。",caution:"韓国の果樹園は現代的なたとえ。本文のぶどう栽培や当時の宗教的意味を置き換えるものではありません。"}
 ];
+
+const PATH=[
+{title:"イエスの物語を知る",ref:"マルコによる福音書 1章",scene:"ソウルの街で、ある先生が人々と出会い、話しかけ、病気の人を気にかける場面を想像してみてください。まずはイエスがどんな行動をしたかに注目します。",meaning:"マルコ1章は、イエスの活動の始まり、弟子たちとの出会い、癒やしなどを描きます。韓国の場面は説明用の創作です。",question:"この章のイエスは、どんな人に目を向けている？"},
+{title:"隣人とは誰か",ref:"ルカによる福音書 10:25–37",scene:"ソウルの帰り道で困っている人を見かけたとします。知り合いではなくても助けるでしょうか。『善いサマリア人』のたとえにつながる問いです。",meaning:"このたとえでは、誰が隣人かという問いに対して、困っている人に憐れみを示した人の行動が焦点になります。登場するサマリア人には当時の歴史的な背景があります。",question:"立場の違いより大切にされている行動は何だろう？"},
+{title:"心配と今日の暮らし",ref:"マタイによる福音書 6:25–34",scene:"家賃や仕事のことで心配な朝。漢江の鳥や公園の草花を眺めて、今日必要なことを一つずつ考える場面を想像してみてください。",meaning:"この箇所では、食べ物や衣服への思い煩いについて語られ、鳥や野の花が例に使われます。生活上の準備を一切やめよという単純な意味ではありません。",question:"今できることと、まだ起きていない心配を分けられる？"},
+{title:"光になるということ",ref:"マタイによる福音書 5:14–16",scene:"雨の夜、漢江沿いの街灯が歩く人の足元を照らすように、小さな親切が誰かの助けになることがあります。",meaning:"『世の光』という比喩は、良い行いが人々に見えることと結びついています。街灯の例は現代の創作です。",question:"誰かの一日を少し明るくする行動は？"},
+{title:"門と羊飼い",ref:"ヨハネによる福音書 10:1–18",scene:"ソウルの駅で入口を探すとき、案内があると安心します。『門』の比喩を考える入口にしてみましょう。",meaning:"イエスは自分を『門』また『良い羊飼い』として語ります。実際の文脈は羊の世話に基づく比喩で、駅の入口と完全には一致しません。",question:"この章で羊飼いが羊に対してすることは？"},
+{title:"つながりと実り",ref:"ヨハネによる福音書 15:1–11",scene:"京畿道の果樹園で、枝が木から養分を受けて実を結ぶ様子を思い浮かべてください。",meaning:"ぶどうの木と枝は、イエスと弟子のつながりを語る比喩です。実りは文脈の中で考え、金銭的な成功などと直結させないようにします。",question:"『つながっている』とはどんな関係だろう？"},
+{title:"詩と祈りの言葉",ref:"詩編 23編",scene:"韓国の山道で道に迷いそうなとき、道を知る案内人がそばにいると安心します。『羊飼い』の詩のイメージを考えてみましょう。",meaning:"詩編23編は主を羊飼いにたとえる詩です。詩の表現として読み、恐怖や罰を決めつけるために使わないようにします。",question:"この詩のどの表現に安心や疑問を感じる？"},
+{title:"聖書全体の背景へ",ref:"創世記 1–3章",scene:"街の始まりや、人と人の関係がどう生まれるかを考えるように、聖書が語る世界の始まりと人間の物語を読んでみましょう。",meaning:"創世記の冒頭は創造と人間の物語です。文学的・神学的な読み方には幅があります。ここから旧約聖書の背景へ進めます。",question:"この物語は人間について何を問いかけている？"}
+];
+const PATH_KEY="hibiki-bible-reading-v1";
+let pathDone={};try{pathDone=JSON.parse(localStorage.getItem(PATH_KEY))||{}}catch(e){}
+function drawPath(){
+ const root=document.getElementById("path-items");root.textContent="";
+ PATH.forEach((d,i)=>{
+  const card=el("article","path-item");const head=el("div","path-top");head.append(el("span","path-no",String(i+1).padStart(2,"0")));
+  const ht=el("div");ht.append(el("b","",d.title),el("small","",d.ref));head.append(ht);card.append(head);
+  card.append(el("p","",d.scene));
+  const detail=el("details");detail.append(el("summary","","聖書の文脈と考える問いを見る"));
+  const extra=el("div","extra");extra.append(el("p","",d.meaning),el("p","", "考える問い："+d.question));detail.append(extra);card.append(detail);
+  const label=el("label","path-done");const checkbox=document.createElement("input");checkbox.type="checkbox";checkbox.checked=!!pathDone[i];checkbox.addEventListener("change",()=>{pathDone[i]=checkbox.checked;try{localStorage.setItem(PATH_KEY,JSON.stringify(pathDone))}catch(e){}updatePathProgress()});label.append(checkbox,document.createTextNode("読んだ"));card.append(label);root.append(card);
+ });updatePathProgress();
+}
+function updatePathProgress(){const n=PATH.filter((_,i)=>pathDone[i]).length;document.getElementById("path-status").textContent=n+" / "+PATH.length+" 読了";document.getElementById("path-bar").style.width=(n/PATH.length*100)+"%"}
+document.getElementById("path-reset").addEventListener("click",()=>{if(!confirm("読了チェックをリセットしますか？"))return;pathDone={};try{localStorage.removeItem(PATH_KEY)}catch(e){}drawPath()});
+drawPath();
+
 function el(tag,cls,text){let n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
 function render(filter){
  let root=document.getElementById("entries");root.textContent="";
