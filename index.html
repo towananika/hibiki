@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>とわなにか</title>
 <script src="sync.js"></script>
@@ -57,16 +57,6 @@
   .search-result { display:block; padding:14px; margin-top:8px; border:1px solid var(--border); border-radius:13px; background:var(--surface); color:var(--text); text-decoration:none; overflow-wrap:anywhere; }
   .search-result strong { display:block; font-size:16px; line-height:1.5; }
   .search-result span { display:block; margin-top:5px; font-size:13px; line-height:1.7; color:var(--muted); }
-  .sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
-  .weather-card { margin-top:18px; padding:15px 16px; border:1px solid var(--border); border-radius:18px; background:var(--surface); }
-  .weather-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-  .weather-head strong { font-size:15px; }
-  .weather-head select { max-width:130px; padding:8px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font:inherit; font-size:13px; }
-  .weather-main { display:flex; align-items:center; gap:12px; margin-top:12px; }
-  .weather-icon { font-size:32px; line-height:1; }
-  .weather-temp { font-size:30px; font-weight:700; }
-  .weather-detail { color:var(--muted); font-size:13px; line-height:1.7; margin-top:7px; }
-  .weather-source { color:var(--muted); font-size:11px; margin-top:8px; }
   .intent-panel { margin-top:20px; padding:16px; border:1px solid var(--border); border-radius:20px; background:var(--surface); }
   .intent-panel h2 { margin:0 0 4px; font-size:18px; }
   .intent-hint { margin:0 0 12px; color:var(--muted); font-size:13px; }
@@ -78,17 +68,28 @@
   .intent-link { display:flex; justify-content:space-between; gap:8px; padding:12px 14px; border-radius:12px; background:var(--bg); color:var(--text); text-decoration:none; font-size:15px; }
   .intent-link span { color:var(--muted); }
   .all-toggle { display:block; width:100%; margin:20px 0 4px; padding:13px; border:1px solid var(--border); border-radius:13px; background:var(--surface); color:var(--text); font:inherit; font-weight:600; cursor:pointer; text-align:left; }
+  .map-entry{display:flex;align-items:center;gap:13px;margin:18px 0 2px;padding:15px;border:1px solid var(--sage);border-radius:17px;background:var(--sage-soft);text-decoration:none;color:var(--text)}.map-entry .map-symbol{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;background:var(--sage);color:white;font-size:25px;flex:none}.map-entry strong{display:block;font-size:17px}.map-entry small{display:block;color:var(--muted);font-size:12px;margin-top:3px}.map-entry .arrow{margin-left:auto;font-size:23px;color:var(--sage)}
   footer { color:var(--muted); font-size:12px; margin-top:24px; text-align:center; }
+
+  .hier{margin-top:22px}.hier h2{font-size:19px;margin:0 0 7px}.hier-hint{font-size:12px;color:var(--muted);margin:0 0 13px}.tier-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.tier-tab{border:1px solid var(--border);border-radius:15px;padding:15px 4px;background:var(--surface);color:var(--text);font:inherit;font-weight:700;font-size:16px;cursor:pointer}.tier-tab[aria-selected="true"]{border:2px solid var(--sage);background:var(--sage-soft)}.tier-mid{display:grid;gap:9px;margin-top:12px}.tier-group{border:1px solid var(--border);background:var(--surface);border-radius:15px;overflow:hidden}.tier-group summary{padding:14px 16px;font-size:15px;font-weight:650;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}.tier-group summary::-webkit-details-marker{display:none}.tier-group summary::after{content:"⌄";color:var(--muted)}.tier-group[open] summary::after{content:"⌃"}.tier-leaves{border-top:1px solid var(--border);padding:5px 12px 11px}.tier-leaf{display:block;padding:11px 6px;text-decoration:none;color:var(--text);border-bottom:1px solid var(--border)}.tier-leaf:last-child{border-bottom:0}.tier-leaf b{display:block;font-size:14px}.tier-leaf small{display:block;color:var(--muted);font-size:12px;margin-top:3px}.tier-tab:focus-visible,.tier-group summary:focus-visible,.tier-leaf:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 </style>
+<link rel="stylesheet" href="weather/weather.css">
 </head>
 <body>
 <main>
   <h1>とわなにか</h1>
+  <section class="simple-weather" data-weather id="home-weather" aria-label="天気予報"></section>
+  <a class="intent-link" href="productivity/">今日の一歩：今できることを選ぶ <span>›</span></a>
   <p class="sub">健康・自由・好きな人たち。<br>ひびきのよい人生のために。</p>
-  <section class="weather-card" aria-labelledby="weather-title">
-    <div class="weather-head"><strong id="weather-title">今日の天気</strong><label><span class="sr-only">天気の地域</span><select id="weather-city" aria-label="天気の地域"><option value="seoul">ソウル</option><option value="tokyo">東京</option><option value="osaka">大阪</option><option value="busan">釜山</option></select></label></div>
-    <div id="weather-content" role="status" aria-live="polite"><p class="weather-detail">天気を取得しています…</p></div>
-    <div class="weather-source">予報：Open-Meteo · 地域は端末に保存</div>
+  <section class="hier" aria-labelledby="hier-title">
+    <h2 id="hier-title">暮らしの3つの柱</h2>
+    <p class="hier-hint">上位を選ぶ → 中位を開く → 必要なページへ</p>
+    <div class="tier-top" role="tablist" aria-label="上位カテゴリー">
+      <button class="tier-tab" type="button" role="tab" data-tier="health" aria-selected="true">健康</button>
+      <button class="tier-tab" type="button" role="tab" data-tier="relations" aria-selected="false">関係</button>
+      <button class="tier-tab" type="button" role="tab" data-tier="economy" aria-selected="false">経済</button>
+    </div>
+    <div id="tier-middle" class="tier-mid" role="tabpanel" aria-label="中位カテゴリーとページ"></div>
   </section>
   <section class="intent-panel" aria-labelledby="intent-title">
     <h2 id="intent-title">今日は何をしたい？</h2>
@@ -113,45 +114,46 @@
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
 <script>
-// 天気は公開予報のみ。位置情報を取得せず、選択した都市だけを保存。
-(function () {
-  var cities = { seoul:[37.5665,126.9780,"Asia/Seoul"], tokyo:[35.6762,139.6503,"Asia/Tokyo"], osaka:[34.6937,135.5023,"Asia/Tokyo"], busan:[35.1796,129.0756,"Asia/Seoul"] };
-  var sel = document.getElementById("weather-city"), box = document.getElementById("weather-content");
-  try { var saved = localStorage.getItem("hibiki-weather-city-v1"); if (cities[saved]) sel.value = saved; } catch (e) {}
-  function desc(code) {
-    if (code === 0) return ["☀️","快晴"];
-    if (code <= 3) return ["⛅","晴れ・くもり"];
-    if (code <= 48) return ["🌫️","霧"];
-    if (code <= 67) return ["🌧️","雨"];
-    if (code <= 77) return ["❄️","雪"];
-    if (code <= 82) return ["🌦️","にわか雨"];
-    if (code <= 86) return ["🌨️","にわか雪"];
-    if (code >= 95) return ["⛈️","雷雨"];
-    return ["☁️","くもり"];
-  }
-  function loadWeather() {
-    var city = sel.value, c = cities[city]; box.textContent = "天気を取得しています…";
-    try { localStorage.setItem("hibiki-weather-city-v1", city); } catch (e) {}
-    var url = "https://api.open-meteo.com/v1/forecast?latitude="+c[0]+"&longitude="+c[1]+"&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=1&timezone="+encodeURIComponent(c[2]);
-    fetch(url).then(function(r){if(!r.ok)throw Error("network");return r.json();}).then(function(d){
-      if (sel.value !== city) return;
-      if (!d.current || !d.daily || !d.daily.temperature_2m_max) throw Error("data");
-      var w=desc(d.current.weather_code), temp=Math.round(d.current.temperature_2m), feel=Math.round(d.current.apparent_temperature), wind=Math.round(d.current.wind_speed_10m);
-      var hi=Math.round(d.daily.temperature_2m_max[0]),lo=Math.round(d.daily.temperature_2m_min[0]),rain=d.daily.precipitation_probability_max[0];
-      box.textContent="";
-      var line=document.createElement("div");line.className="weather-main";
-      var icon=document.createElement("span");icon.className="weather-icon";icon.textContent=w[0];
-      var degree=document.createElement("span");degree.className="weather-temp";degree.textContent=temp+"℃";
-      var label=document.createElement("span");label.textContent=w[1];label.textContent=(rain>=50?"🌂 雨に注意 · ":"")+w[1];line.append(icon,degree,label);
-      var detail=document.createElement("div");detail.className="weather-detail";detail.textContent="雨 "+(rain == null?"—":rain+"%")+" · 体感 "+feel+"℃ · 風 "+wind+"km/h · 最高 "+hi+"℃ / 最低 "+lo+"℃";
-      box.append(line,detail);
-    }).catch(function(){if(sel.value===city)box.textContent="天気を取得できませんでした。地域を選び直すと再試行できます。";});
-  }
-  sel.addEventListener("change",loadWeather);loadWeather();
-})();
+
+var TREE={
+ health:[
+  {name:"毎日の体調",items:[["健康記録","睡眠・水・食事・歩数","health/"],["睡眠メモ","寝る・起きるの記録","sleep/"]]},
+  {name:"散歩と天気",items:[["散歩ルート5選","気分に合わせたコース","health/#walking-routes"],["散歩前の天気比較","気温・雨・風・体調で判断","health/#walk-weather"]]},
+  {name:"休息と自分の気持ち",items:[["夢日記","願いと日々の記録","dreams/"],["これまでの道","人生タイムライン","timeline/"]]}
+ ],
+ relations:[
+  {name:"大切な人とのつながり",items:[["愛と関係","連絡・ありがとう・大切な人","relations/"]]},
+  {name:"自分を理解する",items:[["私について","自分の説明書","about/"],["これまでの道","振り返り","timeline/"]]}
+ ],
+ economy:[
+  {name:"日々のお金",items:[["家計","収入と支出","money/budget.html"],["お金と自由","お金の全体像","money/"],["円とウォン","両替と仕組み","money/yen.html"]]},
+  {name:"資産と制度",items:[["預金と投資","資産を整理","money/assets.html"],["使える制度","積立・税・支援","money/support.html"]]},
+  {name:"住まいと移動",items:[["住まい","家と住まい代","home/"],["首都圏の経済価値マップ","地域を比較","home/value-map.html"],["乗り物の費用","移動コスト","money/vehicle.html"]]},
+  {name:"学びと道具",items:[["勉強","経済・金融など","study/"],["道具箱","計算ツール","../tool/"]]}
+ ]
+};
+function renderTree(kind){
+ var root=document.getElementById("tier-middle");root.textContent="";
+ TREE[kind].forEach(function(group,i){
+  var details=document.createElement("details");details.className="tier-group";details.open=i===0;
+  var summary=document.createElement("summary");summary.textContent=group.name;details.appendChild(summary);
+  var leaves=document.createElement("div");leaves.className="tier-leaves";
+  group.items.forEach(function(item){
+   var a=document.createElement("a");a.className="tier-leaf";a.href=item[2];
+   var b=document.createElement("b");b.textContent=item[0];var s=document.createElement("small");s.textContent=item[1];a.appendChild(b);a.appendChild(s);leaves.appendChild(a);
+  });details.appendChild(leaves);root.appendChild(details);
+ });
+ document.querySelectorAll(".tier-tab").forEach(function(b){b.setAttribute("aria-selected",String(b.dataset.tier===kind));});
+ try{localStorage.setItem("hibiki-tier-v1",kind)}catch(e){}
+}
+document.querySelectorAll(".tier-tab").forEach(function(b){b.addEventListener("click",function(){renderTree(b.dataset.tier)})});
+var initialTier="health";try{var st=localStorage.getItem("hibiki-tier-v1");if(TREE[st])initialTier=st}catch(e){}
+renderTree(initialTier);
+
 // ▼ ページを足すときはここに1行足す。new: 足した日（7日間「NEW」が出る）
 var GROUPS = [
   { n: "毎日", pages: [
+    { key: "more", name: "今日の一歩", note: "5分から始める・仕事と収入のきっかけ", href: "productivity/", new: "2026-10-21", icon: '<path d="M4 12l5 5L20 6"/>' },
     { key: "health", name: "健康", note: "毎日4つをタップ", href: "health/", icon: '<path d="M3 12h4l2-5 4 10 2-5h6"/>' },
     { key: "health", name: "睡眠メモ", note: "寝る・起きたを1タップ", href: "sleep/", new: "2026-10-17", icon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>' },
     { key: "people", name: "愛と関係", note: "連絡・ありがとう・大切な人", href: "relations/", icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' } ]},
@@ -161,6 +163,7 @@ var GROUPS = [
     { key: "money", name: "使える制度", note: "未来積立・税が戻る制度・やること", href: "money/support.html", new: "2026-10-18", icon: '<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>' },
     { key: "money", name: "家計", note: "所得と費用・自分で調整", href: "money/budget.html", new: "2026-10-11", icon: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>' },
     { key: "money", name: "預金と投資", note: "持っているお金を入れる", href: "money/assets.html", new: "2026-10-15", icon: '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>' },
+    { key: "money", name: "首都圏の経済価値マップ", note: "緑・赤で比較、データ不足は灰色", href: "home/value-map.html", new: "2026-10-19", icon: '<path d="M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2zM9 3v16M15 5v16"/>' },
     { key: "money", name: "乗り物の費用", note: "スクーターの実費と月あたり", href: "money/vehicle.html", new: "2026-10-15", icon: '<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6l-2-8h-3M13 9h4l1 8"/>' },
     { key: "money", name: "住まい", note: "チョンセ・住まい代", href: "home/", icon: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>' } ]},
   { n: "自分", pages: [
@@ -220,5 +223,6 @@ if (window.HibikiSync) HibikiSync.open("priority").then(function (D) {
 if (window.HibikiSync && HibikiSync.on()) document.getElementById("login").textContent = "ログイン中";
 </script>
 <script src="search/search.js"></script>
+<script src="weather/weather.js"></script>
 </body>
 </html>

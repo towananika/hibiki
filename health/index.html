@@ -49,16 +49,20 @@
   .g { display:flex; justify-content:space-between; align-items:baseline; font-size:14px; }
   .g b { font-size:17px; font-variant-numeric:tabular-nums; }
   .note { font-size:12px; color:var(--muted); margin:12px 0 0; }
-  .wx-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.wx-head select{max-width:130px;padding:8px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font:inherit;font-size:13px}.wx-rain{font-size:21px;font-weight:700;line-height:1.5;margin:12px 0 5px}.wx-feel{font-size:15px;line-height:1.7;margin:5px 0}.wx-meta{font-size:13px;line-height:1.7;color:var(--muted);margin:7px 0 0}
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; }
+
+  .walks{display:grid;gap:10px}.walk{border:1px solid var(--border);border-radius:15px;padding:12px;background:var(--bg)}.walk-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline}.walk-head strong{font-size:14px}.walk-head small{color:var(--muted);font-size:12px}.walk p{font-size:12px;color:var(--muted);line-height:1.6;margin:6px 0 8px}.walk svg{display:block;width:100%;height:auto;border-radius:12px;background:var(--sage-soft)}.walk a{display:inline-block;margin-top:9px;color:var(--sage);font-size:13px;font-weight:600;text-decoration:none}.walk-intro{font-size:13px;line-height:1.7;color:var(--muted);margin:0 0 12px}.walk-note{font-size:11px;color:var(--muted);line-height:1.6;margin:12px 0 0}
+
+  .wx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.wx-field{display:grid;gap:4px;font-size:12px;color:var(--muted)}.wx-field select{width:100%;padding:11px 7px;border:1px solid var(--border);border-radius:11px;background:var(--bg);color:var(--text);font:inherit;font-size:14px}.wx-result{margin-top:12px;padding:13px;border-radius:13px;background:var(--sage-soft);line-height:1.7;font-size:14px}.wx-result b{display:block}.wx-link{display:inline-block;margin-top:10px;color:var(--sage);font-size:13px;font-weight:600}.wx-foot{font-size:11px;color:var(--muted);line-height:1.6;margin:10px 0 0}
 </style>
+<link rel="stylesheet" href="../weather/weather.css">
 </head>
 <body>
 <main>
   <div class="top"><a class="brand" href="../">← とわなにか</a><span class="date" id="date"></span></div>
   <h1>健康</h1>
+  <section class="simple-weather" data-weather id="walk-weather" aria-label="天気予報"></section>
 
-  <section class="card" aria-labelledby="wx-title"><div class="wx-head"><strong id="wx-title">今日の天気と体感</strong><select id="wx-city" aria-label="天気の地域"><option value="seoul">ソウル</option><option value="tokyo">東京</option><option value="osaka">大阪</option><option value="busan">釜山</option></select></div><div id="wx-result" role="status" aria-live="polite">天気を読み込んでいます…</div><p class="wx-meta">Open-Meteo の予報。体感は目安です。GPSは使いません。</p></section>
   <section class="card">
     <p class="label"><span>今日（タップで記録）</span><b id="count"></b></p>
     <div class="today" id="today"></div>
@@ -90,31 +94,23 @@
 </main>
 
 <script>
-(function(){
-  var cities={seoul:[37.5665,126.978,"Asia/Seoul"],tokyo:[35.6762,139.6503,"Asia/Tokyo"],osaka:[34.6937,135.5023,"Asia/Tokyo"],busan:[35.1796,129.0756,"Asia/Seoul"]};
-  var sel=document.getElementById("wx-city"),out=document.getElementById("wx-result");
-  try{var saved=localStorage.getItem("hibiki-weather-city-v1");if(cities[saved])sel.value=saved;}catch(e){}
-  function show(){
-    var city=sel.value,c=cities[city];out.textContent="天気を読み込んでいます…";
-    try{localStorage.setItem("hibiki-weather-city-v1",city);}catch(e){}
-    var url="https://api.open-meteo.com/v1/forecast?latitude="+c[0]+"&longitude="+c[1]+"&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&hourly=precipitation_probability&daily=precipitation_probability_max,temperature_2m_max,temperature_2m_min&forecast_days=2&timezone="+encodeURIComponent(c[2]);
-    fetch(url).then(function(r){if(!r.ok)throw Error("network");return r.json();}).then(function(d){
-      if(sel.value!==city)return;
-      if(!d.current||!d.daily||!d.hourly)throw Error("data");
-      var time=d.current.time.slice(0,13),values=[];
-      d.hourly.time.forEach(function(t,i){if(t>=time&&t<d.hourly.time[Math.min(d.hourly.time.length-1,d.hourly.time.indexOf(time+":00")+12)])values.push(d.hourly.precipitation_probability[i]);});
-      var near=values.length?Math.max.apply(null,values):null,day=d.daily.precipitation_probability_max[0];
-      var rainy=d.current.weather_code>=51&&d.current.weather_code<=99;
-      var rain=rainy?"☔ 今は雨・雪の可能性":near>=70?"☔ この先は雨に注意":near>=40?"🌂 傘を持つと安心":near>=20?"🌥️ 雨の可能性は低め":"☀️ 雨の心配は小さめ";
-      var temp=Math.round(d.current.temperature_2m),feel=Math.round(d.current.apparent_temperature),wind=d.current.wind_speed_10m;
-      var sense=feel<=5?"かなり寒い体感":feel<=12?"肌寒い体感":feel<=18?"少しひんやりする体感":feel<=25?"過ごしやすい体感":"暑く感じそう";
-      var windNote=wind>=25?"風が強く、体感が下がりそう":wind>=10?"風があると寒く感じやすい":wind>=4?"少し風がある":"風は穏やか";
-      out.textContent="";
-      [["wx-rain",rain],["wx-feel",sense+"。"+windNote+"。"],["wx-meta","気温 "+temp+"℃ · 体感 "+feel+"℃ · 風速 "+Math.round(wind)+"km/h"],["wx-meta","今後約12時間の最大降水確率 "+(near==null?"—":near+"%")+" · 今日の最大 "+(day==null?"—":day+"%")],["wx-meta","最高 "+Math.round(d.daily.temperature_2m_max[0])+"℃ / 最低 "+Math.round(d.daily.temperature_2m_min[0])+"℃"]].forEach(function(row){var p=document.createElement("p");p.className=row[0];p.textContent=row[1];out.appendChild(p);});
-    }).catch(function(){if(sel.value===city)out.textContent="天気を取得できませんでした。地域を選び直すと再試行できます。";});
-  }
-  sel.addEventListener("change",show);show();
-})();
+
+
+// 散歩シリーズ：地図は概念図。実際の経路・距離を示さない。
+var WALKS=[
+ {n:"01",t:"住宅街を往復",time:"15〜30分",d:"近くの道を7〜15分歩き、同じ道で戻る。",dest:"버드나루로17길 영등포구",x:115,y:48,label:"住宅街"},
+ {n:"02",t:"水と緑の方向へ",time:"30〜45分目安",d:"샛강方面へ。時間が来たら途中で折り返してもいい。",dest:"샛강생태공원 서울",x:252,y:52,label:"샛강方面"},
+ {n:"03",t:"公園でひと休み",time:"40〜60分目安",d:"당산공원方面へ。ベンチで休む時間も。",dest:"당산공원 영등포구",x:106,y:114,label:"당산공원"},
+ {n:"04",t:"漢江を眺める",time:"50〜80分目安",d:"양화한강공원方面へ。広い景色を見たい日に。",dest:"양화한강공원 서울",x:252,y:115,label:"漢江"},
+ {n:"05",t:"少し遠くへ",time:"70〜110分以上",d:"선유도공원方面へ。余裕のある休日に。",dest:"선유도공원 서울",x:250,y:26,label:"선유도"}
+];
+var walksRoot=document.getElementById("walks");
+if(walksRoot) walksRoot.innerHTML=WALKS.map(function(w){
+ var sx=174,sy=78;
+ var svg='<svg viewBox="0 0 350 145" role="img" aria-label="出発点から'+w.label+'方面へ向かう概念図。正確な道路経路ではありません"><path d="M15 42H335M15 101H335M72 12V133M174 12V133M280 12V133" stroke="var(--border)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M'+sx+' '+sy+' L'+w.x+' '+w.y+'" stroke="var(--sage)" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="7 5"/><circle cx="'+sx+'" cy="'+sy+'" r="8" fill="var(--wood)" stroke="var(--surface)" stroke-width="3"/><circle cx="'+w.x+'" cy="'+w.y+'" r="8" fill="var(--sage)" stroke="var(--surface)" stroke-width="3"/><text x="'+sx+'" y="94" font-size="10" fill="var(--text)" text-anchor="middle">出発付近</text><text x="'+w.x+'" y="'+(w.y<50?w.y+22:w.y-13)+'" font-size="11" font-weight="600" fill="var(--text)" text-anchor="middle">'+w.label+'</text></svg>';
+ return '<div class="walk"><div class="walk-head"><strong>'+w.n+'｜'+w.t+'</strong><small>'+w.time+'</small></div><p>'+w.d+'</p>'+svg+'<a href="https://map.naver.com/p/search/'+encodeURIComponent(w.dest)+'" target="_blank" rel="noopener noreferrer">NAVER地図で場所を確認 ↗</a></div>';
+}).join("");
+
 var HABITS = [
   { k: "sleep", s: "睡眠", name: "よく寝た", sub: "7時間以上", ic: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>' },
   { k: "walk", s: "歩く",  name: "歩いた",   sub: "7,000歩",   ic: '<circle cx="13" cy="4" r="2"/><path d="M10 21l2-6-2-3 2-4 3 3h3M8 12l2-4"/>' },
@@ -164,5 +160,6 @@ document.getElementById("today").addEventListener("click", function (e) {
 });
 render();
 </script>
+<script src="../weather/weather.js"></script>
 </body>
 </html>

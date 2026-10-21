@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>今日の一歩 — とわなにか</title>
+<meta name="description" content="今日進めることを3つまで選び、1つに集中して、進んだことを残す。">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<style>
+:root{color-scheme:light dark;--bg:#f5f1e9;--surface:#fbf9f4;--border:#e2dac8;--text:#2b2924;--muted:#746c5e;--sage:#74886d;--soft:#e2e8dd;--blue:#5b7a99;--wood:#93704b}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--surface:#242119;--border:#38332a;--text:#ede8dd;--muted:#a89e8a;--sage:#9db394;--soft:#26301f;--blue:#8fb0cf;--wood:#c99f74}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}main{max-width:480px;margin:auto;padding:24px 16px 60px}a{color:var(--blue)}.back{display:inline-block;min-height:44px;font-size:14px;text-decoration:none}h1{margin:6px 0;font-size:27px}h2{font-size:18px;margin:0 0 10px}p{margin:8px 0}.note{font-size:13px;color:var(--muted)}.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:18px;margin:16px 0}.focus{border-color:var(--sage);background:var(--soft)}button,input,select,textarea{font:inherit;color:inherit}button,a.action{min-height:44px;border:1px solid var(--border);border-radius:10px;padding:8px 12px;background:var(--surface);cursor:pointer}button.primary{background:var(--sage);color:var(--bg);border-color:var(--sage)}input,select,textarea{width:100%;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px}textarea{resize:vertical}label{display:block}form{display:grid;gap:8px}.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}ul{list-style:none;margin:0;padding:0}.task{padding:14px 0;border-top:1px solid var(--border);overflow-wrap:anywhere}.task label{display:flex;align-items:flex-start;gap:10px}.task input{width:22px;height:22px;flex:none;margin-top:3px}.task.done .title{text-decoration:line-through;color:var(--muted)}.task .actions{margin-left:32px}.candidate{border-top:1px solid var(--border);padding:12px 0}.candidate p{font-size:14px;margin:0}#focus-title{font-size:21px;font-weight:700;overflow-wrap:anywhere}#timer{font-size:32px;font-variant-numeric:tabular-nums}#message{color:var(--blue);font-size:14px}summary{cursor:pointer;min-height:44px}#day{max-width:190px}a.action{display:inline-block;text-decoration:none}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--blue);outline-offset:3px}[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<a href="../" class="back">‹ 入口</a>
+<h1>今日の一歩</h1>
+<p class="note">3つまで選ぶ → 1つに集中する → 進んだことを残す</p>
+<label class="note" for="day">記録する日</label><input id="day" type="date">
+<p id="message" role="status" aria-live="polite"></p>
+<section class="card focus" aria-labelledby="focus-heading">
+<h2 id="focus-heading">いまは、これだけ</h2>
+<p id="focus-title">まずは、今日の一歩を選びましょう。</p>
+<div id="focus-controls" hidden><a id="open-task" class="action" hidden>関連ページを開く ›</a>
+<p id="timer" aria-label="集中時間の残り">15:00</p>
+<div class="actions"><button id="start" type="button">15分だけ始める</button><button id="stop" type="button">タイマーを戻す</button><button id="finish" class="primary" type="button">この一歩を完了</button></div>
+<p class="note">タイマーが終わったら、続けるか休むか選べます。</p></div>
+</section>
+<section class="card" aria-labelledby="idea-heading"><h2 id="idea-heading">今なら、何ができそう？</h2>
+<p class="note">大きな計画の前に、スマホから決められる小さな一歩。</p>
+<div class="actions"><label for="idea-time">使える時間<select id="idea-time"><option value="5">5分以内</option><option value="15">15分以内</option><option value="30">30分以内</option></select></label>
+<label for="idea-kind">今の気分<select id="idea-kind"><option value="any">おまかせ</option><option value="life">暮らしを整える</option><option value="work">仕事・開発を進める</option><option value="income">収入のきっかけ</option></select></label></div>
+<div class="actions"><button id="draw-idea" type="button">一歩を提案して</button></div>
+<div id="idea-result" hidden aria-live="polite"><p id="idea-title" style="font-weight:700"></p><p id="idea-why" class="note"></p><button id="take-idea" type="button">今日の一歩に加える</button></div>
+<p class="note">収入の候補は、買い物や契約をせずに始められる準備です。収益を保証するものではありません。</p></section>
+<section class="card"><h2>進めること <span id="count" class="note"></span></h2>
+<ul id="tasks"></ul>
+<form id="add"><label for="task">小さく、具体的な一歩</label><input id="task" maxlength="100" required placeholder="例：マクロ9講の問題を3問解く">
+<label class="note" for="area">関連するページ</label><select id="area"><option value="work">仕事・開発など</option><option value="study">勉強</option><option value="health">健康</option><option value="budget">家計</option><option value="house">住まい</option><option value="vehicle">乗り物・車選び</option><option value="dream">夢・やりたいこと</option></select>
+<button class="primary" type="submit">今日の一歩に加える</button></form></section>
+<details class="card"><summary>既存の記録から選ぶ</summary><p class="note">優先順位と、まだ完了を記録していない教材からの候補です。</p><div id="suggestions"></div><a href="../priority/">優先順位を確認する ›</a></details>
+<section class="card"><h2>何が進んだ？</h2><label class="note" for="reflection">小さな成果と、次にすることを1行で</label><textarea id="reflection" rows="3" maxlength="500" placeholder="例：利子率と投資の関係を説明できた。次は確認問題。"></textarea><p id="saved" class="note" role="status"></p></section>
+<p class="note">日付を変えると過去の記録も見られます。勉強や健康の完了記録は、それぞれのページで付けます。</p>
+<noscript>記録にはJavaScriptが必要です。</noscript>
+</main>
+<script src="../study/plan.js"></script>
+<script src="../study/materials.js"></script>
+<script src="../priority/pri.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
