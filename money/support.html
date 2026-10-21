@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>使える制度 — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a { color:var(--wood); }
+  a.back { font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .card.done { opacity:.55; }
+  .top { display:flex; align-items:flex-start; gap:10px; }
+  .no { flex:none; width:28px; height:28px; border-radius:50%; background:var(--wood); color:#fff; font-weight:700; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .top .t { flex:1; }
+  .kind { display:inline-block; font-size:11px; border-radius:999px; padding:0 8px; margin-top:2px; }
+  .k-save { background:var(--sage-soft); color:var(--sage); } .k-tax { background:var(--blue-soft); color:var(--blue); } .k-cash { background:var(--wood-soft); color:var(--wood); }
+  .gain { margin:12px 0 4px; padding:10px 12px; border-radius:12px; background:var(--sage-soft); }
+  .gain small { display:block; font-size:12px; color:var(--muted); }
+  .gain b { font-size:18px; }
+  .fit { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); margin:10px 0 0; }
+  .fit .meter { flex:1; height:8px; border-radius:4px; background:var(--wood-soft); overflow:hidden; }
+  .fit .meter i { display:block; height:100%; background:var(--sage); }
+  ul.cond { margin:10px 0 0; padding:0; list-style:none; font-size:14px; }
+  ul.cond li { padding:2px 0 2px 22px; position:relative; }
+  ul.cond li::before { content:"✓"; position:absolute; left:2px; color:var(--sage); font-weight:700; }
+  ul.cond li.q::before { content:"?"; color:var(--wood); }
+  .todo { margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--blue-soft); font-size:14px; }
+  .todo b { color:var(--blue); }
+  .alert { margin-top:10px; padding:10px 12px; border-radius:12px; background:var(--red-soft); font-size:14px; }
+  .alert b { color:var(--red); }
+  .hosoku { margin-top:8px; font-size:12px; color:var(--muted); border-left:3px solid var(--border); padding-left:8px; }
+  label.chk { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); margin-top:10px; cursor:pointer; }
+  .calc { display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; margin-top:10px; font-size:14px; }
+  .calc input { width:90px; font:inherit; padding:6px 8px; border-radius:8px; border:1px solid var(--border); background:var(--surface); color:var(--text); }
+  .sum { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .sum div { border-radius:12px; padding:8px 10px; text-align:center; }
+  .sum small { display:block; color:var(--muted); font-size:11px; }
+  .sum b { font-size:20px; }
+  .no-list { font-size:14px; margin:8px 0 0; padding-left:18px; color:var(--muted); }
+  .src { font-size:12px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="../">‹ メニュー</a>
+<h1>使える制度</h1>
+<p class="lead">韓国の制度で、ひびきが受けられそうなもの。上から大事な順。2026年10月18日に調べた。</p>
+
+<div class="card">
+  <div class="sum">
+    <div style="background:var(--sage-soft)"><small>ためる</small><b>3</b></div>
+    <div style="background:var(--blue-soft)"><small>税が戻る</small><b>3</b></div>
+    <div style="background:var(--wood-soft)"><small>お金が戻る</small><b>1</b></div>
+  </div>
+  <p class="src" style="margin:8px 0 0">終わったら「済み」にチェック。チェックは端末どうしでそろう。</p>
+</div>
+
+<div id="list"></div>
+
+<div class="card">
+  <h2>いまは対象外</h2>
+  <ul class="no-list">
+    <li>青年の家賃特別支援（月20万×24か月）… 保証金5,000万以下が条件。いまの家は超えている。</li>
+    <li>勤労奨励金 … 1人世帯は年収2,200万未満が条件。</li>
+  </ul>
+</div>
+
+<p class="src">調べた先：<a href="https://www.korea.kr/news/policyNewsView.do?newsId=148971997">政府の政策ニュース（青年未来積立 2次）</a>・<a href="https://www.fnnews.com/news/202610150946206727">ファイナンシャルニュース（2次締め切り）</a>・<a href="https://housing.seoul.go.kr/site/main/content/sh01_061030">ソウル市 住まい（保証料の支援）</a>。条件は年ごとに変わるので、申し込む前に窓口の案内で確かめる。年齢・年収は本人に確認中（34歳以下・年収5,000万以下として選んだ）。</p>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-support-v1";
+  var S = {}; try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+  var ITEMS = [
+    { id: "mirai", kind: "save", name: "青年未来積立", fit: 100,
+      gain: ["政府の上乗せ", "積立額の6%（月最大3万）・利子に税なし"],
+      cond: ["19〜34歳", "年収6,000万以下（7,500万までは税なしだけ）", "家族の所得が中央値の2倍以下", { q: "中小企業に新しく入った人は上乗せ12%（月最大6万）" }],
+      alert: "<b>2回目の受付は10月16日で終わった。</b>申し込んだなら、審査結果が11月12〜13日に届き、<b>11月16〜27日に口座を開く</b>（開かないと無効）。まだなら3回目を待つ（日程は未発表）。",
+      todo: "<b>やること：</b>申し込んだか確かめる。月50万を3年で、政府の分は最大108万。",
+      hosoku: "補足：月50万まで3年ためる国の積立。銀行の利子に、政府がお金を上乗せしてくれる。「青年飛躍口座」を持っていたら、未来積立の口座を先に開いてから、特別に解約して移せる（順番が逆だと損）。" },
+    { id: "rent", kind: "tax", name: "家賃の税額控除", fit: 95,
+      gain: ["戻る額", "1年に払った家賃の17%"],
+      cond: ["家を持たない世帯主（1人世帯でOK）", "年収5,500万以下で17%（8,000万まで15%）", "85㎡以下の家・転入届ずみ"],
+      calc: true,
+      todo: "<b>やること：</b>1〜2月の年末調整で、賃貸契約書と家賃の振込記録を会社に出す。",
+      hosoku: "補足：チョンセでも、保証金とは別に毎月払う家賃の部分が対象。年末調整は、会社が1年分の税を計算しなおして戻す手続き。" },
+    { id: "loan", kind: "tax", name: "チョンセローン返済の控除", fit: 90,
+      gain: ["所得から引ける額", "返した利息と元金の40%（年400万まで）"],
+      cond: ["家を持たない世帯主", "85㎡以下", "銀行からのチョンセローン"],
+      todo: "<b>やること：</b>年末調整で「住宅の借入金」の欄が入っているか見る。国税庁のサイトに自動で出ないときは、銀行で返済の証明をもらう。",
+      hosoku: "補足：利息を払うほど、税が少し戻るしくみ。下の請約通帳の控除と合わせて年400万が上限。" },
+    { id: "dream", kind: "save", name: "青年住宅ドリーム請約通帳", fit: 85,
+      gain: ["利子", "最大年4.5%・利子500万まで税なし"],
+      cond: ["19〜34歳", "年収5,000万以下", "家を持たない", { q: "いまの請約通帳を持っていれば乗りかえ（これまでの期間も引きつぐ）" }],
+      todo: "<b>やること：</b>銀行のアプリで、持っている請約通帳を確かめて乗りかえる。月25万まで入れると控除も最大。",
+      hosoku: "補足：請約通帳は、新しいマンションの抽選に申し込むための積立。当たると、価格の80%まで年2.2%からのローンにつながる。入れたお金の40%（年300万まで）を所得から引ける。" },
+    { id: "isa", kind: "save", name: "個人総合資産口座（庶民型）", fit: 70,
+      gain: ["税なしの利益", "400万まで（超えた分も9.9%と低め）"],
+      cond: ["年収5,000万以下で庶民型", "3年以上持つ", { q: "韓国で上場している米国株ETFも買える（米国株そのものは不可）" }],
+      todo: "<b>やること：</b>証券会社のアプリで開く。いまの株の一部を、この口座で米国株ETFに置きかえるかを考える。",
+      hosoku: "補足：株・ETF・預金をまとめて入れられる箱。中で出た利益に税がほとんどかからない。年2,000万まで入れられる。" },
+    { id: "hug", kind: "cash", name: "チョンセ保証料の払い戻し", fit: 60,
+      gain: ["戻る額", "払った保証料の全部（ソウル最大40万）"],
+      cond: ["19〜39歳", "保証金3億以下", "年収5,000万以下", { q: "「保証金を返してもらう保証」に入っているとき" }],
+      todo: "<b>やること：</b>保証に入っているか確かめる。入っていれば、政府の補助金サイトか区役所で申し込む。",
+      hosoku: "補足：大家さんが保証金を返せないときに、公的機関が代わりに返してくれる保険。その保険料を、若い人には自治体が戻してくれる。" },
+    { id: "sme", kind: "tax", name: "中小企業で働く青年の所得税減免", fit: 40,
+      gain: ["減る税", "所得税の90%（年200万まで・5年）"],
+      cond: [{ q: "勤め先が中小企業かどうか" }, "入社したときに34歳以下"],
+      todo: "<b>やること：</b>会社の人事に「中小企業の青年減免の対象か」を聞く。対象なら申請書を出すだけ。",
+      hosoku: "補足：対象なら一番大きい。大企業や公的機関だと対象外。" }
+  ];
+  var KIND = { save: "ためる", tax: "税が戻る", cash: "お金が戻る" };
+
+  function won(n) { return n >= 10000 ? Math.round(n / 10000).toLocaleString("ja-JP") + "万" : n.toLocaleString("ja-JP"); }
+
+  document.getElementById("list").innerHTML = ITEMS.map(function (it, i) {
+    var cond = it.cond.map(function (c) { return typeof c === "string" ? "<li>" + c + "</li>" : '<li class="q">' + c.q + "</li>"; }).join("");
+    return '<div class="card' + (S[it.id] ? " done" : "") + '" id="c-' + it.id + '"><div class="top"><span class="no">' + (i + 1) + '</span><div class="t"><h2>' + it.name + '</h2><span class="kind k-' + it.kind + '">' + KIND[it.kind] + "</span></div></div>" +
+      '<div class="gain"><small>' + it.gain[0] + "</small><b>" + it.gain[1] + "</b></div>" +
+      (it.calc ? '<div class="calc"><span>月の家賃</span><input id="rentIn" inputmode="numeric" placeholder="150000"><span style="white-space:nowrap">→ 1年で <b id="rentOut">—</b> 戻る</span></div>' : "") +
+      '<div class="fit">合いそう<span class="meter"><i style="width:' + it.fit + '%"></i></span></div>' +
+      '<ul class="cond">' + cond + "</ul>" +
+      (it.alert ? '<div class="alert">' + it.alert + "</div>" : "") +
+      '<div class="todo">' + it.todo + "</div>" +
+      '<div class="hosoku">' + it.hosoku + "</div>" +
+      '<label class="chk"><input type="checkbox" data-id="' + it.id + '"' + (S[it.id] ? " checked" : "") + "> 済み</label></div>";
+  }).join("");
+
+  document.getElementById("list").addEventListener("change", function (e) {
+    var id = e.target.getAttribute("data-id"); if (!id) return;
+    S[id] = e.target.checked; save();
+    document.getElementById("c-" + id).classList.toggle("done", e.target.checked);
+  });
+
+  var rin = document.getElementById("rentIn"), rout = document.getElementById("rentOut");
+  function rent() { var v = parseInt(String(rin.value).replace(/\D/g, ""), 10) || 0; rout.textContent = v ? "約" + won(Math.round(Math.min(v * 12, 10000000) * 0.17)) + "ウォン" : "—"; }
+  if (S.rent_amt) rin.value = S.rent_amt;
+  rin.addEventListener("input", function () { S.rent_amt = rin.value; save(); rent(); });
+  rent();
+})();
+</script>
+</body>
+</html>
