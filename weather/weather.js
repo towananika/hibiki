@@ -23,7 +23,7 @@ var counter=0,ctrl;
 function load(){
 var id=++counter,c=cities[sel.value];if(ctrl)ctrl.abort();ctrl=new AbortController();var own=ctrl;var timeout=setTimeout(function(){own.abort()},12000);refresh.disabled=true;content.textContent='最新の予報を読み込んでいます…';
 try{localStorage.setItem('hibiki-weather-city-v1',sel.value)}catch(e){}
-var url='https://api.open-meteo.com/v1/forecast?latitude='+c[0]+'&longitude='+c[1]+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m&hourly=temperature_2m,precipitation_probability,wind_speed_10m,apparent_temperature,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&wind_speed_unit=ms&timezone='+encodeURIComponent(c[3])+'&forecast_days=7';
+var url='https://api.open-meteo.com/v1/forecast?latitude='+c[0]+'&longitude='+c[1]+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m&hourly=temperature_2m,precipitation_probability,wind_speed_10m,apparent_temperature,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset&wind_speed_unit=ms&timezone='+encodeURIComponent(c[3])+'&past_days=1&forecast_days=6';
 fetch(url,{signal:own.signal}).then(function(r){if(!r.ok)throw Error('network');return r.json()}).then(function(d){
 if(id!==counter)return;if(!d.current||!d.hourly||!d.daily)throw Error('missing');
 var n=d.current,h=d.hourly,day=(d.daily.time||[]).indexOf(n.time.slice(0,10));if(day<0)day=0;
@@ -60,11 +60,11 @@ forecast.append(el('p','wx-trend',changeText+' 今日から明日にかけて '+
 }
 for(var i=nowIndex;i<end;i++){var item=el('div','wx-hour');var dateLabel=h.time[i].slice(0,10)===lastTomorrow?'今日':'明日';item.append(el('small','',dateLabel+' '+h.time[i].slice(11,16)),el('span','',icon(h.weather_code[i])),el('b','',deg(h.temperature_2m[i])),el('small','',ok(h.precipitation_probability[i])?'雨 '+h.precipitation_probability[i]+'%':'雨 —'),el('small','',ok(h.wind_speed_10m[i])?'風 '+h.wind_speed_10m[i].toFixed(1):'風 —'));strip.append(item)}
 forecast.append(strip);content.append(forecast);
-var weekly=el('div','wx-week');weekly.append(el('h3','','7日間の天気'));
+var weekly=el('div','wx-week');weekly.append(el('h3','','昨日から7日間の天気'));
 (d.daily.time||[]).slice(0,7).forEach(function(date,i){
 var row=el('div','wx-day'),weekday=['日','月','火','水','木','金','土'][new Date(date+'T12:00:00').getDay()];
-row.append(el('span','wx-day-date',i===0?'今日':date.slice(5).replace('-','/')+' ('+weekday+')'),el('span','wx-day-icon',icon((d.daily.weather_code||[])[i])),el('span','wx-day-range',deg(d.daily.temperature_2m_min[i])+' 〜 '+deg(d.daily.temperature_2m_max[i])));
-weekly.append(row)
+row.append(el('span','wx-day-date',date===n.time.slice(0,10)?'今日':i===0?'昨日':date.slice(5).replace('-','/')+' ('+weekday+')'),el('span','wx-day-icon',icon((d.daily.weather_code||[])[i])),el('span','wx-day-range',deg(d.daily.temperature_2m_min[i])+' 〜 '+deg(d.daily.temperature_2m_max[i])));
+if(i===0){row.classList.add('wx-yesterday');row.setAttribute('aria-label','昨日の参考データ')}weekly.append(row)
 });content.append(weekly);
 var times=el('p','weather-detail','日の入り '+(d.daily.sunset[day]||'').slice(11,16)+' · 予報時刻 '+n.time.replace('T',' ')+' · '+c[2]);content.append(times);
 source.textContent='Open-Meteo · '+c[2]+'付近の予報（実測と異なる場合あり）';
