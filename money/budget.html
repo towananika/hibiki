@@ -114,12 +114,13 @@
     <p class="note" id="plan-rate"></p>
   </section>
 
+  <div class="card need" id="need"></div>
+
   <div class="card" id="cin"></div>
   <div class="card" id="cout"></div>
 
   <details>
-    <summary>参考の目安・住まい代の上限</summary>
-    <div class="card need" id="need"></div>
+    <summary>住まい代の上限</summary>
     <div class="card" id="cap">
     <h2>住まい代はいくらまで？</h2>
     <p class="note" style="margin:4px 0 8px">所得から、住まい以外の費用と貯金の目標を引いた残りが上限です。</p>
@@ -212,7 +213,7 @@
   function renderNeed() {
     var box = document.getElementById("need"), lo = 0, hi = 0, groups = {}, order = [];
     box.textContent = "";
-    box.appendChild(el("h2", null, "参考の金額（月）"));
+    box.appendChild(el("h2", null, "消費の目安（月）"));
     box.appendChild(el("p", "note", "以前の仮置き額。必要額は、会社の支援や暮らしによって変わります。"));
     NEED.forEach(function (x) {
       if (!groups[x.g]) { groups[x.g] = []; order.push(x.g); }
