@@ -83,6 +83,14 @@
   .head h2 { min-width:0; font-size:16px; }
   .foot { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:24px; }
   input:focus-visible, button:focus-visible, summary:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+  .need-item > summary { cursor:pointer; list-style:none; }
+  .need-item > summary::-webkit-details-marker { display:none; }
+  .need-item > summary .name::before { content:"▸ "; color:var(--wood); }
+  .need-item[open] > summary .name::before { content:"▾ "; }
+  .need-item form { display:grid; gap:10px; margin:4px 0 16px; }
+  .need-item label { display:grid; gap:4px; font-size:12px; color:var(--muted); }
+  .need-item input, .need-item textarea { width:100%; min-width:0; font:inherit; font-size:14px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); }
+  .need-item textarea { min-height:80px; resize:vertical; }
 </style>
 </head>
 <body>
@@ -222,6 +230,32 @@
     { g: "備え・つきあい", n: "身の回り（服・美容）", lo: 20000, hi: 40000, re: /服|身の回り/ }
   ];
   function curOf(re) { return S.expense.reduce(function (t, x) { return re.test(x.name) ? t + (+x.amt || 0) : t; }, 0); }
+  var needOpen = {};
+  function needForm(category) {
+    var f = el("form"), matches = S.expense.filter(function (it) { return category.re.test(it.name); });
+    if (!matches.length) matches = [null];
+    var fields = matches.map(function (it) {
+      var label = el("label", null, (it ? it.name : category.n) + "（月・ウォン）"), amount = el("input");
+      amount.type = "number"; amount.min = "0"; amount.max = "1000000000"; amount.step = "1"; amount.inputMode = "numeric"; amount.required = true;
+      amount.value = it ? it.amt || 0 : ""; label.appendChild(amount); f.appendChild(label);
+      var memoLabel = el("label", null, "詳細・メモ"), memo = el("textarea");
+      memo.maxLength = 2000; memo.value = it ? it.memo || "" : "";
+      memoLabel.appendChild(memo); f.appendChild(memoLabel);
+      return { item:it, amount:amount, memo:memo };
+    });
+    var buttons = el("div", "btns"), submit = el("button", "main", "保存"); submit.type = "submit";
+    buttons.appendChild(submit); f.appendChild(buttons);
+    f.onsubmit = function (event) {
+      event.preventDefault(); if (!f.reportValidity()) return;
+      fields.forEach(function (field) {
+        var it = field.item;
+        if (!it) { it = { id:uid(), name:category.n, kind:"var" }; S.expense.push(it); }
+        it.amt = Number(field.amount.value); it.memo = field.memo.value.trim();
+      });
+      needOpen[category.n] = true; save(); render();
+    };
+    return f;
+  }
   function renderNeed() {
     var box = document.getElementById("need"), lo = 0, hi = 0, groups = {}, order = [];
     box.textContent = "";
@@ -235,7 +269,9 @@
       box.appendChild(el("div", "grp", g));
       groups[g].forEach(function (x) {
         var cur = curOf(x.re), st = !cur ? "" : cur < x.lo ? "low" : cur > x.hi ? "high" : "ok";
-        var r = el("div", "r " + st);
+        var detail = el("details", "need-item"), r = el("summary", "r " + st);
+        detail.open = !!needOpen[x.n];
+        detail.ontoggle = function () { needOpen[x.n] = detail.open; };
         r.appendChild(el("div", "name", x.n));
         r.appendChild(el("div", "rng", won(x.lo) + "〜" + won(x.hi)));
         // 目安の帯（うすい緑）に、いまの額（色の棒）を重ねる。どちらも同じ目盛り
@@ -246,7 +282,7 @@
         var s = el("small", null, cur ? "いま " + won(cur) + "　" : "いまは未入力　");
         var lab = { low: "参考額より少ない", ok: "参考額の範囲", high: "参考額より多い" }[st];
         if (lab) s.appendChild(el("b", null, lab));
-        r.appendChild(s); box.appendChild(r);
+        r.appendChild(s); detail.appendChild(r); detail.appendChild(needForm(x)); box.appendChild(detail);
       });
     });
     box.appendChild(el("div", "tot", "合計の目安　" + won(lo) + "〜" + won(hi)));
