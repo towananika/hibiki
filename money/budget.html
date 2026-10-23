@@ -109,6 +109,8 @@
     <div class="plan-input"><span>₩</span><input id="plan-amount" type="number" min="0" max="1000000000" step="1" inputmode="numeric"></div>
     <input id="plan-range" type="range" min="0" max="1000000" step="10000" aria-label="月に使う額の目安">
     <div class="scale"><span>₩0</span><span id="plan-max"></span></div>
+    <div class="stack" id="plan-stack" role="img" aria-label="試算の消費と残り"></div>
+    <div class="legend"><span class="lg-life">消費</span><span class="lg-free">残り</span></div>
     <div class="plan-result" id="plan-result" aria-live="polite"><span id="plan-result-label">残る額（月）</span><b id="plan-left">—</b></div>
     <p class="note" id="plan-diff"></p>
     <p class="note" id="plan-rate"></p>
@@ -178,9 +180,19 @@
     var diff = amount - actual;
     document.getElementById("plan-diff").textContent = (diff === 0 ? "記録の費用と同じ" : "記録の費用より " + won(Math.abs(diff)) + (diff > 0 ? " 多い" : " 少ない"));
     document.getElementById("plan-rate").textContent = income > 0 ? "所得の " + Math.round(amount / income * 100) + "% を消費 · 残りは貯蓄・投資など" : "所得：未入力";
+    var chart = document.getElementById("plan-stack"); chart.textContent = "";
+    chart.setAttribute("aria-label", income > 0 ? "消費 " + won(amount) + "、" + (remaining < 0 ? "不足 " : "残り ") + won(Math.abs(remaining)) : "所得：未入力");
+    if (income > 0) {
+      var spent = el("i", "s-life"); spent.style.width = Math.min(100, amount / income * 100) + "%";
+      if (remaining < 0) spent.style.background = "var(--red)";
+      var rest = el("i", "s-free"); rest.style.width = Math.max(0, remaining / income * 100) + "%";
+      chart.appendChild(spent); chart.appendChild(rest);
+    }
   }
   function won(n) { return "₩" + Math.round(n).toLocaleString("ja-JP"); }
   function man(n) { return n >= 10000 ? "（約" + (Math.round(n / 1000) / 10).toLocaleString("ja-JP") + "万ウォン）" : ""; }
+  var GUIDE = [["住", 20, 30], ["光熱", 3, 6], ["通信", 2, 4], ["食", 15, 20], ["日用", 2, 4], ["交通", 3, 8], ["保険", 3, 8]];
+  function guideOf(name) { return GUIDE.find(function (g) { return name.indexOf(g[0]) === 0 || (g[0].length > 1 && name.indexOf(g[0]) >= 0); }); }
   function sum(a) { return a.reduce(function (t, x) { return t + (+x.amt || 0); }, 0); }
   function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
 
@@ -339,6 +351,18 @@
         it.amt = Math.round(Number(amount.value)); save(); render();
       };
       r.appendChild(amount);
+      if (type === "expense" && total > 0) {
+        var share = el("div", "share"), fill = el("i");
+        fill.style.width = ((+it.amt || 0) / total * 100) + "%";
+        share.setAttribute("role", "img");
+        share.setAttribute("aria-label", "費用全体の " + Math.round((+it.amt || 0) / total * 100) + "%");
+        share.appendChild(fill); r.appendChild(share);
+      }
+      var g = type === "expense" ? guideOf(it.name) : null, inc = sum(S.income);
+      if (g) {
+        var lo = Math.round(inc * g[1] / 100), hi = Math.round(inc * g[2] / 100);
+        r.appendChild(el("div", "guide", "参考：手取りの " + g[1] + "〜" + g[2] + "%" + (inc > 0 ? "（" + won(lo) + "〜" + won(hi) + "）" : "")));
+      }
       var acts = el("div", "acts");
       var eb = el("button", null, "直す"); eb.onclick = function () { editing = { type: type, id: it.id }; render(); };
       var db = el("button", "del", "消す"); db.onclick = function () {
