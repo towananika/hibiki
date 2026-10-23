@@ -10,6 +10,7 @@ const { pathToFileURL } = require('node:url');
   const home = { deposit: 1000, loanPct: 50, rate: 2.4, rent: 10, fee: 3 };
   for (const fixture of [
     { home, amount: 0, expected: 140000 },
+    { home, amount: 140000, expected: 140000 },
     { home, amount: 99000, expected: 99000 },
     { home: { ...home, fee: null }, amount: 0, expected: 0 },
     { home: null, amount: 0, expected: 0 }
@@ -34,8 +35,14 @@ const { pathToFileURL } = require('node:url');
     const state = await page.evaluate(() => JSON.parse(localStorage.getItem('hibiki-budget-v1')));
     assert.equal(state.expense[0].amt, fixture.expected);
     assert.match(state.expense[0].memo, /既存メモ/);
+    if (fixture.expected === 140000) {
+      assert.deepEqual(state.expense[0].parts.map(p => p.name), ['家賃', '管理費', 'ローン利息']);
+      assert.equal(state.expense[0].parts.reduce((s,p) => s + p.amt, 0), 140000);
+    }
     if (fixture.home && fixture.amount === 0 && fixture.home.fee !== null) {
       assert.match(state.expense[0].memo, /家賃.*管理費.*利息/);
+      await page.locator('#need details').first().locator('summary').click();
+      await page.screenshot({ path:path.resolve(__dirname, '../budget-housing-parts.png'), fullPage:true });
       await page.locator('#cout .quick-amount').fill('0');
       await page.locator('#cout .quick-amount').dispatchEvent('change');
       await page.reload();
