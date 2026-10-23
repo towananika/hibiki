@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>乗り物の費用 — とわなにか</title>
 <script src="../sync.js"></script>
+<script src="vehicle-cost.js"></script>
 <style>
   :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
   @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
@@ -114,11 +115,7 @@
     return Math.max(1, (b - a) / 864e5 / 30.4);
   }
   function calc() {
-    var m = months(), rec = S.recs.reduce(function (t, r) { return t + (+r.amt || 0); }, 0);
-    var per = S.years > 0 ? (+S.purchase || 0) / (S.years * 12) : 0;
-    var real = m ? rec / m : 0;
-    var life = m ? (real + per) * m : 0;
-    return { m: m, rec: rec, real: real, per: per, total: real + per, perKm: S.km > 0 && life ? life / S.km : 0, yearKm: S.km > 0 && m ? S.km / (m / 12) : 0 };
+    return HibikiVehicleCost.calculate(S) || { m:0, rec:0, real:0, per:0, total:0, perKm:0, yearKm:0, available:false };
   }
   function summary() {
     var c = calc(), kv = document.getElementById("kv"); kv.textContent = "";
@@ -177,8 +174,10 @@
     var c = calc(), msg = document.getElementById("an");
     try {
       var B = JSON.parse(localStorage.getItem("hibiki-budget-v1")); if (!B || !B.expense) throw 0;
-      var t = B.expense.filter(function (x) { return /交通/.test(x.name); })[0]; if (!t) throw 0;
-      t.amt = Math.round(c.total / 1000) * 1000; localStorage.setItem("hibiki-budget-v1", JSON.stringify(B));
+      var t = HibikiVehicleCost.apply(B, c);
+      if (!t) { msg.textContent = "分析に必要な記録、または家計の交通費の内訳を確認してください。"; return; }
+      localStorage.setItem("hibiki-budget-v1", JSON.stringify(B));
+      localStorage.setItem("hibiki-budget-vehicle-imported", "1");
       msg.textContent = "交通費を " + won(t.amt) + " にしました。";
     } catch (e) { msg.textContent = "先に「家計」ページを一度開いてください。"; }
   };
