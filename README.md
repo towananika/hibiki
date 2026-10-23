@@ -14,6 +14,8 @@
 - `about/` 私について（ほかのAIに貼る説明書）。中身は `private/about.json`（暗号、平文は共有フォルダの `hibiki/about-me.md`）。全文コピーと🔒を除いたコピー。公開版 `about/ai.txt`（お金・人間関係・本名・地域を抜いた文。URLを渡せばほかのAIが読める）
 
 ## 端末どうしの同期
+- 家計 `money/budget.html`：実額を明細で直接編集。消費の目安はスライダー・金額入力で試算し、月の残額と実額との差を表示する。試算は `hibiki-budget-plan-v1` に別保存し、既存の家計記録を変更しない。参考額と住居費上限は折りたたみ表示。
+
 - `sync.js` を各記録ページの `<head>` で読む。`hibiki-` で始まる localStorage を鍵ごとに新しいほうでそろえる。
 - 合言葉は `sync/` で入れる。端末に残るのは SHA-256 にした id だけ。
 - サーバーは `worker/`（Cloudflare Worker + Durable Object）。公開は ひびき が `worker/deploy.ps1` を実行。
