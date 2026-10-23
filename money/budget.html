@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>家計 — とわなにか</title>
 <script src="../sync.js"></script>
+<script src="vehicle-cost.js"></script>
 <style>
   :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
   @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
@@ -231,10 +232,25 @@
   ];
   function curOf(re) { return S.expense.reduce(function (t, x) { return re.test(x.name) ? t + (+x.amt || 0) : t; }, 0); }
   var needOpen = {};
+  function readVehicleResult() {
+    try {
+      var vehicle = JSON.parse(localStorage.getItem("hibiki-vehicle-v1"));
+      if (vehicle) return Promise.resolve(HibikiVehicleCost.calculate(vehicle));
+    } catch (e) { return Promise.resolve(null); }
+    if (!window.HibikiSync) return Promise.resolve(null);
+    return HibikiSync.open("vehicle").then(function (D) {
+      return D ? HibikiVehicleCost.calculate({ purchase:D.purchase || 0, bought:D.bought || "", years:5, km:D.km || 0, recs:D.recs || [] }) : null;
+    }).catch(function () { return null; });
+  }
+  function vehicleBreakdown(it) {
+    var v = it.vehicleAnalysis;
+    return v ? "取り込み時の分析：実費の月平均 " + won(v.real) + " ＋ 購入費の月割り " + won(v.purchaseMonthly) + "。合計 " + won(v.total) + "／月。" : "";
+  }
   function needForm(category) {
     var f = el("form"), matches = S.expense.filter(function (it) { return category.re.test(it.name); });
     if (!matches.length) matches = [null];
     var fields = matches.map(function (it) {
+      if (it && it.vehicleAnalysis) f.appendChild(el("p", "note", vehicleBreakdown(it)));
       var label = el("label", null, (it ? it.name : category.n) + "（月・ウォン）"), amount = el("input");
       amount.type = "number"; amount.min = "0"; amount.max = "1000000000"; amount.step = "1"; amount.inputMode = "numeric"; amount.required = true;
       amount.value = it ? it.amt || 0 : ""; label.appendChild(amount); f.appendChild(label);
@@ -245,6 +261,22 @@
     });
     var buttons = el("div", "btns"), submit = el("button", "main", "保存"); submit.type = "submit";
     buttons.appendChild(submit); f.appendChild(buttons);
+    if (/交通/.test(category.n)) {
+      var source = el("a", "back", "乗り物の分析を見る"); source.href = "vehicle.html"; f.appendChild(source);
+      var importButton = el("button", null, "乗り物の分析を反映"); importButton.type = "button";
+      var status = el("p", "note"); status.setAttribute("role", "status");
+      importButton.onclick = function () {
+        importButton.disabled = true;
+        readVehicleResult().then(function (result) {
+          var item = HibikiVehicleCost.apply(S, result);
+          if (!item) { status.textContent = "乗り物の記録、または複数ある交通費の内訳を確認してください。"; return; }
+          needOpen[category.n] = true; save();
+          try { localStorage.setItem("hibiki-budget-vehicle-imported", "1"); } catch (e) {}
+          render();
+        }).finally(function () { importButton.disabled = false; });
+      };
+      f.appendChild(importButton); f.appendChild(status);
+    }
     f.onsubmit = function (event) {
       event.preventDefault(); if (!f.reportValidity()) return;
       fields.forEach(function (field) {
@@ -435,6 +467,18 @@
     if (!confirm("入れた内容を消して、はじめの形にもどします。いいですか？")) return;
     S = defaults(); editing = null; planned = null; savePlan(); save(); render();
   };
+  // 未入力の交通費には、乗り物ページと同じ計算結果を一度だけ取り込む。
+  readVehicleResult().then(function (result) {
+    try { if (localStorage.getItem("hibiki-budget-vehicle-imported")) return; } catch (e) { return; }
+    var items = S.expense.filter(function (it) { return /交通/.test(it.name); });
+    if (items.length > 1 || (items[0] && +items[0].amt > 0)) return;
+    if (!HibikiVehicleCost.apply(S, result)) return;
+    try {
+      localStorage.setItem(KEY, JSON.stringify(S));
+      localStorage.setItem("hibiki-budget-vehicle-imported", "1");
+    } catch (e) {}
+    render();
+  });
   // home/index.htmlと同じ暗号化データ（万ウォン）から、未入力の住まい代だけを補う。
   if (window.HibikiSync) HibikiSync.open("home").then(function (H) {
     if (!H) return;
