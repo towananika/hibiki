@@ -24,6 +24,7 @@
     if (!item) { item = { id:"vehicle-transport", name:"交通費", kind:"var", amt:0 }; budget.expense.push(item); }
     item.amt = Math.round(result.total);
     item.vehicleAnalysis = { real:Math.round(result.real), purchaseMonthly:Math.round(result.per), months:result.m, total:item.amt };
+    item.parts = [{ name:"実費の月平均", amt:Math.round(result.real) }, { name:"購入費の月割り", amt:item.amt - Math.round(result.real) }];
     return item;
   }
   window.HibikiVehicleCost = { calculate:calculate, apply:apply };

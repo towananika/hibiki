@@ -92,6 +92,10 @@
   .need-item label { display:grid; gap:4px; font-size:12px; color:var(--muted); }
   .need-item input, .need-item textarea { width:100%; min-width:0; font:inherit; font-size:14px; padding:8px; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text); }
   .need-item textarea { min-height:80px; resize:vertical; }
+  .part-row { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,110px) 32px; gap:6px; align-items:center; margin:6px 0; }
+  .part-row button { width:32px; height:36px; padding:0; }
+  .part-amount { text-align:right; }
+  .need-total[readonly] { background:var(--blue-soft); font-weight:600; }
 </style>
 </head>
 <body>
@@ -246,21 +250,62 @@
     var v = it.vehicleAnalysis;
     return v ? "取り込み時の分析：実費の月平均 " + won(v.real) + " ＋ 購入費の月割り " + won(v.purchaseMonthly) + "。合計 " + won(v.total) + "／月。" : "";
   }
+  S.expense.forEach(function (it) {
+    var v = it.vehicleAnalysis;
+    if (!it.parts && v && Number.isFinite(v.real) && v.real >= 0 && Number.isFinite(v.total) && v.total >= v.real && it.amt === v.total) {
+      it.parts = [{ name:"実費の月平均", amt:v.real }, { name:"購入費の月割り", amt:v.total - v.real }]; save();
+    }
+  });
+  function partsEditor(item, amount, category) {
+    var box = el("div", "parts-editor"), rows = el("div"), fields = [];
+    var add = el("button", null, "＋ 内訳を追加"); add.type = "button"; add.setAttribute("aria-label", "内訳を追加");
+    function update() {
+      amount.readOnly = fields.length > 0;
+      if (fields.length) amount.value = fields.reduce(function (sum, field) { return sum + Math.max(0, Number(field.amount.value) || 0); }, 0);
+      amount.setCustomValidity(Number(amount.value) > 1000000000 ? "合計は10億ウォン以下で入力してください。" : "");
+    }
+    function append(part) {
+      var row = el("div", "part-row"), name = el("input", "part-name"), value = el("input", "part-amount");
+      name.value = part.name; name.maxLength = 80; name.required = true; name.setAttribute("aria-label", "内訳名");
+      name.oninput = function () { name.setCustomValidity(name.value.trim() ? "" : "内訳名を入力してください。"); };
+      value.type = "number"; value.min = "0"; value.max = "1000000000"; value.step = "1"; value.inputMode = "numeric"; value.required = true; value.value = part.amt; value.setAttribute("aria-label", "内訳の月額（ウォン）");
+      var remove = el("button", "del", "×"); remove.type = "button"; remove.title = "内訳を削除"; remove.setAttribute("aria-label", "内訳を削除");
+      var field = { name:name, amount:value }; fields.push(field);
+      remove.onclick = function () { fields = fields.filter(function (f) { return f !== field; }); row.remove(); if (!fields.length) amount.value = "0"; update(); };
+      value.oninput = update;
+      row.appendChild(name); row.appendChild(value); row.appendChild(remove); rows.appendChild(row); update();
+    }
+    if (item && Array.isArray(item.parts) && item.parts.length && item.parts.every(function (p) { return p && typeof p.name === "string" && Number.isFinite(p.amt) && p.amt >= 0; })) {
+      item.parts.forEach(append);
+    }
+    add.onclick = function () {
+      if (!fields.length && Number(amount.value) > 0) append({ name:"現在の合計", amt:Number(amount.value) });
+      else {
+        var names = /住/.test(category.n) ? ["家賃", "管理費", "ローン利息"] : [];
+        append({ name:names[fields.length] || "", amt:0 });
+      }
+      fields[fields.length - 1].name.focus();
+    };
+    box.appendChild(rows); box.appendChild(add);
+    return { element:box, values:function () { return fields.map(function (f) { return { name:f.name.value.trim(), amt:Number(f.amount.value) }; }); } };
+  }
   function needForm(category) {
     var f = el("form"), matches = S.expense.filter(function (it) { return category.re.test(it.name); });
     if (!matches.length) matches = [null];
     var fields = matches.map(function (it) {
       if (it && it.vehicleAnalysis) f.appendChild(el("p", "note", vehicleBreakdown(it)));
-      var label = el("label", null, (it ? it.name : category.n) + "（月・ウォン）"), amount = el("input");
+      var label = el("label", null, (it ? it.name : category.n) + " 合計（月・ウォン）"), amount = el("input", "need-total");
       amount.type = "number"; amount.min = "0"; amount.max = "1000000000"; amount.step = "1"; amount.inputMode = "numeric"; amount.required = true;
       amount.value = it ? it.amt || 0 : ""; label.appendChild(amount); f.appendChild(label);
+      var parts = partsEditor(it, amount, category); f.appendChild(parts.element);
       var memoLabel = el("label", null, "詳細・メモ"), memo = el("textarea");
       memo.maxLength = 2000; memo.value = it ? it.memo || "" : "";
       memoLabel.appendChild(memo); f.appendChild(memoLabel);
-      return { item:it, amount:amount, memo:memo };
+      return { item:it, amount:amount, memo:memo, parts:parts };
     });
     var buttons = el("div", "btns"), submit = el("button", "main", "保存"); submit.type = "submit";
     buttons.appendChild(submit); f.appendChild(buttons);
+    var formError = el("p", "note"); formError.setAttribute("role", "alert"); f.appendChild(formError);
     if (/交通/.test(category.n)) {
       var source = el("a", "back", "乗り物の分析を見る"); source.href = "vehicle.html"; f.appendChild(source);
       var importButton = el("button", null, "乗り物の分析を反映"); importButton.type = "button";
@@ -279,10 +324,15 @@
     }
     f.onsubmit = function (event) {
       event.preventDefault(); if (!f.reportValidity()) return;
+      if (fields.some(function (field) { var n = Number(field.amount.value); return !Number.isSafeInteger(n) || n < 0 || n > 1000000000; })) {
+        formError.textContent = "合計は0〜10億ウォンの整数で入力してください。"; return;
+      }
       fields.forEach(function (field) {
         var it = field.item;
         if (!it) { it = { id:uid(), name:category.n, kind:"var" }; S.expense.push(it); }
         it.amt = Number(field.amount.value); it.memo = field.memo.value.trim();
+        var parts = field.parts.values();
+        if (parts.length) it.parts = parts; else delete it.parts;
       });
       needOpen[category.n] = true; save(); render();
     };
@@ -373,7 +423,7 @@
       var name = ni.value.trim(); if (!name) return;
       var amt = Math.max(0, Math.round(+ai.value || 0));
       var list = S[type];
-      if (item) { item.name = name; item.amt = amt; if (ki) item.kind = ki.value; }
+      if (item) { item.name = name; if (item.amt !== amt) delete item.parts; item.amt = amt; if (ki) item.kind = ki.value; }
       else { var x = { id: uid(), name: name, amt: amt }; if (ki) x.kind = ki.value; list.push(x); }
       editing = null; save(); render();
     };
@@ -416,7 +466,8 @@
       amount.setAttribute("aria-label", it.name + "（月・ウォン）");
       amount.onchange = function () {
         if (!amount.validity.valid || amount.value === "") { amount.value = it.amt || 0; return; }
-        it.amt = Math.round(Number(amount.value)); save(); render();
+        var next = Math.round(Number(amount.value)); if (next !== it.amt) delete it.parts;
+        it.amt = next; save(); render();
       };
       r.appendChild(amount);
       if (type === "expense" && total > 0) {
@@ -483,20 +534,25 @@
   if (window.HibikiSync) HibikiSync.open("home").then(function (H) {
     if (!H) return;
     var marker = "hibiki-budget-home-amount-v1";
-    try { if (localStorage.getItem(marker)) return; } catch (e) { return; }
+    var imported = false;
+    try { imported = !!localStorage.getItem(marker); } catch (e) { return; }
     var houses = S.expense.filter(function (x) { return /住|家賃|管理費|ローン.*利息/.test(x.name); });
     if (houses.length !== 1) return;
     var it = houses[0];
-    if (+it.amt > 0) {
-      try { localStorage.setItem(marker, "1"); } catch (e) {}
-      return;
-    }
     if (![H.deposit, H.loanPct, H.rate, H.rent, H.fee].every(function (v) { return Number.isFinite(v) && v >= 0; }) || H.loanPct > 100) return;
     var interest = H.deposit * H.loanPct / 100 * H.rate / 100 / 12 * 10000;
     var rent = H.rent * 10000, fee = H.fee * 10000;
     var total = Math.round(rent + fee + interest);
     if (!Number.isSafeInteger(total) || total <= 0) return;
+    var parts = [{ name:"家賃", amt:Math.round(rent) }, { name:"管理費", amt:Math.round(fee) }, { name:"ローン利息", amt:total - Math.round(rent) - Math.round(fee) }];
+    if (+it.amt > 0) {
+      if (!it.parts && it.amt === total) { it.parts = parts; save(); render(); }
+      try { localStorage.setItem(marker, "1"); } catch (e) {}
+      return;
+    }
+    if (imported || (Array.isArray(it.parts) && it.parts.length)) return;
     it.amt = total;
+    it.parts = parts;
     var breakdown = "住まいの内訳（月）：家賃 " + won(rent) + " ＋ 管理費 " + won(fee) + " ＋ ローン利息 約" + won(interest) + "。合計 " + won(total) + "（住まいページの登録条件による計算）。";
     it.memo = (it.memo ? it.memo + "\n" : "") + breakdown;
     try {
