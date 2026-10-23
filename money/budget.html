@@ -68,15 +68,7 @@
   .trk .fill { position:absolute; left:0; top:4px; bottom:4px; border-radius:4px; background:var(--wood); }
   .need .r.low .fill { background:var(--blue); } .need .r.ok .fill { background:var(--sage); } .need .r.high .fill { background:var(--red); }
   .need .tot { display:flex; justify-content:space-between; font-weight:600; border-top:2px solid var(--border); padding-top:10px; margin-top:6px; }
-  .card { background:none; border:0; border-radius:0; box-shadow:none; padding:20px 0; margin:0; border-bottom:1px solid var(--border); }
-  .sum div { border-radius:6px; }
-  .sum .left { background:none; padding:12px 0 0; }
-  .sum .left b { font-size:28px; }
   .row { grid-template-columns:minmax(0,1fr) minmax(100px,140px); align-items:center; }
-  .acts { gap:12px; }
-  .acts button { padding:2px 0; border:0; background:none; border-radius:0; font-size:12px; color:var(--muted); }
-  .acts .del { color:var(--red); }
-  button { border-radius:6px; }
   .quick-amount, #plan-amount { width:100%; min-width:0; font:inherit; font-variant-numeric:tabular-nums; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:8px; text-align:right; }
   .plan-input { display:flex; align-items:center; gap:8px; margin:12px 0; }
   #plan-amount { font-size:22px; font-weight:600; }
@@ -88,10 +80,8 @@
   .plan-result[data-negative="true"] { color:var(--red); }
   #plan-diff { min-height:20px; margin:4px 0; }
   summary { cursor:pointer; font-size:14px; font-weight:600; padding:16px 0; }
-  details .card { padding-top:0; }
   .head h2 { min-width:0; font-size:16px; }
   .foot { display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:24px; }
-  .foot button { font-size:12px; }
   input:focus-visible, button:focus-visible, summary:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
 </style>
 </head>
@@ -109,7 +99,8 @@
     </div>
     <div class="meter"><i id="mbar" style="width:0%"></i></div>
     <div class="note" id="mnote"></div>
-    <div class="stack" id="stack" hidden></div>
+    <div class="stack" id="stack"></div>
+    <div class="legend"><span class="lg-house">住まい</span><span class="lg-life">生活費</span><span class="lg-care">保険・つきあい・その他</span><span class="lg-free">残り</span></div>
   </div>
 
   <section class="card" aria-labelledby="plan-title">
