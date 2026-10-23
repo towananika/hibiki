@@ -399,7 +399,33 @@
     if (!confirm("入れた内容を消して、はじめの形にもどします。いいですか？")) return;
     S = defaults(); editing = null; planned = null; savePlan(); save(); render();
   };
-  // 住まいの保証金とローンの条件は、暗号で置いた private/housing.json から1回だけ取りこむ（メモと月の利息）
+  // home/index.htmlと同じ暗号化データ（万ウォン）から、未入力の住まい代だけを補う。
+  if (window.HibikiSync) HibikiSync.open("home").then(function (H) {
+    if (!H) return;
+    var marker = "hibiki-budget-home-amount-v1";
+    try { if (localStorage.getItem(marker)) return; } catch (e) { return; }
+    var houses = S.expense.filter(function (x) { return /住|家賃|管理費|ローン.*利息/.test(x.name); });
+    if (houses.length !== 1) return;
+    var it = houses[0];
+    if (+it.amt > 0) {
+      try { localStorage.setItem(marker, "1"); } catch (e) {}
+      return;
+    }
+    if (![H.deposit, H.loanPct, H.rate, H.rent, H.fee].every(function (v) { return Number.isFinite(v) && v >= 0; }) || H.loanPct > 100) return;
+    var interest = H.deposit * H.loanPct / 100 * H.rate / 100 / 12 * 10000;
+    var rent = H.rent * 10000, fee = H.fee * 10000;
+    var total = Math.round(rent + fee + interest);
+    if (!Number.isSafeInteger(total) || total <= 0) return;
+    it.amt = total;
+    var breakdown = "住まいの内訳（月）：家賃 " + won(rent) + " ＋ 管理費 " + won(fee) + " ＋ ローン利息 約" + won(interest) + "。合計 " + won(total) + "（住まいページの登録条件による計算）。";
+    it.memo = (it.memo ? it.memo + "\n" : "") + breakdown;
+    try {
+      localStorage.setItem(KEY, JSON.stringify(S));
+      localStorage.setItem(marker, "1");
+    } catch (e) {}
+    render();
+  }).catch(function () { /* 未ログイン・復号失敗時は既存の記録を保つ。 */ });
+  // 旧housingデータは保証金と利息の補足メモとして残す。
   if (window.HibikiSync) HibikiSync.open("housing").then(function (D) {
     if (!D) return;
     try { if (localStorage.getItem("hibiki-budget-housing-seeded")) return; localStorage.setItem("hibiki-budget-housing-seeded", "1"); } catch (e) {}
@@ -408,7 +434,7 @@
     var monthly = Math.round(D.deposit * D.loanRatio * D.rate / 100 / 12);
     it.memo = D.memo + "月の利息は約" + won(monthly) + "（自動計算）。";
     save(); render();
-  });
+  }).catch(function () { /* 未ログイン時は既存のメモを保つ。 */ });
   // 承認された毎月の費用を、ログイン後に一度だけ取り込む。
   if (window.HibikiSync) HibikiSync.open("budget-additions").then(function (D) {
     if (!D || !Array.isArray(D.items)) return;
