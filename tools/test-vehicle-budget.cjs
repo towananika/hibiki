@@ -1,0 +1,35 @@
+const { chromium } = require('playwright');
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const { pathToFileURL } = require('node:url');
+(async () => {
+  const browser = await chromium.launch({ headless:true, channel:'msedge' });
+  const page = await browser.newPage({ viewport:{ width:390, height:844 } });
+  const errors = []; page.on('pageerror', e => errors.push(e.message));
+  await page.route('**/sync.js', r => r.fulfill({ body:'' }));
+  await page.addInitScript(() => {
+    if (localStorage.getItem('test-transport')) return;
+    const today = new Date().toISOString().slice(0,10);
+    localStorage.setItem('hibiki-vehicle-v1', JSON.stringify({ purchase:120000, years:5, bought:today, recs:[{id:'r', d:today, amt:10000}] }));
+    localStorage.setItem('hibiki-budget-v1', JSON.stringify({ income:[], expense:[{id:'t', name:'交通費', amt:0, memo:'残すメモ'}] }));
+    localStorage.setItem('test-transport', '1');
+  });
+  const url = name => pathToFileURL(path.resolve(__dirname, '../money/' + name)).href;
+  await page.goto(url('budget.html'));
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('hibiki-budget-v1')).expense[0].amt === 12000);
+  const traffic = page.locator('#need details').filter({has:page.locator('summary', {hasText:'交通費'})});
+  await traffic.locator('summary').click();
+  assert.match(await traffic.innerText(), /実費の月平均.*購入費の月割り/);
+  await page.evaluate(() => { const v = JSON.parse(localStorage.getItem('hibiki-vehicle-v1')); v.purchase = 240000; localStorage.setItem('hibiki-vehicle-v1', JSON.stringify(v)); });
+  await traffic.getByRole('button', {name:'乗り物の分析を反映', exact:true}).click();
+  await page.waitForFunction(() => JSON.parse(localStorage.getItem('hibiki-budget-v1')).expense[0].amt === 14000);
+  assert.equal(await traffic.locator('textarea').inputValue(), '残すメモ');
+  await page.screenshot({path:path.resolve(__dirname, '../budget-transport.png'), fullPage:true});
+  await page.goto(url('vehicle.html'));
+  assert.match(await page.locator('#mt').innerText(), /14,000/);
+  await page.locator('#apply').click();
+  assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('hibiki-budget-v1')).expense[0].amt), 14000);
+  assert.deepEqual(errors, []);
+  await browser.close();
+  console.log('Vehicle/budget: automatic import, explicit refresh, matching analysis total and memo preservation passed.');
+})().catch(e => { console.error(e); process.exitCode = 1; });
