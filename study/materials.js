@@ -13,11 +13,13 @@ window.StudyMaterials = {
   },
   "trad": {
     "7": "view.html?n=tradition7",
-    "8": "view.html?n=tradition8"
+    "8": "view.html?n=tradition8",
+    "9": "view.html?n=tradition9"
   },
   "money": {
     "8": "view.html?n=money8",
-    "9": "view.html?n=money9"
+    "9": "view.html?n=money9",
+    "10": "view.html?n=money10"
   },
   "macro": {
     "8": "view.html?n=macro8",
@@ -40,6 +42,7 @@ window.StudyMaterials = {
     "15": "view.html?n=religion15"
   },
   "open": {
-    "8": "view.html?n=open8"
+    "8": "view.html?n=open8",
+    "9": "view.html?n=open9"
   }
 };
