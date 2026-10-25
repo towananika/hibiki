@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3年計画 — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --gold:#b08a35; --gold-soft:#f1e6cc; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --gold:#d8b25e; --gold-soft:#3a3220; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a { color:var(--wood); }
+  a.back { font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0 0 10px; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .note { color:var(--muted); font-size:12px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .lab { display:block; font-size:12px; color:var(--muted); letter-spacing:.06em; margin:12px 0 6px; }
+  .vision { font-size:19px; font-weight:700; line-height:1.55; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .two div { border-radius:10px; padding:8px 10px; font-size:13px; line-height:1.5; }
+  .two small { display:block; color:var(--muted); font-size:11.5px; }
+  .vals { display:flex; flex-wrap:wrap; gap:5px; }
+  .vals span { font-size:12px; padding:2px 10px; border-radius:99px; border:1px solid var(--border); }
+  .h { background:var(--sage-soft); } .m { background:var(--gold-soft); } .r { background:var(--red-soft); } .s { background:var(--blue-soft); } .f { background:var(--wood-soft); }
+  .tabs { display:flex; gap:6px; margin-bottom:10px; }
+  .tabs button { flex:1; font:inherit; font-weight:700; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:6px 0; cursor:pointer; }
+  .tabs button.on { color:#fff; border-color:transparent; }
+  .goal { font-size:13px; border-radius:10px; padding:6px 10px; margin-bottom:6px; }
+  ol { margin:0; padding-left:1.4em; display:grid; gap:3px; font-size:14px; }
+  ol li::marker { font-weight:700; color:var(--muted); }
+  .tri { font-size:12px; color:var(--muted); border-top:1px dashed var(--border); padding-top:8px; margin-top:10px; }
+  .years { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .yr { border:1px solid var(--border); border-radius:12px; padding:8px; display:grid; gap:2px; }
+  .yr b { font-size:18px; } .yr small { color:var(--muted); font-size:11px; }
+  .yr.now { border:2px solid var(--wood); }
+  .yr ul { margin:4px 0 0; padding:0; list-style:none; display:grid; gap:3px; font-size:11.5px; line-height:1.4; }
+  .yr li { border-radius:6px; padding:2px 5px; }
+  .qs { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .q { border:1px solid var(--border); border-radius:12px; padding:10px; }
+  .q.now { border:2px solid var(--wood); }
+  .q b { display:flex; justify-content:space-between; align-items:baseline; }
+  .q b small { font-weight:400; color:var(--muted); font-size:11px; }
+  .q ul { margin:6px 0 0; padding:0; list-style:none; display:grid; gap:4px; font-size:12.5px; line-height:1.45; }
+  .q li { display:grid; grid-template-columns:10px 1fr; gap:6px; }
+  .dot { width:8px; height:8px; border-radius:50%; margin-top:5px; }
+  .wk { border:1px solid var(--border); border-radius:12px; padding:10px 12px; margin-bottom:8px; }
+  .wk.now { border:2px solid var(--wood); }
+  .wk .hd { display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .wk .hd small { font-weight:400; color:var(--muted); }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font:inherit; font-size:13px; padding:4px 12px; border-radius:99px; border:0; color:var(--text); cursor:pointer; }
+  .chip.done { text-decoration:line-through; opacity:.55; }
+  .chip.done::before { content:"✓ "; font-weight:700; }
+  .meter { height:10px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:4px 0; }
+  .meter i { display:block; height:100%; background:var(--sage); }
+  .loop { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; text-align:center; }
+  .loop a { text-decoration:none; color:var(--text); border-radius:12px; padding:8px 4px; font-size:12px; line-height:1.4; }
+  .loop b { display:block; font-size:14px; }
+  .cad { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; text-align:center; font-size:11.5px; color:var(--muted); line-height:1.4; }
+  .cad b { display:block; font-size:15px; color:var(--wood); }
+  #lock { text-align:center; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← 入口</a>
+  <h1>3年計画</h1>
+  <p class="lead">2026年11月 → 2029年10月。健康・豊か・関係を、毎週すこしずつ。</p>
+  <div id="plan"><p class="card" id="lock">ログインした端末で、計画が出ます。</p></div>
+
+  <div class="card">
+    <h2>記録の輪</h2>
+    <div class="loop">
+      <a class="s" href="../study/"><b>① 学ぶ</b>勉強</a>
+      <a class="f" href="../priority/"><b>② やる</b>いま、これを</a>
+      <a class="h" href="../timeline/"><b>③ やった</b>これまでの道</a>
+      <a class="r" href="../dreams/"><b>④ 気づき</b>夢日記</a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>見直しの周期</h2>
+    <div class="cad">
+      <div><b>毎週</b>日曜5分</div>
+      <div><b>4週</b>短期を作り直す</div>
+      <div><b>季節</b>中期を見直す</div>
+      <div><b>1年</b>長期を見直す</div>
+    </div>
+  </div>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-plan-v1", C = { h:"var(--sage)", m:"var(--gold)", r:"var(--red)", s:"var(--blue)", f:"var(--wood)" };
+  var done = {}; try { done = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
+  var today = new Date(), ym = today.toISOString().slice(0, 7), ymd = today.toISOString().slice(0, 10);
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]; }); }
+  function md(s) { return (+s.slice(5, 7)) + "/" + (+s.slice(8, 10)); }
+
+  function render(D) {
+    var h = '';
+    // ビジョン
+    h += '<div class="card"><span class="lab" style="margin-top:0">ビジョン</span><div class="vision">' + esc(D.vision) + '</div>' +
+      '<span class="lab">したいこと</span><div class="two">' + D.wants.map(function (w) { return '<div class="' + w.k + '">' + esc(w.t) + '</div>'; }).join("") + '</div>' +
+      '<span class="lab">3年で育てる力</span><div class="two">' + D.grow.map(function (w) { return '<div class="' + w.k + '">' + esc(w.t) + '<small>' + esc(w.s) + '</small></div>'; }).join("") + '</div>' +
+      '<span class="lab">大事にすること</span><div class="vals">' + D.values.map(function (v) { return '<span>' + esc(v) + '</span>'; }).join("") + '</div></div>';
+    // 今週
+    var wi = D.weeks.findIndex(function (w) { return ymd >= w.from && ymd <= w.to; });
+    var all = [], got = 0;
+    D.weeks.forEach(function (w, i) { w.items.forEach(function (x, j) { var id = w.from + ":" + j; all.push(id); if (done[id]) got++; }); });
+    h += '<div class="card"><h2>短期　4週</h2><div class="meter"><i style="width:' + Math.round(got / all.length * 100) + '%"></i></div><p class="note" style="margin:0 0 10px">' + got + ' / ' + all.length + ' できた。タップで ✓</p>' +
+      D.weeks.map(function (w, i) {
+        return '<div class="wk' + (i === wi ? ' now' : '') + '"><div class="hd">' + (i + 1) + '週目' + (i === wi ? '・いま' : '') + '<small>' + md(w.from) + '〜' + md(w.to) + '</small></div><div class="chips">' +
+          w.items.map(function (x, j) { var id = w.from + ":" + j; return '<button class="chip ' + x.k + (done[id] ? ' done' : '') + '" data-id="' + id + '">' + esc(x.t) + '</button>'; }).join("") + '</div></div>';
+      }).join("") + '</div>';
+    // 柱
+    h += '<div class="card"><h2>柱ごとの優先順</h2><div class="tabs">' + D.pillars.map(function (p, i) { return '<button data-i="' + i + '">' + esc(p.name) + '</button>'; }).join("") + '</div><div id="pil"></div></div>';
+    // 長期
+    h += '<div class="card"><h2>長期　3年</h2><div class="years">' + D.years.map(function (y) {
+      var now = ym >= y.from && ym <= y.to;
+      return '<div class="yr' + (now ? ' now' : '') + '"><small>' + y.n + (now ? '・いま' : '') + '</small><b>' + esc(y.th) + '</b><small>' + y.from.slice(2).replace("-", ".") + '〜' + y.to.slice(2).replace("-", ".") + '</small><ul>' +
+        y.g.slice(0, 3).map(function (g, i) { return '<li class="' + "hmr"[i] + '">' + esc(g) + '</li>'; }).join("") + '</ul></div>';
+    }).join("") + '</div></div>';
+    // 中期
+    h += '<div class="card"><h2>中期　1年目の季節</h2><div class="qs">' + D.quarters.map(function (q) {
+      var now = ym >= q.from && ym <= q.to;
+      return '<div class="q' + (now ? ' now' : '') + '"><b>' + q.n + (now ? '・いま' : '') + '<small>' + (+q.from.slice(5)) + '〜' + (+q.to.slice(5)) + '月</small></b><ul>' +
+        q.items.map(function (x) { return '<li><i class="dot" style="background:' + C[x.k] + '"></i>' + esc(x.t) + '</li>'; }).join("") + '</ul></div>';
+    }).join("") + '</div></div>';
+    document.getElementById("plan").innerHTML = h;
+
+    function pil(i) {
+      var p = D.pillars[i];
+      document.querySelectorAll(".tabs button").forEach(function (b, j) { b.className = j === i ? "on" : ""; b.style.background = j === i ? C[D.pillars[j].k] : ""; });
+      document.getElementById("pil").innerHTML = '<div class="goal ' + p.k + '">3年後：' + esc(p.goal) + '</div><div class="two" style="background:none">' +
+        '<div style="padding:0"><span class="lab">やること</span><ol>' + p.acts.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join("") + '</ol></div>' +
+        '<div style="padding:0"><span class="lab">知ること</span><ol>' + p.knows.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join("") + '</ol></div></div>' +
+        '<div class="tri">物語から：' + esc(p.tri) + '　<a href="' + p.href + '">記録する →</a></div>';
+    }
+    document.querySelectorAll(".tabs button").forEach(function (b) { b.addEventListener("click", function () { pil(+b.dataset.i); }); });
+    pil(0);
+    document.querySelectorAll(".chip").forEach(function (b) {
+      b.addEventListener("click", function () { var id = b.dataset.id; if (done[id]) delete done[id]; else done[id] = ymd; save(); render(D); });
+    });
+  }
+  if (window.HibikiSync) HibikiSync.open("plan").then(function (D) {
+    if (!D || !D.vision) { document.getElementById("lock").textContent = "🔒 この端末では、計画を開けません。"; return; }
+    render(D);
+  });
+})();
+</script>
+</body>
+</html>

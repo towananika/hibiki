@@ -18,7 +18,7 @@
 - ページでは `HibikiSync.open("<name>").then(...)` で読む。null ならロック表示。
 
 ## いまあるページ
-入口 `index.html`（グループ分けメニュー）／ `health/`（アレルギー検査は `private/allergy.json`）／ `relations/` ／ `money/`（週間レポートは自動ルーチンが更新）／ `money/budget.html`（家計：所得と費用、`hibiki-budget-v1`）／ `money/assets.html`（預金と投資、`hibiki-assets-v1`）／ `money/vehicle.html`（乗り物の費用：実費と購入費の月割り、`hibiki-vehicle-v1`）／ `dreams/`（夢日記、`hibiki-dreams-v1`）／ `priority/`（いま、これを：優先の順番。判断は `priority/pri.js`）／ `home/` ／ `timeline/`（`private/timeline.json`）／ `study/`（放送大学「デジタル経済の理解」）。
+入口 `index.html`（グループ分けメニュー）／ `health/`（アレルギー検査は `private/allergy.json`）／ `relations/` ／ `money/`（週間レポートは自動ルーチンが更新）／ `money/budget.html`（家計：所得と費用、`hibiki-budget-v1`）／ `money/assets.html`（預金と投資、`hibiki-assets-v1`）／ `money/vehicle.html`（乗り物の費用：実費と購入費の月割り、`hibiki-vehicle-v1`）／ `dreams/`（夢日記、`hibiki-dreams-v1`）／ `plan/`（3年計画：ビジョン・柱・3年→季節→4週。中身は `private/plan.json`、4週の✓は `hibiki-plan-v1`。見直しは4週ごと・季節ごと・1年ごと）／ `priority/`（いま、これを：優先の順番。判断は `priority/pri.js`）／ `home/` ／ `timeline/`（`private/timeline.json`）／ `study/`（放送大学「デジタル経済の理解」）。
 年齢は `hibiki-life-age` を各ページで共有する。
 
 ## 本人について
