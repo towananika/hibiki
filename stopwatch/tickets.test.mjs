@@ -1,5 +1,9 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {compareTickets as compare} from './tickets.mjs';
 const tickets=[{name:'short',kind:'time',minutes:30,price:200},{name:'long',kind:'time',minutes:120,price:700},{name:'day',kind:'day',price:1500}];
+test('free through exactly thirty minutes, no deduction after threshold',()=>{
+ assert.equal(compare(30,tickets,{freeWithin:30})[0].price,0);
+ assert.equal(compare(30+1/60000,tickets,{freeWithin:30,combine:true})[0].price,400);
+});
 test('single tickets and optional combinations',()=>{
  assert.equal(compare(150,tickets).length,0);assert.equal(compare(150,tickets,{combine:true})[0].price,900);
  assert.equal(compare(120,tickets,{combine:true})[0].price,700);assert.equal(compare(120.01,tickets,{combine:true})[0].price,900);

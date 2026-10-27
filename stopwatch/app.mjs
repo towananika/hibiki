@@ -18,6 +18,8 @@ function renderFee(){
   $('fee-title').textContent=$('planned-minutes').value!==''?'出庫予定時間での駐車券の目安':'いま出庫した場合の目安';
   if($('planned-minutes').value!==''&&ticket){$('fee').textContent=new Intl.NumberFormat('ja-JP',{style:'currency',currency:$('ticket-currency').value,maximumFractionDigits:0}).format(ticket.price);$('fee-note').textContent='指定した合計時間・併用条件での登録券の最安候補。';}
   if($('planned-minutes').value!==''&&!ticket){$('fee').textContent='比較できる券なし';$('fee-note').textContent='券の登録内容と併用・当日券の条件を確認してください。';}
+  const comparedMinutes=$('planned-minutes').value===''?elapsed(state)/60000:Number($('planned-minutes').value);
+  if(comparedMinutes>=0&&comparedMinutes<=30){$('fee').textContent='無料';$('fee-note').textContent='30分以内は無料。';}
 }
 for(const k of [...rateNames,'currency'])$(k).addEventListener('input',()=>{
   renderFee();try{const saved=Object.fromEntries(rateNames.map(k=>[k,$(k).value]));saved.currency=$('currency').value;localStorage.setItem(RATE_KEY,JSON.stringify(saved));}

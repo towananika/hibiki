@@ -1,12 +1,12 @@
 import {compareTickets} from './tickets.mjs';
 let previous='';
-export function drawTicketChart(tickets,currency,combine,dayValid){
+export function drawTicketChart(tickets,currency,combine,dayValid,freeWithin=0){
  const canvas=document.getElementById('ticket-chart'),note=document.getElementById('chart-note');
- const key=JSON.stringify([tickets,currency,combine,dayValid,canvas.clientWidth]);if(key===previous)return;previous=key;
+ const key=JSON.stringify([tickets,currency,combine,dayValid,freeWithin,canvas.clientWidth]);if(key===previous)return;previous=key;
  const w=Math.max(240,canvas.clientWidth),h=240,dpr=window.devicePixelRatio||1;canvas.width=w*dpr;canvas.height=h*dpr;
  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
  const timed=tickets.filter(t=>t.kind==='time'),days=tickets.filter(t=>t.kind==='day');
- const points=Array.from({length:25},(_,i)=>{const results=compareTickets(i*30,timed,{combine});return {minutes:i*30,price:results?.[0]?.price??null};});
+ const points=Array.from({length:25},(_,i)=>{const results=compareTickets(i*30,timed,{combine,freeWithin});return {minutes:i*30,price:results?.[0]?.price??null};});
  const day=dayValid&&days.length?Math.min(...days.map(t=>t.price)):null;
  const values=points.map(p=>p.price).filter(n=>n!==null);if(day!==null)values.push(day);
  if(!tickets.length){note.textContent='券を登録すると時間別の費用を表示します。';return;}

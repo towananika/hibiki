@@ -1,5 +1,6 @@
-export function compareTickets(minutes,tickets,{combine=false,sameDay=false}={}){
+export function compareTickets(minutes,tickets,{combine=false,sameDay=false,freeWithin=0}={}){
   if(!Number.isFinite(minutes)||minutes<0||minutes>10080)return null;
+  if(minutes<=freeWithin)return [{price:0,parts:[],covered:0}];
   const items=tickets.filter(t=>typeof t.name==='string'&&Number.isSafeInteger(t.price)&&t.price>=0&&(t.kind==='day'||(t.kind==='time'&&Number.isSafeInteger(t.minutes)&&t.minutes>0&&t.minutes<=10080)));
   const target=Math.ceil(minutes), results=[];
   if(!target)return [{price:0,parts:[],covered:0}];
