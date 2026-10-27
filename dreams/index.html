@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>夢日記 — とわなにか</title>
 <script src="../sync.js"></script>
+<link rel="stylesheet" href="wishlist.css">
 <style>
   :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
   @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
@@ -63,7 +64,7 @@
 <main>
   <a class="back" href="../">← 入口</a>
   <h1>夢日記</h1>
-  <p><a href="../wishes/">ほしいもの・サービス</a> · <a href="../notes/">メモ帳</a></p>
+  <p><a href="#purchases">ほしいもの・サービス</a></p>
   <p class="lead">ねがい・やってみたいこと・こうなったらいいなを、思いついたときに1行ずつ足します。かなったら○を押すと、あとで振り返れます。この端末とログインした端末にだけ残ります。</p>
 
   <div class="card">
@@ -78,7 +79,16 @@
   <form class="add" id="add"><input id="txt" maxlength="120" placeholder="たとえば：静かな部屋で眠りたい" required><button class="main" type="submit">足す</button></form>
 
   <div class="card" id="list"></div>
+  <section id="purchases" class="wishlist" aria-labelledby="purchases-title">
+    <h2 id="purchases-title">ほしいもの・サービス</h2>
+    <p class="sub">希望は注文・契約とは別。予算や時期は、決めたいときに。</p>
+    <p id="wishlist-notice" class="sub"></p>
+    <div class="tabs" role="group" aria-label="種類"><button data-filter="purchase" aria-pressed="true">購入品</button><button data-filter="service" aria-pressed="false">サービス</button><button data-filter="all" aria-pressed="false">すべて</button></div>
+    <p id="wishlist-status" role="status">個人のリストを読み込み中…</p><div id="wishlist-list"></div>
+    <p class="sub">予算などの編集はこのブラウザ内のみ、非暗号化で保存されます。共有端末ではご注意ください。</p>
+  </section>
 </main>
+<script type="module" src="wishlist.mjs"></script>
 <script>
 (function () {
   var KEY = "hibiki-dreams-v1";
