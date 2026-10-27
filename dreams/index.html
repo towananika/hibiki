@@ -61,8 +61,9 @@
 </head>
 <body>
 <main>
-  <a class="back" href="./">← 入口</a>
+  <a class="back" href="../">← 入口</a>
   <h1>夢日記</h1>
+  <p><a href="../wishes/">ほしいもの・サービス</a> · <a href="../notes/">メモ帳</a></p>
   <p class="lead">ねがい・やってみたいこと・こうなったらいいなを、思いついたときに1行ずつ足します。かなったら○を押すと、あとで振り返れます。この端末とログインした端末にだけ残ります。</p>
 
   <div class="card">
@@ -137,6 +138,16 @@
     try { localStorage.setItem("hibiki-dreams-seeded", "1"); } catch (e) {}
     save(); render();
   });
+  // Separate encrypted additions preserve the original seed and existing dreams.
+  if (window.HibikiSync) HibikiSync.open("wishlist-20261027").then(function (D) {
+    if (!D || !D.dream) return;
+    var marker = "hibiki-dreams-wishlist-20261027";
+    try { if (localStorage.getItem(marker)) return; } catch (e) { return; }
+    var x = D.dream;
+    if (!S.items.some(function (y) { return y.id === x.id || y.text === x.text; })) S.items.push({ id:x.id, text:x.text, at:x.at, done:"" });
+    try { localStorage.setItem(KEY, JSON.stringify(S)); localStorage.setItem(marker, "1"); } catch (e) { return; }
+    render();
+  }).catch(function () {});
   render();
 })();
 </script>
