@@ -1,8 +1,8 @@
 import {compareTickets} from './tickets.mjs';
 let previous='';
 export function drawTicketChart(tickets,currency,combine,dayValid){
- const key=JSON.stringify([tickets,currency,combine,dayValid,window.innerWidth]);if(key===previous)return;previous=key;
  const canvas=document.getElementById('ticket-chart'),note=document.getElementById('chart-note');
+ const key=JSON.stringify([tickets,currency,combine,dayValid,canvas.clientWidth]);if(key===previous)return;previous=key;
  const w=Math.max(240,canvas.clientWidth),h=240,dpr=window.devicePixelRatio||1;canvas.width=w*dpr;canvas.height=h*dpr;
  const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);ctx.clearRect(0,0,w,h);
  const timed=tickets.filter(t=>t.kind==='time'),days=tickets.filter(t=>t.kind==='day');
