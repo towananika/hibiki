@@ -11,7 +11,7 @@ const fs=require('node:fs'),path=require('node:path');
       const url=new URL(route.request().url());
       if(url.pathname==='/sync.js')return route.fulfill({contentType:'text/javascript',body:'window.HibikiSync={open:async name=>name==="wishlist-20261027"?('+JSON.stringify(fixture)+'):null};'});
       const file=path.join(process.cwd(),url.pathname.endsWith('/')?url.pathname+'index.html':url.pathname);
-      return route.fulfill({contentType:file.endsWith('.mjs')?'text/javascript':'text/html',body:fs.readFileSync(file)});
+      return route.fulfill({contentType:file.endsWith('.mjs')?'text/javascript':file.endsWith('.css')?'text/css':'text/html',body:fs.readFileSync(file)});
     });
     const check=(condition,label)=>{if(!condition)throw Error(label);};
     await page.goto('https://preview.invalid/dreams/');await page.locator('article').waitFor();
