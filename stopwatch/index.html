@@ -19,6 +19,7 @@
 <label>駐車券の割引額<input id="ticketAmount" type="number" min="0" step="1" value="0"></label>
 </div></details><p>無料時間・駐車券の時間を差し引き、基本料金と追加料金を計算。追加時間は単位ごとに切り上げます。上限適用後に金額割引を引きます。日付ごとの上限・夜間料金・無料時間超過時の遡及課金などは未対応。実際の精算額を優先してください。</p></section>
 <section class="fee" aria-labelledby="ticket-title"><h2 id="ticket-title">駐車券の組み合わせ</h2>
+<p>30分以内は無料。超過した場合は、30分を差し引かず全時間で比較します。</p>
 <div class="rate-fields"><label>出庫予定までの合計時間（分）<input id="planned-minutes" type="number" min="0" max="10080" placeholder="空欄なら現在の経過時間"></label></div>
 <label class="check"><input id="combine-tickets" type="checkbox">時間券の併用可として比較</label>
 <label class="check"><input id="day-valid" type="checkbox">当日券が対象の駐車全体に使えることを確認済み</label>

@@ -19,12 +19,12 @@ export function updateTickets(ms,firstStartedAt,exitedAt){
  const end=firstStartedAt===null?null:new Date(manual!==''?firstStartedAt+minutes*60000:exitedAt??firstStartedAt+minutes*60000);
  const sameDate=end!==null&&new Date(firstStartedAt).toDateString()===end.toDateString();
  const sameDay=$('day-valid').checked&&(manual!==''||sameDate);
- const results=compareTickets(minutes,tickets,{combine:$('combine-tickets').checked,sameDay});
- drawTicketChart(tickets,currency,$('combine-tickets').checked,$('day-valid').checked);
+ const results=compareTickets(minutes,tickets,{combine:$('combine-tickets').checked,sameDay,freeWithin:30});
+ drawTicketChart(tickets,currency,$('combine-tickets').checked,$('day-valid').checked,30);
  $('ticket-results').replaceChildren();
  $('ticket-message').textContent=error||(!tickets.length?'登録された駐車券はありません。':results===null?'比較できる時間は0〜10,080分です。':!results.length?'この条件で時間をカバーする駐車券はありません。':'');
  if(!results)return;
- results.slice(0,3).forEach((r,i)=>{const li=document.createElement('li');const description=r.parts.length?r.parts.map(t=>`${t.name} × ${t.count}`).join(' ＋ '):'駐車時間なし';li.textContent=`${i===0?'最安候補：':''}${money(r.price)} / ${description}${r.covered===null?'':`（${r.covered}分）`}`;$('ticket-results').append(li);});
+ results.slice(0,3).forEach((r,i)=>{const li=document.createElement('li');const description=r.parts.length?r.parts.map(t=>`${t.name} × ${t.count}`).join(' ＋ '):'30分以内は無料';li.textContent=`${i===0?'最安候補：':''}${money(r.price)} / ${description}${r.covered===null?'':`（${r.covered}分）`}`;$('ticket-results').append(li);});
  $('ticket-condition').textContent='登録券だけの購入費用を比較。通常料金や保有済み券は含みません。'+($('combine-tickets').checked?'時間券を複数併用でき、枚数上限なしという仮定です。':'時間券は1枚ずつ比較します。')+(!sameDay?'当日券は有効条件未確認、または日付またぎのため除外。':'当日券が対象の駐車全体に有効という確認に基づく概算です。');
  return results[0]||null;
 }
