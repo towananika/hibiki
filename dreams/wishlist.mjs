@@ -1,5 +1,6 @@
-import {amount, remaining, safeSource} from './model.mjs';
-const KEY = 'mio-wishlist-settings-v1', root = document.getElementById('list'), status = document.getElementById('status');
+import {amount, remaining, safeSource} from './wishlist-model.mjs';
+const container = document.getElementById('purchases');
+const KEY = 'mio-wishlist-settings-v1', root = document.getElementById('wishlist-list'), status = document.getElementById('wishlist-status');
 let data = null, filter = 'purchase', edits = {}, readable = true;
 try { edits = JSON.parse(localStorage.getItem(KEY) || '{}'); if (!edits || typeof edits !== 'object' || Array.isArray(edits)) throw Error(); }
 catch { readable = false; edits = {}; }
@@ -50,14 +51,14 @@ function render() {
     detail.append(sources, el('p', '次の一歩（仮案）：' + item.next, 'next')); card.append(detail); root.append(card);
   }
 }
-document.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => {
+container.querySelectorAll('[data-filter]').forEach(button => button.onclick = () => {
   if ([...root.querySelectorAll('form')].some(form => form.dataset.dirty === 'true') && !confirm('未保存の編集を破棄して切り替えますか？')) return;
-  filter = button.dataset.filter; document.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b === button))); render();
+  filter = button.dataset.filter; container.querySelectorAll('[data-filter]').forEach(b => b.setAttribute('aria-pressed', String(b === button))); render();
 });
 root.addEventListener('input', event => { const form = event.target.closest('form'); if (form) form.dataset.dirty = 'true'; });
 root.addEventListener('submit', event => { if (event.target.querySelector('[role=status]').textContent.includes('保存しました')) event.target.dataset.dirty = 'false'; });
 try {
   data = await window.HibikiSync?.open('wishlist-20261027');
   if (!data || !Array.isArray(data.items)) { status.textContent = 'リストを開けませんでした。ログインを確認してください。'; }
-  else { document.getElementById('notice').textContent = data.notice; status.textContent = readable ? '' : '編集データを読み込めませんでした。上書きは行いません。'; render(); }
+  else { document.getElementById('wishlist-notice').textContent = data.notice; status.textContent = readable ? '' : '編集データを読み込めませんでした。上書きは行いません。'; render(); }
 } catch { status.textContent = 'リストを読み込めませんでした。ログインを確認して再読み込みしてください。'; }

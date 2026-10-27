@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {amount, remaining, safeSource} from './model.mjs';
+import {amount, remaining, safeSource} from './wishlist-model.mjs';
 test('unknown values remain unknown and zero is valid', () => {
   assert.equal(amount(''), null); assert.equal(amount('0'), 0);
   assert.equal(remaining(1000, null), null); assert.equal(remaining(null, 0), null);
