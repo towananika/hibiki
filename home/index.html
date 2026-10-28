@@ -95,6 +95,14 @@
     </div>
   </section>
 
+  <section class="card" id="loan-payment" hidden>
+    <p class="label"><span>ローンの支払通知</span><small id="loan-payment-date"></small></p>
+    <p class="big" id="loan-payment-amount"></p>
+    <p class="note" id="loan-payment-basis"></p>
+    <details><summary>計算の詳細</summary><p class="note" id="loan-payment-detail"></p></details>
+    <p class="note" id="loan-payment-priority"></p>
+  </section>
+
   <section class="card">
     <p class="label"><span>ひびきへ</span></p>
     <p style="margin:0;font-size:15px;line-height:1.8">チョンセの保証金は、ひびきのいちばん大きな財産です。<br><b>赤い「大事」</b>の3つだけは、かならず。</p>
@@ -158,5 +166,6 @@ document.getElementById("list").addEventListener("click", function (e) {
 });
 render();
 </script>
+<script type="module" src="loan-payment.mjs"></script>
 </body>
 </html>
