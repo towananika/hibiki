@@ -24,6 +24,8 @@
 
 ## メモ帳
 
+Instagram Reader：入口 `instagram/`、公開ソース `tools/instagram-reader/`（MIT）。取得処理はPC内のNode.js＋Playwrightで動作し、GitHub Pagesでは実行しない。`read-post.cjs <投稿URL>` は必要時にlocalhostサーバーを起動し、本文と取得状況をJSONで返す。`--images` は画像を公開リポジトリ外に保存。ログイン用プロファイルもPC内のみ。チャットAIが取得結果を引用資料として分析する。取得制限を回避せず、全スライド・動画は未対応。ローカルCodex用スキル `instagram-reader` を用意。単体テスト `node --test tools/instagram-reader/test.cjs`、ブラウザ検証 `node tools/instagram-reader/browser-test.cjs`（サーバー起動後）。
+
 `notes/` は入力原文を保持し、350ms後に端末内の語句ルールで簡易分類する。AI要約は未接続。選択した保存メモと入力中のメモから相談文を確認・コピーし、ChatGPTへ手動で渡せる。外部AIへの自動送信や有料API呼び出しは行わない。
 
 保存キー `mio-local-notes-v1` は意図的に従来の `hibiki-*` 同期対象外とし、ブラウザ内のみ・非暗号化。共有端末での利用には注意。公開リポジトリにユーザーのメモを保存しない。ログイン画面の表示制御は、個人データのサーバー側認可を保証しない。`node --test notes/organize.test.mjs` で分類と相談文生成を確認。

@@ -1,0 +1,8 @@
+{
+  "name": "hibiki-instagram-reader",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {"start": "node server.cjs", "test": "node --test test.cjs"},
+  "license": "MIT",
+  "dependencies": {"playwright": "^1.47.2"}
+}
