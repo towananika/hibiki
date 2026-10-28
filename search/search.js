@@ -32,7 +32,7 @@
   }
   function render() {
     var query = input.value.trim(), active = !!query;
-    menu.hidden = active; priority.hidden = active; results.hidden = !active; clear.hidden = !input.value;
+    menu.hidden = active; if (priority) priority.hidden = active; results.hidden = !active; clear.hidden = !input.value;
     results.replaceChildren(); status.textContent = '';
     if (!active) return;
     status.textContent = '探しています…';

@@ -90,8 +90,9 @@
       <label for="pd">買った日<input id="pd" type="date"></label>
       <label for="pk">いまの走行距離（km）<input id="pk" type="number" min="0" step="1" inputmode="numeric"></label>
       <label for="py">何年使う予定<input id="py" type="number" min="1" max="20" step="1" inputmode="numeric"></label>
+      <label for="pi">保険料（年額・ウォン）<input id="pi" type="number" min="0" step="1" inputmode="numeric" placeholder="未入力"></label>
     </div>
-    <div class="note">購入費は、使う年数で割って「月割り」にします。</div>
+    <div class="note">保険料は年額÷12で合計に含めます。同じ保険料を「記録」にも入れると二重計上になるため、年額か記録のどちらか一方に入力してください。未入力の保険料は合計に含みません。</div>
   </div>
 
   <div class="card" id="list"></div>
@@ -119,7 +120,8 @@
   }
   function summary() {
     var c = calc(), kv = document.getElementById("kv"); kv.textContent = "";
-    document.getElementById("mt").textContent = c.m || S.purchase ? won(c.total) : "—";
+    document.getElementById("mt").textContent = c.available ? won(c.total) : "—";
+    var insuranceRow=el('div','kv');insuranceRow.appendChild(el('span',null,'保険料の月割り'));insuranceRow.appendChild(el('b',null,S.insuranceAnnual==null||S.insuranceAnnual===''?'未入力':won(c.insurance||0)));kv.appendChild(insuranceRow);
     [["記録した費用の合計", won(c.rec)], ["記録の期間", c.m ? (Math.round(c.m * 10) / 10) + " か月" : "—"], ["実費の月平均（チャージ・点検・修理）", c.m ? won(c.real) : "—"], ["購入費の月割り", won(c.per)], ["1kmあたりの費用", c.perKm ? won(c.perKm) : "走行距離と買った日を入れる"], ["1年あたりの走行", c.yearKm ? Math.round(c.yearKm).toLocaleString("ja-JP") + " km" : "—"]].forEach(function (p) {
       var r = el("div", "kv"); r.appendChild(el("span", null, p[0])); r.appendChild(el("b", null, p[1])); kv.appendChild(r);
     });
@@ -128,6 +130,7 @@
     document.getElementById("mn").textContent = note || (c.m ? "" : "記録を足すと、月平均が出ます。");
   }
   function settings() {
+    var pi=document.getElementById('pi');pi.value=S.insuranceAnnual==null?'':S.insuranceAnnual;pi.onchange=function(){S.insuranceAnnual=pi.value===''?null:Math.max(0,Math.round(Number(pi.value)||0));save();render();};
     var pp = document.getElementById("pp"), pd = document.getElementById("pd"), py = document.getElementById("py");
     var pk = document.getElementById("pk"); pk.value = S.km || ""; pk.onchange = function () { S.km = Math.max(0, Math.round(+pk.value || 0)); save(); render(); };
     pp.value = S.purchase || ""; pd.value = S.bought || ""; py.value = S.years || 5;

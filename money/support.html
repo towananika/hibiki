@@ -46,14 +46,15 @@
   .sum small { display:block; color:var(--muted); font-size:11px; }
   .sum b { font-size:20px; }
   .no-list { font-size:14px; margin:8px 0 0; padding-left:18px; color:var(--muted); }
-  .src { font-size:12px; color:var(--muted); }
+  .src { font-size:12px; color:var(--muted); }.support-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:16px 0}.support-tools input,.support-tools select,.calc select{min-width:0;min-height:42px;padding:8px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;font:inherit;font-size:14px}.card{border-radius:8px;box-shadow:none}.card details{margin-top:12px;font-size:14px}.card summary{cursor:pointer}.cond li::before{content:'・'!important;color:var(--muted)!important}[hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
 <a class="back" href="../">‹ メニュー</a>
 <h1>使える制度</h1>
-<p class="lead">韓国の制度で、ひびきが受けられそうなもの。上から大事な順。2026年10月18日に調べた。</p>
+<p class="lead">使えるか確認したい制度の候補。本人の年齢・所得・世帯条件を確認するまで、対象とは断定しません。</p>
+<div class="support-tools"><input id="support-search" type="search" placeholder="制度名・目的で検索" aria-label="制度を検索"><select id="support-filter" aria-label="確認の状態"><option value="todo">未完了</option><option value="done">確認済み</option><option value="all">すべて</option></select></div><p class="src" id="support-count" role="status"></p>
 
 <div class="card">
   <div class="sum">
@@ -67,14 +68,14 @@
 <div id="list"></div>
 
 <div class="card">
-  <h2>いまは対象外</h2>
+  <h2>対象条件の確認が必要</h2>
   <ul class="no-list">
-    <li>青年の家賃特別支援（月20万×24か月）… 保証金5,000万以下が条件。いまの家は超えている。</li>
-    <li>勤労奨励金 … 1人世帯は年収2,200万未満が条件。</li>
+    <li>青年の家賃支援・勤労奨励金なども、募集年度と世帯条件を確認してから判断します。</li>
+    <li>所得控除は「戻る金額」ではありません。税額控除も実際の税額などによって還付額が変わります。</li>
   </ul>
 </div>
 
-<p class="src">調べた先：<a href="https://www.korea.kr/news/policyNewsView.do?newsId=148971997">政府の政策ニュース（青年未来積立 2次）</a>・<a href="https://www.fnnews.com/news/202610150946206727">ファイナンシャルニュース（2次締め切り）</a>・<a href="https://housing.seoul.go.kr/site/main/content/sh01_061030">ソウル市 住まい（保証料の支援）</a>。条件は年ごとに変わるので、申し込む前に窓口の案内で確かめる。年齢・年収は本人に確認中（34歳以下・年収5,000万以下として選んだ）。</p>
+<p class="src">制度の候補情報は2026年10月18日の記録。家賃・ローン控除の公式案内は10月28日に再確認。他の金額・受付日程は参考情報のため、申請前に各公式窓口で再確認してください。</p>
 </main>
 <script>
 (function () {
@@ -86,12 +87,12 @@
     { id: "mirai", kind: "save", name: "青年未来積立", fit: 100,
       gain: ["政府の上乗せ", "積立額の6%（月最大3万）・利子に税なし"],
       cond: ["19〜34歳", "年収6,000万以下（7,500万までは税なしだけ）", "家族の所得が中央値の2倍以下", { q: "中小企業に新しく入った人は上乗せ12%（月最大6万）" }],
-      alert: "<b>2回目の受付は10月16日で終わった。</b>申し込んだなら、審査結果が11月12〜13日に届き、<b>11月16〜27日に口座を開く</b>（開かないと無効）。まだなら3回目を待つ（日程は未発表）。",
+      alert: "募集回ごとに受付・審査・口座開設の日程が異なります。申請済みなら銀行の通知を優先し、次回募集は公式案内で確認してください。",
       todo: "<b>やること：</b>申し込んだか確かめる。月50万を3年で、政府の分は最大108万。",
       hosoku: "補足：月50万まで3年ためる国の積立。銀行の利子に、政府がお金を上乗せしてくれる。「青年飛躍口座」を持っていたら、未来積立の口座を先に開いてから、特別に解約して移せる（順番が逆だと損）。" },
     { id: "rent", kind: "tax", name: "家賃の税額控除", fit: 95,
-      gain: ["戻る額", "1年に払った家賃の17%"],
-      cond: ["家を持たない世帯主（1人世帯でOK）", "年収5,500万以下で17%（8,000万まで15%）", "85㎡以下の家・転入届ずみ"],
+      gain: ["税額控除の目安", "対象家賃の15%または17%（条件あり）"],
+      cond: ["無住宅などの世帯条件を満たす給与所得者", "総給与5,500万以下で17%、8,000万以下で15%（総合所得にも別の制限あり）", "85㎡以下、または基準価格4億以下などの対象住宅・住所一致", "対象家賃は年1,000万まで。実際の還付額は納税額などにより変わる"],
       calc: true,
       todo: "<b>やること：</b>1〜2月の年末調整で、賃貸契約書と家賃の振込記録を会社に出す。",
       hosoku: "補足：チョンセでも、保証金とは別に毎月払う家賃の部分が対象。年末調整は、会社が1年分の税を計算しなおして戻す手続き。" },
@@ -99,7 +100,7 @@
       gain: ["所得から引ける額", "返した利息と元金の40%（年400万まで）"],
       cond: ["家を持たない世帯主", "85㎡以下", "銀行からのチョンセローン"],
       todo: "<b>やること：</b>年末調整で「住宅の借入金」の欄が入っているか見る。国税庁のサイトに自動で出ないときは、銀行で返済の証明をもらう。",
-      hosoku: "補足：利息を払うほど、税が少し戻るしくみ。下の請約通帳の控除と合わせて年400万が上限。" },
+      hosoku: "補足：返済額の40%を課税対象の所得から差し引く制度。40%がそのまま返金されるわけではありません。請約通帳の控除と合わせて年400万が上限。借入・入居時期なども確認が必要です。" },
     { id: "dream", kind: "save", name: "青年住宅ドリーム請約通帳", fit: 85,
       gain: ["利子", "最大年4.5%・利子500万まで税なし"],
       cond: ["19〜34歳", "年収5,000万以下", "家を持たない", { q: "いまの請約通帳を持っていれば乗りかえ（これまでの期間も引きつぐ）" }],
@@ -108,7 +109,7 @@
     { id: "isa", kind: "save", name: "個人総合資産口座（庶民型）", fit: 70,
       gain: ["税なしの利益", "400万まで（超えた分も9.9%と低め）"],
       cond: ["年収5,000万以下で庶民型", "3年以上持つ", { q: "韓国で上場している米国株ETFも買える（米国株そのものは不可）" }],
-      todo: "<b>やること：</b>証券会社のアプリで開く。いまの株の一部を、この口座で米国株ETFに置きかえるかを考える。",
+      todo: "<b>やること：</b>いま持っている口座・加入条件・手数料を確認する。既存資産の売却や契約は、税金と利用目的を確認してから。",
       hosoku: "補足：株・ETF・預金をまとめて入れられる箱。中で出た利益に税がほとんどかからない。年2,000万まで入れられる。" },
     { id: "hug", kind: "cash", name: "チョンセ保証料の払い戻し", fit: 60,
       gain: ["戻る額", "払った保証料の全部（ソウル最大40万）"],
@@ -122,6 +123,7 @@
       hosoku: "補足：対象なら一番大きい。大企業や公的機関だと対象外。" }
   ];
   var KIND = { save: "ためる", tax: "税が戻る", cash: "お金が戻る" };
+  var SOURCES={mirai:'https://www.korea.kr/multi/visualNewsView.do?newsId=148972089',rent:'https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=239025&mi=40613',loan:'https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=239033&mi=40680',dream:'https://nhuf.molit.go.kr/',isa:'https://www.fsc.go.kr/',hug:'https://housing.seoul.go.kr/site/main/content/sh01_061030',sme:'https://www.nts.go.kr/'};
 
   function won(n) { return n >= 10000 ? Math.round(n / 10000).toLocaleString("ja-JP") + "万" : n.toLocaleString("ja-JP"); }
 
@@ -129,26 +131,30 @@
     var cond = it.cond.map(function (c) { return typeof c === "string" ? "<li>" + c + "</li>" : '<li class="q">' + c.q + "</li>"; }).join("");
     return '<div class="card' + (S[it.id] ? " done" : "") + '" id="c-' + it.id + '"><div class="top"><span class="no">' + (i + 1) + '</span><div class="t"><h2>' + it.name + '</h2><span class="kind k-' + it.kind + '">' + KIND[it.kind] + "</span></div></div>" +
       '<div class="gain"><small>' + it.gain[0] + "</small><b>" + it.gain[1] + "</b></div>" +
-      (it.calc ? '<div class="calc"><span>月の家賃</span><input id="rentIn" inputmode="numeric" placeholder="150000"><span style="white-space:nowrap">→ 1年で <b id="rentOut">—</b> 戻る</span></div>' : "") +
-      '<div class="fit">合いそう<span class="meter"><i style="width:' + it.fit + '%"></i></span></div>' +
-      '<ul class="cond">' + cond + "</ul>" +
+      (it.calc ? '<div class="calc"><span>月の家賃</span><input id="rentIn" aria-label="月の家賃" inputmode="numeric" placeholder="未入力"><select id="rentRate" aria-label="確認した控除率"><option value="">控除率未確認</option><option value="0.17">17%対象</option><option value="0.15">15%対象</option></select><span>控除目安 <b id="rentOut">—</b></span></div>' : "") +
+      '<p class="src">対象条件は未判定'+(['rent','loan'].includes(it.id)?' · 公式条件を10/28確認':' · 金額・受付は要再確認')+'</p><details><summary>条件・金額の詳細</summary><ul class="cond">' + cond + "</ul>" +
       (it.alert ? '<div class="alert">' + it.alert + "</div>" : "") +
       '<div class="todo">' + it.todo + "</div>" +
-      '<div class="hosoku">' + it.hosoku + "</div>" +
-      '<label class="chk"><input type="checkbox" data-id="' + it.id + '"' + (S[it.id] ? " checked" : "") + "> 済み</label></div>";
+      '<div class="hosoku">' + it.hosoku + '</div></details><p class="src"><a target="_blank" rel="noopener" href="'+SOURCES[it.id]+'">公式案内を確認 ↗</a></p>' +
+      '<label class="chk"><input type="checkbox" data-id="' + it.id + '"' + (S[it.id] ? " checked" : "") + "> 確認を終えた</label></div>";
   }).join("");
 
   document.getElementById("list").addEventListener("change", function (e) {
     var id = e.target.getAttribute("data-id"); if (!id) return;
     S[id] = e.target.checked; save();
     document.getElementById("c-" + id).classList.toggle("done", e.target.checked);
+    filter();
   });
 
   var rin = document.getElementById("rentIn"), rout = document.getElementById("rentOut");
-  function rent() { var v = parseInt(String(rin.value).replace(/\D/g, ""), 10) || 0; rout.textContent = v ? "約" + won(Math.round(Math.min(v * 12, 10000000) * 0.17)) + "ウォン" : "—"; }
+  var rate=document.getElementById('rentRate');
+  function rent() { var v=Number(rin.value),r=Number(rate.value);rout.textContent=rin.value!==''&&Number.isFinite(v)&&v>=0&&r?'約'+won(Math.round(Math.min(v*12,10000000)*r))+'ウォン（還付保証なし）':'—'; }
+  rate.value=S.rent_rate||'';rate.onchange=function(){S.rent_rate=rate.value;save();rent();};
   if (S.rent_amt) rin.value = S.rent_amt;
   rin.addEventListener("input", function () { S.rent_amt = rin.value; save(); rent(); });
   rent();
+  function filter(){var query=document.getElementById('support-search').value.trim().toLowerCase(),view=document.getElementById('support-filter').value,count=0;ITEMS.forEach(function(item){var card=document.getElementById('c-'+item.id),show=(!query||card.textContent.toLowerCase().includes(query))&&(view==='all'||(view==='done'?!!S[item.id]:!S[item.id]));card.hidden=!show;if(show)count++;});document.getElementById('support-count').textContent=count+'件';}
+  document.getElementById('support-search').oninput=filter;document.getElementById('support-filter').onchange=filter;filter();
 })();
 </script>
 </body>
