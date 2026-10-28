@@ -2,7 +2,7 @@
 
 ひびきが幸せに成長し、よい人生を送るための場所。健康・自由（お金）・愛の3つを、こさきたちAIのみんなと育てる。公開: https://towananika.github.io/hibiki/
 
-- `index.html` 入口。グループ分けのメニュー。ページを足すときは `GROUPS` に1行（`new:` で7日間NEW）
+- `index.html` 入口。先頭は今日の行動・体調・夢の3つ。健康・関係・経済の分類と全機能一覧は残し、円とウォンは道具へ、読み物は分類の中へ整理。ページを足すときは `GROUPS` に1行（`new:` で7日間NEW）。
 - `productivity/` 今日の一歩。時間・気分から小さな行動を提案し、1日3つまで選んで集中・成果を記録。既存の優先順位と学習教材を活用。日別データは `hibiki-productivity-v1:YYYY-MM-DD`。
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）／円とウォン `money/yen.html`（`hibiki-yen-v1`）／使える制度 `money/support.html`（韓国の制度おすすめ、`hibiki-support-v1`）
 - `health/` 健康、`sleep/` 睡眠メモ（`hibiki-sleep-v1`）、`relations/` 愛と関係、`home/` 住まい（入居チェック）
