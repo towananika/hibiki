@@ -16,4 +16,8 @@ assert.equal(cost.calculate({ purchase:-1, recs:[] }), null);
 assert.equal(cost.calculate({ recs:[{ d:'invalid', amt:1 }] }), null);
 assert.equal(cost.apply(budget, cost.calculate({ recs:[] })), null);
 assert.equal(cost.apply({ expense:[{name:'交通費'},{name:'交通費2'}] }, result), null);
+const insured=cost.calculate({purchase:120000,years:5,insuranceAnnual:240000,recs:[]});
+assert.equal(insured.insurance,20000);assert.equal(insured.total,22000);
+const imported=cost.apply({expense:[]},insured);assert.equal(imported.parts.reduce((sum,p)=>sum+p.amt,0),22000);assert.equal(imported.vehicleAnalysis.insuranceMonthly,20000);
+assert.equal(cost.calculate({insuranceAnnual:-1,recs:[]}),null);
 console.log('Vehicle costs: shared calculation, memo preservation, duplicates and missing-data checks passed.');
