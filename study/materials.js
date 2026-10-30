@@ -14,7 +14,8 @@ window.StudyMaterials = {
   "trad": {
     "7": "view.html?n=tradition7",
     "8": "view.html?n=tradition8",
-    "9": "view.html?n=tradition9"
+    "9": "view.html?n=tradition9",
+    "10": "view.html?n=tradition10"
   },
   "money": {
     "8": "view.html?n=money8",
