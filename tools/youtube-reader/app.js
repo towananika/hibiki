@@ -17,4 +17,4 @@ $('form').addEventListener('submit',async event=>{
   } catch(error){ $('status').textContent=error.message; } finally { $('read').disabled=false; }
 });
 $('copy').onclick=async()=>{if(!result)return;try{await navigator.clipboard.writeText(asText());$('status').textContent='チャット用の文章をコピーしました。';}catch{$('status').textContent='コピーできませんでした。「文章を保存」を使ってください。';}};
-$('download').onclick=()=>{if(!result)return;const url=URL.createObjectURL(new Blob([asText()],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='youtube-transcript.txt';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+$('download').onclick=()=>{if(!result)return;const url=URL.createObjectURL(new Blob([asText()],{type:'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='youtube-transcript.txt';a.hidden=true;document.body.append(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url);},1000);};
