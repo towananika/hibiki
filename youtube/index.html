@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YouTube Reader — とわなにか</title>
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --sage:#74886d; --sage-soft:#e2e8dd; --red:#b5583f; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --sage:#9db394; --sage-soft:#26301f; --red:#e08b70; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.8 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
+  main { max-width:520px; margin:0 auto; padding:28px 16px 64px; }
+  a.back { color:var(--muted); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; font-weight:600; margin:14px 0 4px; }
+  .sub { color:var(--muted); margin:0 0 24px; font-size:14px; }
+  ol { margin:0; padding:0; list-style:none; display:grid; gap:12px; counter-reset:s; }
+  li { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px 14px 52px; position:relative; counter-increment:s; }
+  li:before { content:counter(s); position:absolute; left:16px; top:14px; width:24px; height:24px; border-radius:50%; background:var(--sage); color:var(--bg); font-size:13px; font-weight:700; display:grid; place-items:center; }
+  li b { display:block; }
+  li small { color:var(--muted); font-size:13px; }
+  .bm { display:inline-block; margin-top:8px; background:var(--red); color:#fff; border-radius:999px; padding:8px 18px; font-weight:700; text-decoration:none; cursor:grab; }
+  .open { display:flex; gap:8px; margin-top:8px; }
+  .open input { flex:1; min-width:0; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:8px; padding:8px 10px; font:inherit; font-size:14px; }
+  .open button { border:0; border-radius:8px; background:var(--sage); color:var(--bg); padding:8px 14px; font:inherit; font-weight:700; cursor:pointer; }
+  .note { margin-top:24px; font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="../">← とわなにか</a>
+<h1>YouTube Reader</h1>
+<p class="sub">動画の題名・説明・字幕を、ボタン1つでコピーします。コピーしたものをClaudeのチャットに貼ると、Claudeが内容を読めます。パソコンのブラウザ用。</p>
+<ol>
+  <li><b>赤いボタンを、ブックマークバーへドラッグする</b><small>最初の1回だけ。ブックマークバーが見えないときは Ctrl+Shift+B。</small><br><a class="bm" id="bm" href="#">YouTubeを読む</a></li>
+  <li><b>YouTubeで動画を開く</b><small>リンクを貼って開くこともできます。ショート動画もふつうの動画として開きます。</small>
+    <div class="open"><input id="url" type="url" placeholder="https://youtu.be/…" aria-label="YouTubeのリンク"><button type="button" id="go">開く</button></div></li>
+  <li><b>ブックマークの「YouTubeを読む」を押す</b><small>字幕が出たら「コピーして閉じる」。</small></li>
+  <li><b>Claudeのチャットに貼る</b><small>「これ読んで」と一言そえて。</small></li>
+</ol>
+<p class="note">字幕は、YouTubeの「文字起こしを表示」と同じものを読みます。字幕のない動画は、題名と説明だけになります。何も外へ送りません。</p>
+</main>
+<script type="text/plain" id="code">(async()=>{const d=document;if(location.pathname.startsWith('/shorts/')){location.href='/watch?v='+location.pathname.split('/')[2];alert('ふつうの動画として開きました。もう一度ボタンを押してください。');return}
+function show(t){let o=d.getElementById('hbk-yt');if(o)o.remove();o=d.createElement('div');o.id='hbk-yt';o.style.cssText='position:fixed;top:8%;left:8%;right:8%;bottom:8%;z-index:2147483647;background:#fbf9f4;color:#2b2924;padding:16px;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:10px;font:14px sans-serif';const ta=d.createElement('textarea');ta.value=t;ta.style.cssText='flex:1;width:100%;font:13px/1.6 sans-serif;color:#2b2924;background:#fff;border:1px solid #e2dac8;border-radius:8px;padding:8px';const b=d.createElement('button');b.textContent='コピーして閉じる';b.style.cssText='padding:10px;border:0;border-radius:8px;background:#b5583f;color:#fff;font:700 15px sans-serif;cursor:pointer';b.onclick=()=>{ta.select();(navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).catch(()=>d.execCommand('copy')).finally(()=>o.remove())};o.append(ta,b);d.body.append(o);ta.focus();ta.select()}
+const q=s=>[...d.querySelectorAll(s)];const title=(d.querySelector('h1.ytd-watch-metadata')||{}).innerText||d.title;const exp=d.querySelector('#description-inline-expander #expand');if(exp)exp.click();
+let seg=q('ytd-transcript-segment-renderer .segment-text');if(!seg.length){const btn=d.querySelector('ytd-video-description-transcript-section-renderer button');if(btn){btn.click();for(let i=0;i<25&&!seg.length;i++){await new Promise(r=>setTimeout(r,300));seg=q('ytd-transcript-segment-renderer .segment-text')}}}
+let text=seg.map(s=>s.innerText.trim()).filter(Boolean).join('\n');
+if(!text){try{const pr=window.ytInitialPlayerResponse;const tr=pr.captions.playerCaptionsTracklistRenderer.captionTracks;const t=tr.find(x=>/^(ko|ja)/.test(x.languageCode))||tr[0];const x=await(await fetch(t.baseUrl+'&fmt=json3')).json();text=x.events.filter(e=>e.segs).map(e=>e.segs.map(s=>s.utf8).join('')).join('').replace(/\n+/g,'\n')}catch(e){}}
+const desc=((d.querySelector('#description-inline-expander')||{}).innerText||'').slice(0,2000);
+show('【題名】'+title+'\n【URL】'+location.href+'\n【説明】\n'+desc+'\n\n【字幕】\n'+(text||'（字幕が見つかりませんでした。字幕のない動画かもしれません）'))})();</script>
+<script>
+document.getElementById("bm").href = "javascript:" + encodeURIComponent(document.getElementById("code").textContent);
+document.getElementById("bm").addEventListener("click", function (e) { e.preventDefault(); alert("このボタンは押さずに、ブックマークバーへドラッグしてください。"); });
+document.getElementById("go").onclick = function () {
+  var u = document.getElementById("url").value.trim(), m = u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([\w-]{11})/);
+  if (m) location.href = "https://www.youtube.com/watch?v=" + m[1]; else document.getElementById("url").focus();
+};
+</script>
+</body>
+</html>
