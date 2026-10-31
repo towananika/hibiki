@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIの疑似投資 — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a.back { color:var(--wood); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0 0 10px; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .note { color:var(--muted); font-size:12px; margin:8px 0 0; }
+  .top { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .top b { font-size:28px; font-variant-numeric:tabular-nums; }
+  .rank { display:grid; grid-template-columns:1.6em 1fr auto; gap:2px 8px; align-items:center; padding:8px 0; border-top:1px solid var(--border); }
+  .rank:first-child { border-top:0; }
+  .rank .n { color:var(--muted); font-size:13px; text-align:center; }
+  .rank .nm { font-weight:600; font-size:15px; }
+  .rank .nm small { display:block; font-weight:400; color:var(--muted); font-size:12px; }
+  .rank .v { text-align:right; font-variant-numeric:tabular-nums; font-size:15px; }
+  .rank .v small { display:block; font-size:12px; }
+  .up { color:var(--sage); } .dn { color:var(--red); } .flat { color:var(--muted); }
+  .mix { grid-column:2 / 4; display:flex; height:8px; border-radius:4px; overflow:hidden; background:var(--wood-soft); }
+  .mix i { display:block; height:100%; }
+  .aib { font-style:normal; font-size:10px; color:#fff; background:var(--blue); border-radius:999px; padding:0 6px; margin-left:6px; vertical-align:2px; }
+  .legend { display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); margin-top:10px; }
+  .legend span::before { content:""; display:inline-block; width:8px; height:8px; border-radius:2px; background:var(--c); margin-right:4px; }
+  .aimix { display:flex; height:28px; border-radius:8px; overflow:hidden; margin:4px 0 8px; }
+  .aimix i { display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-style:normal; white-space:nowrap; overflow:hidden; }
+  .why { background:var(--blue-soft); border-radius:12px; padding:10px 12px; font-size:14px; }
+  .hist { font-size:13px; color:var(--muted); margin:8px 0 0; padding-left:18px; }
+  svg.chart { width:100%; height:auto; display:block; }
+  svg.chart text { font-size:10px; fill:var(--muted); }
+  .rules { display:grid; grid-template-columns:auto 1fr; gap:6px 10px; font-size:14px; }
+  .rules b { color:var(--wood); }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← お金と自由</a>
+  <h1>AIの疑似投資</h1>
+  <p class="lead">架空の1万ドルで8つのやり方を競争。本当のお金は動きません。</p>
+
+  <section class="card">
+    <div class="top"><span id="leadName">—</span><b id="leadVal">—</b></div>
+    <p class="note" id="since">—</p>
+  </section>
+
+  <section class="card">
+    <h2>順位</h2>
+    <div id="rank"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section class="card">
+    <h2>推移</h2>
+    <div id="chart"></div>
+  </section>
+
+  <section class="card">
+    <h2>AIのおまかせ：今の配分</h2>
+    <div class="aimix" id="aimix"></div>
+    <div class="why" id="why"></div>
+    <ol class="hist" id="hist" reversed></ol>
+  </section>
+
+  <section class="card">
+    <h2>ルール</h2>
+    <div class="rules">
+      <b>元手</b><span>どれも1万ドルから</span>
+      <b>更新</b><span>毎週土曜の朝、木曜の終値で</span>
+      <b>固定の7つ</b><span>最初に買って、あとは持つだけ</span>
+      <b>AI</b><span>毎週配分を見直す。理由を1行残す</span>
+      <b>入れない</b><span>債券・個別株・手数料と税</span>
+    </div>
+    <p class="note">練習のための記録で、投資の勧めではありません。値段の出典：Gotrade（ビットコインは現物ETFの値段）</p>
+  </section>
+</main>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var fmt = function (v) { return "$" + Math.round(v).toLocaleString("en-US"); };
+  var pct = function (r) { var s = (r * 100).toFixed(1); return (r > 0.0005 ? "+" : "") + s + "%"; };
+  var cls = function (r) { return r > 0.0005 ? "up" : r < -0.0005 ? "dn" : "flat"; };
+  var md = function (d) { var a = d.split("-"); return (+a[1]) + "/" + (+a[2]); };
+
+  fetch("sim.json?v=" + Date.now()).then(function (r) { return r.json(); }).then(draw);
+
+  function value(D, plan, upto) {
+    var W = D.weeks, A = D.assets;
+    if (!plan.ai) {
+      var p0 = W[0].p, pt = W[upto].p, v = 0;
+      for (var k in plan.mix) v += D.money * plan.mix[k] / 100 * pt[k] / p0[k];
+      return v;
+    }
+    // AI: 週ごとに、その週の配分で次の週まで持つ
+    var val = D.money;
+    for (var i = 0; i < upto; i++) {
+      var mix = aiMixAt(D, W[i].d), g = 0;
+      for (var k2 in mix) g += mix[k2] / 100 * W[i + 1].p[k2] / W[i].p[k2];
+      val *= g;
+    }
+    return val;
+  }
+  function aiMixAt(D, d) {
+    var m = D.ai[0].mix;
+    D.ai.forEach(function (a) { if (a.d <= d) m = a.mix; });
+    return m;
+  }
+  function mixBar(D, mix) {
+    var h = "";
+    for (var k in mix) h += '<i style="width:' + mix[k] + '%;background:' + D.assets[k].color + '"></i>';
+    return h;
+  }
+
+  function draw(D) {
+    var last = D.weeks.length - 1, prev = Math.max(0, last - 1);
+    var rows = D.plans.map(function (pl) {
+      var v = value(D, pl, last), vp = value(D, pl, prev);
+      return { pl: pl, v: v, r: v / D.money - 1, w: vp ? v / vp - 1 : 0,
+               mix: pl.ai ? aiMixAt(D, D.weeks[last].d) : pl.mix,
+               line: D.weeks.map(function (_, i) { return value(D, pl, i); }) };
+    }).sort(function (a, b) { return b.v - a.v; });
+
+    $("leadName").textContent = last ? "いま1位：" + rows[0].pl.name : "スタートしました";
+    $("leadVal").textContent = last ? fmt(rows[0].v) : fmt(D.money);
+    $("since").textContent = md(D.start) + " に開始 ・ " + md(D.weeks[last].d) + " の終値まで ・ " + last + "週目";
+
+    $("rank").innerHTML = rows.map(function (x, i) {
+      return '<div class="' + (x.pl.ai ? "ai" : "") + '"><div class="rank">' +
+        '<span class="n">' + (last ? i + 1 : "") + '</span>' +
+        '<span class="nm">' + x.pl.name + (x.pl.ai ? '<em class="aib">AI</em>' : '') + '<small>' + x.pl.idea + '</small></span>' +
+        '<span class="v">' + fmt(x.v) + '<small class="' + cls(x.r) + '">' + pct(x.r) + '</small></span>' +
+        '<div class="mix">' + mixBar(D, x.mix) + '</div></div></div>';
+    }).join("");
+    var used = {};
+    D.plans.forEach(function (pl) { for (var k in (pl.ai ? aiMixAt(D, D.weeks[last].d) : pl.mix)) used[k] = 1; });
+    $("legend").innerHTML = Object.keys(D.assets).filter(function (k) { return used[k]; }).map(function (k) {
+      return '<span style="--c:' + D.assets[k].color + '">' + D.assets[k].name + '</span>';
+    }).join("");
+
+    // 推移の線
+    if (last < 1) {
+      $("chart").innerHTML = '<p class="note" style="margin:0">来週の土曜から線が伸びます。</p>';
+    } else {
+      var Wd = 320, H = 180, L = 34, R = 8, T = 8, B = 18, all = [];
+      rows.forEach(function (x) { all = all.concat(x.line); });
+      var lo = Math.min.apply(null, all.concat([D.money])), hi = Math.max.apply(null, all.concat([D.money]));
+      var pad = (hi - lo) * 0.1 || 100; lo -= pad; hi += pad;
+      var X = function (i) { return L + (Wd - L - R) * i / last; };
+      var Y = function (v) { return T + (H - T - B) * (1 - (v - lo) / (hi - lo)); };
+      var s = '<svg class="chart" viewBox="0 0 ' + Wd + ' ' + H + '">';
+      s += '<line x1="' + L + '" x2="' + (Wd - R) + '" y1="' + Y(D.money) + '" y2="' + Y(D.money) + '" stroke="var(--border)" stroke-dasharray="3 3"/>';
+      s += '<text x="0" y="' + (Y(D.money) + 3) + '">$10k</text>';
+      s += '<text x="' + L + '" y="' + (H - 4) + '">' + md(D.weeks[0].d) + '</text>';
+      s += '<text x="' + (Wd - R) + '" y="' + (H - 4) + '" text-anchor="end">' + md(D.weeks[last].d) + '</text>';
+      rows.slice().reverse().forEach(function (x) {
+        var col = x.pl.ai ? "var(--blue)" : "var(--muted)", w = x.pl.ai ? 2.5 : 1.2, op = x.pl.ai ? 1 : 0.55;
+        s += '<polyline fill="none" stroke="' + col + '" stroke-width="' + w + '" opacity="' + op + '" points="' +
+          x.line.map(function (v, i) { return X(i) + "," + Y(v); }).join(" ") + '"/>';
+      });
+      s += '</svg>';
+      $("chart").innerHTML = s + '<p class="note">青い太線がAIのおまかせ。灰色は固定の7つ。</p>';
+    }
+
+    // AIの配分
+    var cur = D.ai[D.ai.length - 1], h = "";
+    for (var k in cur.mix) h += '<i style="width:' + cur.mix[k] + '%;background:' + D.assets[k].color + '">' + (cur.mix[k] >= 20 ? D.assets[k].name + " " + cur.mix[k] : cur.mix[k]) + '</i>';
+    $("aimix").innerHTML = h;
+    $("why").textContent = md(cur.d) + "：" + cur.why;
+    $("hist").innerHTML = D.ai.slice(0, -1).reverse().map(function (a) {
+      return "<li>" + md(a.d) + "：" + a.why + "</li>";
+    }).join("");
+  }
+})();
+</script>
+</body>
+</html>

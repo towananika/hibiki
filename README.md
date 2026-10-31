@@ -4,7 +4,7 @@
 
 - `index.html` 入口。先頭は今日の行動・体調・夢の3つ。健康・関係・経済の分類と全機能一覧は残し、円とウォンは道具へ、読み物は分類の中へ整理。ページを足すときは `GROUPS` に1行（`new:` で7日間NEW）。
 - `productivity/` 今日の一歩。時間・気分から小さな行動を提案し、1日3つまで選んで集中・成果を記録。既存の優先順位と学習教材を活用。日別データは `hibiki-productivity-v1:YYYY-MM-DD`。
-- `money/` お金（金利メーター、配分、週間レポート `money/report.html`）／円とウォン `money/yen.html`（`hibiki-yen-v1`）／使える制度 `money/support.html`（韓国の制度おすすめ、`hibiki-support-v1`）
+- `money/` お金（金利メーター、配分、週間レポート `money/report.html`）／円とウォン `money/yen.html`（`hibiki-yen-v1`）／使える制度 `money/support.html`（韓国の制度おすすめ、`hibiki-support-v1`）／AIの疑似投資 `money/sim.html`（架空の1万ドルで8つのやり方を比べる。データは `money/sim.json`、週間レポートのルーチンが毎週足す）
 - `health/` 健康、`sleep/` 睡眠メモ（`hibiki-sleep-v1`）、`relations/` 愛と関係、`home/` 住まい（入居チェック）
 - `study/` 勉強（7章は `study/ch7.html` にくわしく。放送大学「デジタル経済の理解」全15章、進み具合は `hibiki-study-digital-v1`。貨幣金融論8講は `study/view.html?n=money8`、上級マクロ経済論8〜15講は `study/view.html?n=macro8`〜`macro15`）
 - 勉強ノートは説明の直後に4択の確認問題を表示。選ぶと正誤と理由が分かり、やり直せる。
