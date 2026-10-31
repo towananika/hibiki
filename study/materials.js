@@ -24,6 +24,7 @@ window.StudyMaterials = {
     "11": "view.html?n=money11"
   },
   "macro": {
+    "0": "view.html?n=macro0",
     "8": "view.html?n=macro8",
     "9": "view.html?n=macro9",
     "10": "view.html?n=macro10",
