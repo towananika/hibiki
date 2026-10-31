@@ -111,6 +111,21 @@
   .course-graph .done-tag { font-size:10px; padding:0 5px; }
   .study-records > summary { min-height:28px; }
   .course-graph { display:flex; align-items:center; gap:6px; } .course-graph .rec { float:none; margin-left:auto; }
+  /* 見分けやすく（2026-10-31）：科目ごとの色を、面・ふち・タイルにうすく使う */
+  :root { --bg:#efe9dd; --c-dig:#6f8a66; --c-trad:#4f6f91; --c-money:#a5533c; --c-macro:#8f6a3f; --c-rel:#7d5f8c; --c-open:#3f7f7a; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16140f; --c-dig:#9db394; --c-trad:#8fb0cf; --c-money:#d98a72; --c-macro:#c99f74; --c-rel:#b99ac7; --c-open:#7fc0b9; } }
+  .subject-card { background:color-mix(in srgb, var(--c) 7%, var(--surface)); border-color:color-mix(in srgb, var(--c) 22%, var(--border)); border-left:4px solid var(--c); }
+  .subject-card .course-link b { color:var(--text); }
+  .subject-card .chev { color:var(--c); }
+  .subject-card .lec-tile.has-page { background:color-mix(in srgb, var(--c) 16%, var(--surface)); color:var(--c); border:1px solid color-mix(in srgb, var(--c) 35%, transparent); }
+  .subject-card .lec-tile.is-unavailable { background:transparent; color:color-mix(in srgb, var(--muted) 70%, transparent); border:1px dashed color-mix(in srgb, var(--muted) 40%, transparent); }
+  .subject-card .lec-tile.is-done { background:var(--c); color:#fff; border-color:var(--c); }
+  .subject-card .lec-tile.is-now { outline:2px solid var(--text); outline-offset:1px; }
+  .subject-card .course-graph .week-tag { color:var(--c); font-weight:600; }
+  .lg-note { background:color-mix(in srgb, var(--muted) 30%, var(--surface)); border:1px solid color-mix(in srgb, var(--muted) 50%, transparent); }
+  .lg-done { background:var(--text); border-color:var(--text); }
+  .lg-now { outline-color:var(--text); }
+  .lg-missing { background:transparent; border:1px dashed var(--muted); }
 </style>
 </head>
 <body>
@@ -137,12 +152,12 @@
 (function () {
   // 受けている科目（2026年2学期・韓国の放送大学）。教材ができたら href を入れる
   var SUBJECTS = [
-    { k: "dig", name: "デジタル経済の理解", href: "digital.html", c: "var(--sage)", ch: "経" },
-    { k: "trad", name: "伝統社会と生活文化", href: "view.html?n=tradition10", c: "var(--blue)", ch: "食" },
-    { k: "money", name: "貨幣金融論", href: "view.html?n=money11", c: "var(--red)", ch: "貨" },
-    { k: "macro", name: "上級マクロ経済論", href: "view.html?n=macro8", c: "var(--wood)", ch: "マ" },
-    { k: "rel", name: "世界の宗教", href: "view.html?n=religion11", c: "var(--blue)", ch: "宗" },
-    { k: "open", name: "開かれた社会と21世紀", href: "view.html?n=open9", c: "var(--wood)", ch: "社" }
+    { k: "dig", name: "デジタル経済の理解", href: "digital.html", c: "var(--c-dig)", ch: "経" },
+    { k: "trad", name: "伝統社会と生活文化", href: "view.html?n=tradition10", c: "var(--c-trad)", ch: "食" },
+    { k: "money", name: "貨幣金融論", href: "view.html?n=money11", c: "var(--c-money)", ch: "貨" },
+    { k: "macro", name: "上級マクロ経済論", href: "view.html?n=macro8", c: "var(--c-macro)", ch: "マ" },
+    { k: "rel", name: "世界の宗教", href: "view.html?n=religion11", c: "var(--c-rel)", ch: "宗" },
+    { k: "open", name: "開かれた社会と21世紀", href: "view.html?n=open9", c: "var(--c-open)", ch: "社" }
   ];
   function jget(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
   function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
@@ -150,7 +165,7 @@
     var EV = jget("hibiki-study-eval-v1", {});
     document.getElementById("subjects").innerHTML = SUBJECTS.map(function (x) {
       var tag = x.href ? "a" : "div", h = x.href ? ' href="' + x.href + '"' : "";
-      return '<article class="sj subject-card" data-subject="' + x.k + '">' +
+      return '<article class="sj subject-card" data-subject="' + x.k + '" style="--c:' + x.c + '">' +
         '<span class="ic" style="background:' + x.c + '">' + x.ch + '</span>' +
         '<div class="t"><' + tag + ' class="course-link"' + h + '><b>' + esc(x.name) + '</b>' +
         (x.href ? '<span class="chev" aria-hidden="true">›</span>' : '') + '</' + tag + '>' +
