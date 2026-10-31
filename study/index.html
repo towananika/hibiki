@@ -140,6 +140,24 @@
   @media (prefers-color-scheme: dark) { :root { --bg:#1d1b17; --surface:#25221d; --border:#3a352c; --text:#d8d1c3; --muted:#9a917e; } }
   body { -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
   @media (prefers-color-scheme: dark) { .subject-card .lec-tile.is-done, .ic { color:var(--bg); } }
+  /* 小さくならないように（2026-10-31）：縮めるのをやめ、科目を2列（PCは3列）にならべ、1〜15講を5×3のマスにして大きく見せる */
+  main { padding:16px 14px 10px; }
+  .due { margin-top:8px; }
+  .study-legend { margin:8px 0 0; font-size:12px; }
+  #subjects { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  #subjects .subject-card { margin:0; display:grid; grid-template-columns:auto 1fr; gap:8px 8px; align-items:center; padding:10px; }
+  #subjects .subject-card .t { display:contents; }
+  #subjects .subject-card .ic { margin:0; width:28px; height:28px; font-size:14px; }
+  #subjects .subject-card .course-link { min-height:34px; font-size:14px; line-height:1.25; }
+  #subjects .subject-card .course-link b { font-size:14px; }
+  #subjects .subject-card [data-subject-graph] { grid-column:1 / -1; }
+  #subjects .lec-grid { grid-template-columns:repeat(5,1fr); gap:4px; margin-top:0; }
+  #subjects .lec-tile { height:30px; font-size:14px; border-radius:7px; }
+  main > a.sj { margin-top:10px; padding:10px 14px; }
+  @media (min-width:700px) {
+    main { max-width:760px; }
+    #subjects { grid-template-columns:repeat(3,1fr); }
+  }
 </style>
 </head>
 <body>
@@ -171,7 +189,7 @@
     { k: "money", name: "貨幣金融論", href: "view.html?n=money11", c: "var(--c-money)", ch: "貨" },
     { k: "macro", name: "上級マクロ経済論", href: "view.html?n=macro8", c: "var(--c-macro)", ch: "マ" },
     { k: "rel", name: "世界の宗教", href: "view.html?n=religion11", c: "var(--c-rel)", ch: "宗" },
-    { k: "open", name: "開かれた社会と21世紀", href: "view.html?n=open9", c: "var(--c-open)", ch: "社" }
+    { k: "open", name: "開かれた社会と21世紀", href: "view.html?n=open11", c: "var(--c-open)", ch: "社" }
   ];
   function jget(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
   function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
@@ -217,12 +235,12 @@
 <script src="materials.js"></script>
 <script src="plan-ui.js?v=20261031-availability"></script>
 <script>
-// 一画面に収める：はみ出すときだけ、全体を少し小さくする
+// 一画面に収める：はみ出すときだけ、ほんの少し（最大8%）小さくする。それでも入らなければスクロール
 (function () {
   function fit() {
     var b = document.body; b.style.zoom = "";
     var z = parseFloat(getComputedStyle(b).zoom) || 1, h = document.documentElement.scrollHeight, vh = window.innerHeight;
-    if (h > vh) b.style.zoom = Math.max(0.7, z * vh / h * 0.98);
+    if (h > vh) b.style.zoom = Math.max(z * 0.92, z * vh / h * 0.98);
   }
   window.addEventListener("load", fit); window.addEventListener("resize", fit); window.addEventListener("studycardsrendered", function () { setTimeout(fit, 0); });
 })();
