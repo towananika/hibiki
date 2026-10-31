@@ -27,7 +27,7 @@
   .toc { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 4px; }
   .toc-box summary { cursor:pointer; color:var(--blue); font-size:calc(15px*var(--k,1)); margin-top:10px; }
   .toc a { font-size:calc(14px*var(--k,1)); color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:4px 10px; text-decoration:none; }
-  .lec { margin-top:14px; } .lec a { color:var(--wood); background:var(--surface); border:1px solid var(--border); } .lec a[aria-current] { background:var(--wood); color:#fff; border-color:var(--wood); font-weight:700; }
+  .lec { margin-top:14px; } .lec a { color:var(--wood); background:var(--surface); border:1px solid var(--border); } .lec a[aria-current] { background:var(--wood); color:#fbf8f2; border-color:var(--wood); font-weight:700; }
   section { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 16px 14px; margin-top:14px; }
   h2 { font-size:calc(22px*var(--k,1)); margin:14px 0 6px; scroll-margin-top:12px; }
   h3 { font-size:calc(18px*var(--k,1)); color:var(--blue); margin:16px 0 4px; }
@@ -52,7 +52,7 @@
   .tl b { margin-right:6px; font-variant-numeric:tabular-nums; } .tl small { display:block; color:var(--muted); font-size:calc(14px*var(--k,1)); }
   .eq { display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap; font-weight:700; margin:12px 0; }
   .eq span { padding:6px 12px; border-radius:999px; background:var(--bg); }
-  .eq span:nth-of-type(1) { background:var(--blue); color:#fff; } .eq span:nth-of-type(2) { background:var(--sage); color:#fff; }
+  .eq span:nth-of-type(1) { background:var(--blue); color:#fbf8f2; } .eq span:nth-of-type(2) { background:var(--sage); color:#fbf8f2; }
   .eq i { font-style:normal; color:var(--muted); }
   .flow { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:10px 0; font-size:calc(16px*var(--k,1)); }
   .flow span { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:5px 10px; } .flow i { font-style:normal; color:var(--muted); }
@@ -78,7 +78,7 @@
   .mcq .explanation { line-height:1.7; }
   .mcq .retry { min-height:44px; }
   .mcq [hidden] { display:none !important; }
-  .play { display:flex; align-items:center; gap:10px; margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:var(--wood); color:#fff; text-decoration:none; font-weight:700; font-size:calc(16px*var(--k,1)); }
+  .play { display:flex; align-items:center; gap:10px; margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:var(--wood); color:#fbf8f2; text-decoration:none; font-weight:700; font-size:calc(16px*var(--k,1)); }
   .play small { display:block; font-weight:400; opacity:.9; font-size:calc(13px*var(--k,1)); }
   .game { border-color:var(--wood); }
   .game .gh { display:flex; justify-content:space-between; align-items:center; font-size:calc(14px*var(--k,1)); color:var(--muted); margin-top:12px; }
@@ -86,10 +86,17 @@
   .game .what { font-size:calc(19px*var(--k,1)); font-weight:700; margin:6px 0; } .game .from { font-size:calc(13px*var(--k,1)); color:var(--muted); }
   .game .ch4 { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0; }
   .game .ch4 button { border:1px solid var(--border); background:var(--bg); color:var(--text); font:inherit; font-size:calc(15px*var(--k,1)); padding:10px 6px; border-radius:12px; cursor:pointer; }
-  .game .ch4 button.ok { background:var(--sage); border-color:var(--sage); color:#fff; } .game .ch4 button.ng { border-color:var(--red); }
+  .game .ch4 button.ok { background:var(--sage); border-color:var(--sage); color:#fbf8f2; } .game .ch4 button.ng { border-color:var(--red); }
   .game .why { background:var(--bg); border-radius:12px; padding:8px 12px; font-size:calc(15px*var(--k,1)); }
-  .game .nx { margin-top:8px; border:0; border-radius:999px; background:var(--wood); color:#fff; font:inherit; font-weight:700; padding:7px 16px; cursor:pointer; }
+  .game .nx { margin-top:8px; border:0; border-radius:999px; background:var(--wood); color:#fbf8f2; font:inherit; font-weight:700; padding:7px 16px; cursor:pointer; }
   .err { color:var(--muted); text-align:center; margin-top:40px; }
+  /* 目にやさしく（2026-10-31）：純白・純黒をさけ、まぶしさをおさえ、行間をひろく */
+  :root { --bg:#ece6da; --surface:#f5f0e6; --border:#d9cfbc; --text:#36322b; --muted:#766e5f; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1d1b17; --surface:#25221d; --border:#3a352c; --text:#d8d1c3; --muted:#9a917e; } }
+  body { -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  body { line-height:1.9; letter-spacing:.02em; }
+  #doc p, #doc li { line-height:1.9; }
+  #doc li + li { margin-top:4px; }
 </style>
 </head>
 <body>
