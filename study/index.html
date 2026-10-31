@@ -80,14 +80,19 @@
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; line-height:1.7; }
   .lec-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:4px; margin-top:8px; }
   .lec-tile { display:flex; align-items:center; justify-content:center; height:30px; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; background:var(--bg); color:var(--muted); border:1px dashed var(--border); }
-  .lec-tile.has-note { background:var(--blue-soft); color:var(--blue); border:1px solid var(--blue-soft); }
-  .lec-tile.is-done { background:var(--sage); color:#fff; border-color:var(--sage); }
+  .lec-tile.has-page { background:var(--surface); color:var(--text); border:1px solid var(--border); }
+  .lec-tile.has-page.is-done { background:var(--sage); color:#fff; border-color:var(--sage); }
+  .lec-tile.is-unavailable { background:#e8e8e8; color:#686868; border:1px solid #d0d0d0; }
+  .plan-lesson.is-unavailable { background:#e8e8e8; color:#686868; border-color:#d0d0d0; }
+  .plan-lesson.is-unavailable small { color:inherit; }
+  @media (prefers-color-scheme: dark) { .lec-tile.is-unavailable, .plan-lesson.is-unavailable { background:#333; color:#aaa; border-color:#555; } }
+  .lec-tile:focus-visible { outline:3px solid var(--blue); outline-offset:2px; }
   .lec-tile.is-now { outline:2px solid var(--blue); outline-offset:1px; }
   .course-graph .week-tag { color:var(--blue); font-size:12px; }
   .course-graph .rec { float:right; font-size:12px; color:var(--muted); }
   .course-graph .done-tag { margin-left:6px; padding:2px 7px; border-radius:999px; background:var(--sage-soft); color:var(--sage); font-weight:700; font-size:12px; }
   .lg { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:3px; border:1px dashed var(--border); }
-  .lg-note { background:var(--blue-soft); border:1px solid var(--blue-soft); } .lg-done { background:var(--sage); border:1px solid var(--sage); } .lg-now { outline:2px solid var(--blue); border:1px solid var(--border); }
+  .lg-note { background:var(--surface); border:1px solid var(--border); } .lg-missing { background:#e8e8e8; border:1px solid #d0d0d0; } .lg-done { background:var(--sage); border:1px solid var(--sage); } .lg-now { outline:2px solid var(--blue); border:1px solid var(--border); }
   /* 一画面に収める（2026-10-31） */
   main { padding:12px 12px 8px; }
   h1 { font-size:20px; margin:4px 0 0; display:inline-block; margin-left:10px; }
@@ -115,7 +120,7 @@
   <p class="sub">受けている科目を、1つずつ</p>
 
   <div class="due" id="due"></div>
-  <p class="study-legend"><span><i class="lg lg-note"></i>ノートあり</span><span><i class="lg lg-done"></i>済み</span><span><i class="lg lg-now"></i><span id="goal-legend">今週</span></span><span><i class="lg"></i>まだ</span></p>
+  <p class="study-legend"><span><i class="lg lg-note"></i>学習ページあり</span><span><i class="lg lg-done"></i>済み</span><span><i class="lg lg-now"></i><span id="goal-legend">今週</span></span><span><i class="lg lg-missing"></i>準備中</span></p>
   <div id="subjects"></div>
   <div class="plan" id="study-progress"></div>
   <details class="study-records"><summary>形成評価の記録</summary><div id="eval-list"></div></details>
@@ -181,7 +186,7 @@
 </script>
 <script src="plan.js"></script>
 <script src="materials.js"></script>
-<script src="plan-ui.js"></script>
+<script src="plan-ui.js?v=20261031-availability"></script>
 <script>
 // 一画面に収める：はみ出すときだけ、全体を少し小さくする
 (function () {

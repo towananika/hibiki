@@ -43,7 +43,7 @@
       if (!list.length) return '';
       return '<div class="plan-course" data-course-group="' + c.key + '"><h3>' + c.name + '</h3><div class="plan-lessons">' + list.map(function (x) {
         var href = link(x.key, x.n), id = prefix + '-' + x.key + '-' + x.n;
-        return '<div class="plan-lesson"><label for="' + id + '"><input id="' + id + '" type="checkbox" data-course="' + x.key + '" data-lesson="' + x.n + '"' + (done(x.key, x.n) ? ' checked' : '') + '>第' + x.n + c.unit + '</label>' + (href ? '<a class="' + (ready(x.key, x.n) ? 'material-ready' : '') + '" href="' + href + '">' + materialLabel(x.key, x.n) + ' ›</a>' : '<small>準備中</small>') + '</div>';
+        return '<div class="plan-lesson' + (href ? '' : ' is-unavailable') + '"><label for="' + id + '"><input id="' + id + '" type="checkbox" data-course="' + x.key + '" data-lesson="' + x.n + '"' + (done(x.key, x.n) ? ' checked' : '') + '>第' + x.n + c.unit + '</label>' + (href ? '<a class="' + (ready(x.key, x.n) ? 'material-ready' : '') + '" href="' + href + '">' + materialLabel(x.key, x.n) + ' ›</a>' : '<small>準備中</small>') + '</div>';
       }).join('') + '</div></div>';
     }).join('');
   }
@@ -67,9 +67,10 @@
       var complete = targets.length > 0 && targets.every(function (n) { return done(c.key, n); });
       var tiles = [];
       for (var k = 1; k <= total; k++) {
-        var cls = 'lec-tile' + (ready(c.key, k) ? ' has-note' : '') + (done(c.key, k) ? ' is-done' : '') + (targets.indexOf(k) >= 0 ? ' is-now' : '');
-        var label = '第' + k + c.unit + (ready(c.key, k) ? '（ノートあり）' : '（まだ）') + (done(c.key, k) ? '・済み' : '');
-        tiles.push(ready(c.key, k) || link(c.key, k) ? '<a class="' + cls + '" href="' + link(c.key, k) + '" aria-label="' + label + '">' + k + '</a>' : '<span class="' + cls + '" aria-label="' + label + '">' + k + '</span>');
+        var href = link(c.key, k);
+        var cls = 'lec-tile' + (href ? ' has-page' : ' is-unavailable') + (done(c.key, k) ? ' is-done' : '') + (targets.indexOf(k) >= 0 ? ' is-now' : '');
+        var label = '第' + k + c.unit + '（' + materialLabel(c.key, k) + '）' + (done(c.key, k) ? '・済み' : '');
+        tiles.push(href ? '<a class="' + cls + '" href="' + href + '" aria-label="' + label + '">' + k + '</a>' : '<span class="' + cls + '" aria-disabled="true" aria-label="' + label + '">' + k + '</span>');
       }
       slot.innerHTML = '<div class="lec-grid">' + tiles.join('') + '</div><button type="button" class="course-graph" data-chart-course="' + c.key + '" aria-label="' + c.name + 'の学習記録を開く"><span class="week-tag">' + caption + '</span>' + (complete ? '<span class="done-tag">✓ 完了</span>' : '') + '<span class="rec">記録 ›</span></button>';
     });
