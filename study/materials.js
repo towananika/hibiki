@@ -51,6 +51,7 @@ window.StudyMaterials = {
   },
   "open": {
     "8": "view.html?n=open8",
-    "9": "view.html?n=open9"
+    "9": "view.html?n=open9",
+    "11": "view.html?n=open11"
   }
 };
