@@ -25,6 +25,7 @@
   .top a { color:var(--muted); text-decoration:none; } .top a:first-child { color:var(--sage); font-weight:600; letter-spacing:.1em; }
   h1 { font-size:calc(28px*var(--k,1)); line-height:1.4; margin:16px 0 8px; }
   .toc { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 4px; }
+  .toc-box summary { cursor:pointer; color:var(--blue); font-size:calc(15px*var(--k,1)); margin-top:10px; }
   .toc a { font-size:calc(14px*var(--k,1)); color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:4px 10px; text-decoration:none; }
   .lec { margin-top:14px; } .lec a { color:var(--wood); background:var(--surface); border:1px solid var(--border); } .lec a[aria-current] { background:var(--wood); color:#fff; border-color:var(--wood); font-weight:700; }
   section { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 16px 14px; margin-top:14px; }
@@ -202,7 +203,7 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     if (el.tagName === "H2") { sec = document.createElement("section"); el.id = "s" + (++i); toc.push('<a href="#s' + i + '">' + esc(el.textContent.replace(/^\d+\.\s*/, "").split(/[：:]/)[0]) + '</a>'); doc.appendChild(sec); }
     (sec || doc).appendChild(el);
   });
-  var t = doc.querySelector(".toc"); if (t) t.innerHTML = toc.join("");
+  var t = doc.querySelector(".toc"); if (t) { t.innerHTML = toc.join(""); var dt = document.createElement("details"); dt.className = "toc-box"; dt.innerHTML = "<summary>目次</summary>"; t.before(dt); dt.appendChild(t); }
   window.dispatchEvent(new Event("studylessonready"));
 
   // ゲームと質問バーのある版（claude.ai のページ）。作り方は /mnt/project-files/hibiki/study/chat/
@@ -233,7 +234,7 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     var DIRS = ["ふえる・上がる ↑", "へる・下がる ↓", "変わらない →", "どちらもある ？"], XK = "hibiki-" + mm[1] + "-xp", xp = 0;
     try { xp = +localStorage.getItem(XK) || 0; } catch (e) {}
     var box = document.createElement("section"); box.className = "game"; box.innerHTML = "<h2>あそんで覚える</h2><div class='gh'><span>Lv <b class='lv'></b>（" + "XP <b class='xp'></b>）</span><span>正解 <b class='ok'>0</b> / " + list.length + "</span></div><div class='q4'></div>";
-    var anchor = doc.querySelector(".play") || doc.querySelector(".toc:not(.lec)"); anchor.after(box);
+    var anchor = doc.querySelector(".play") || doc.querySelector(".toc-box"); anchor.after(box);
     var q = list.slice().sort(function () { return Math.random() - .5; }), i = 0, ok = 0, area = box.querySelector(".q4");
     function hud() { box.querySelector(".lv").textContent = Math.floor(xp / 50) + 1; box.querySelector(".xp").textContent = xp; box.querySelector(".ok").textContent = ok; }
     function next() {
