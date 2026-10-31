@@ -11,3 +11,6 @@
 .practice-review[hidden]{display:none!important}
 .practice-review-status{color:var(--blue)}
 .mcq .recall-note{border-left:3px solid var(--sage);border-radius:0;font-size:calc(15px*var(--k,1))}
+/* シンプル表示（2026-10-31）：上の案内・音ボタン・細かい記録の文は出さない */
+.practice-panel,.practice-spaced,.practice-storage,.practice-next{display:none!important}
+.mcq .check-label{display:none}
