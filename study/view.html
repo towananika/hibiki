@@ -231,7 +231,8 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   var SERIES = { macro: { 0:"やさしい土台", 8:"消費", 9:"投資", 10:"労働", 11:"お金", 12:"一般均衡", 13:"均衡の波", 14:"不均衡の波", 15:"成長" }, tradition: { 7:"食の暮らし", 8:"訴え状", 9:"学校と試験", 10:"役人と両班", 11:"女性と結婚", 12:"奴婢", 13:"生まれる・結婚", 14:"葬式と祭り", 15:"村と家の神" } };
   SERIES.money = { 8:"お金の増える仕組み", 9:"お金の増え方", 10:"中央銀行", 11:"お金を持つ理由" };
   SERIES.religion = { 8:"仏教", 9:"ジャイナ教・シク教・バハイ信仰", 10:"中国の宗教", 11:"日本の宗教", 12:"韓国の宗教", 13:"先住民の宗教", 14:"新しい宗教", 15:"世界の宗教文化" };
-  var mm = n.match(/^(macro|tradition|money|religion)(\d+)$/);
+  SERIES.open = { 8:"まちづくり", 9:"法と制度", 11:"人をつなぐ組織化" };
+  var mm = n.match(/^(macro|tradition|money|religion|open)(\d+)$/);
   if (mm) { var LEC = SERIES[mm[1]], row = document.createElement("div"); row.className = "toc lec";
     row.innerHTML = Object.keys(LEC).map(function (k) { return '<a href="?n=' + mm[1] + k + '"' + (+k === +mm[2] ? ' aria-current="page"' : "") + '>' + k + '講 ' + LEC[k] + '</a>'; }).join("");
     doc.insertBefore(row, doc.firstChild); }
