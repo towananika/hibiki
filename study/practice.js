@@ -42,11 +42,18 @@
     ['.feedback', '.explanation', '.retry'].forEach(function (s) { q.querySelector(s).hidden = true; });
     var note = q.querySelector('.recall-note'); if (note) note.remove();
   }
+  // 練習問題をすべて一度は正解したら、その講を「学習済み」にする（勉強トップの講タイルが塗られる）
+  var SOLVED = 'hibiki-study-solved-v1';
+  function allSolved() { return questions.length > 0 && questions.every(function (q) { var r = read(q); return r && (r.everCorrect || r.firstCorrect); }); }
+  function markSolved() {
+    if (!lesson || !allSolved()) return;
+    try { var m = JSON.parse(localStorage.getItem(SOLVED)) || {}; if (!m[lesson]) { m[lesson] = Date.now(); localStorage.setItem(SOLVED, JSON.stringify(m)); } } catch (e) {}
+  }
   function update() {
     if (!panel) return;
     var summary = StudyRecall.summarize(questions.map(read), Date.now());
     panel.querySelector('.practice-progress').textContent = summary.answered + ' / ' + questions.length + '問に回答';
-    result.querySelector('.practice-first').textContent = summary.answered ? '最初の回答で正解：' + summary.firstCorrect + ' / ' + summary.answered + '問' : 'まだ回答していません。まずは理由を考えて選んでみよう。';
+    if (allSolved()) { markSolved(); result.querySelector('.practice-first').textContent = '✓ 全問正解。この講は学習済みです。'; } else result.querySelector('.practice-first').textContent = summary.answered ? '最初の回答で正解：' + summary.firstCorrect + ' / ' + summary.answered + '問' : 'まだ回答していません。まずは理由を考えて選んでみよう。';
     result.querySelector('.practice-spaced').textContent = '時間をあけて正解したことがある問題：' + summary.spacedCorrect + '問';
     result.querySelector('.practice-pending').textContent = 'あとで確かめたい問題：' + summary.pending + '問';
     var next = result.querySelector('.practice-next');
@@ -70,7 +77,8 @@
   function answer(q, correct) {
     if (!q.dataset.recallKey || !panel) return;
     var old = read(q), now = Date.now(), record = StudyRecall.answer(old, correct, now);
-    state[q.dataset.recallKey] = record; persist(); update(); feedback(correct);
+    if (correct) record.everCorrect = true; else if (old && old.everCorrect) record.everCorrect = true;
+    state[q.dataset.recallKey] = record; persist(); markSolved(); update(); feedback(correct);
     var note = q.querySelector('.recall-note');
     if (!note) { note = document.createElement('p'); note.className = 'recall-note'; q.appendChild(note); }
     note.textContent = !correct ? '理由を確かめたら、自分の言葉で言ってみよう。10分ほどあけて、もう一度確かめるのが目安です。' : old && record.spacedCorrect > (old.spacedCorrect || 0) ? '時間をあけても思い出せました。次は別の日に確かめよう。' : old ? '今の理解を確認できました。次は少し時間をあけて、答えを見ずに確かめよう。' : '理由も自分の言葉で説明してみよう。明日、答えを見ずに確かめるのが目安です。';

@@ -19,7 +19,11 @@
   var state = read(KEY, null);
   if (!state || state.mode !== 'university' || !state.totals || !state.enabled || !state.first || !state.pace || !state.done || !Array.isArray(state.weeks)) state = fresh();
   function config() { return courses.map(function (c) { return { key: c.key, total: state.totals[c.key] || 15, first: state.first[c.key] || 1, pace: state.pace[c.key] || 1, enabled: state.enabled[c.key] !== false }; }); }
-  function done(key, n) { return key === 'dig' ? !!read(DIGITAL, {})[n - 1] : !!state.done[key + ':' + n]; }
+  // 学習済み＝その講の練習問題を全部正解した（practice.js が hibiki-study-solved-v1 に書く）
+  function done(key, n) {
+    var href = materials[key] && materials[key][n], m = href && href.match(/n=([a-z0-9-]+)/);
+    return !!(m && read('hibiki-study-solved-v1', {})[m[1]]);
+  }
   var materials = window.StudyMaterials || {};
   function ready(key, n) { return !!(materials[key] && materials[key][n]); }
   function link(key, n) {
@@ -68,11 +72,11 @@
       var tiles = [];
       for (var k = 1; k <= total; k++) {
         var href = link(c.key, k);
-        var cls = 'lec-tile' + (href ? ' has-page' : ' is-unavailable') + (done(c.key, k) ? ' is-done' : '') + (targets.indexOf(k) >= 0 ? ' is-now' : '');
-        var label = '第' + k + c.unit + '（' + materialLabel(c.key, k) + '）' + (done(c.key, k) ? '・済み' : '');
+        var cls = 'lec-tile' + (href ? ' has-page' : ' is-unavailable') + (done(c.key, k) ? ' is-done' : '');
+        var label = '第' + k + c.unit + '（' + materialLabel(c.key, k) + '）' + (done(c.key, k) ? '・学習済み' : '');
         tiles.push(href ? '<a class="' + cls + '" href="' + href + '" aria-label="' + label + '">' + k + '</a>' : '<span class="' + cls + '" aria-disabled="true" aria-label="' + label + '">' + k + '</span>');
       }
-      slot.innerHTML = '<div class="lec-grid">' + tiles.join('') + '</div><button type="button" class="course-graph" data-chart-course="' + c.key + '" aria-label="' + c.name + 'の学習記録を開く"><span class="week-tag">' + caption + '</span>' + (complete ? '<span class="done-tag">✓ 完了</span>' : '') + '<span class="rec">記録 ›</span></button>';
+      slot.innerHTML = '<div class="lec-grid">' + tiles.join('') + '</div>';
     });
   }
   host.innerHTML = '<dialog id="progress-dialog" aria-labelledby="progress-title"><div class="progress-heading"><h2 id="progress-title"></h2><button type="button" id="progress-close">閉じる</button></div><p class="plan-note">学習した講にチェックを入れます。</p><div id="progress-list"></div><p id="plan-status" role="status"></p></dialog>';
@@ -80,7 +84,7 @@
   if (!state.weeks.length) { state.weeks = P.build(state.start, state.count, config()); store(KEY, state); }
   function paint() {
     if (state.weeks.length) paintCourseGraphs(state.weeks[current()]);
-    document.getElementById('goal-legend').textContent = '今週';
+    var gl = document.getElementById('goal-legend'); if (gl) gl.textContent = '今週';
   }
   function paintRecords() {
     if (!activeCourse) return;
