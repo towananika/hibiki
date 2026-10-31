@@ -65,7 +65,13 @@
       var summary = available.length ? '教材あり：第' + lessonRanges(available) + c.unit : '教材は準備中';
       var status = targets.length ? targets.map(function (n) { return materialLabel(c.key, n); }).filter(function (x,i,a) { return a.indexOf(x) === i; }).join('・') : '';
       var complete = targets.length > 0 && targets.every(function (n) { return done(c.key, n); });
-      slot.innerHTML = '<button type="button" class="course-graph" data-chart-course="' + c.key + '" aria-label="' + c.name + '、' + total + c.unit + '中' + finished + c.unit + '完了。この週は' + goal + '。' + (complete ? 'この週の学習は完了。' : '') + summary + '。' + status + '。学習記録を開く"><span class="chart-track" aria-hidden="true">' + segments.join('') + '</span><span class="chart-caption">' + '<span class="week-tag">' + caption + '</span>' + (status ? '<span class="material-state' + (targets.every(function (n) { return ready(c.key,n); }) ? ' is-ready' : '') + '">' + status + '</span>' : '') + (complete ? '<span class="done-tag">✓ 完了</span>' : '') + '</span></button><p class="material-summary">' + summary + '</p>';
+      var tiles = [];
+      for (var k = 1; k <= total; k++) {
+        var cls = 'lec-tile' + (ready(c.key, k) ? ' has-note' : '') + (done(c.key, k) ? ' is-done' : '') + (targets.indexOf(k) >= 0 ? ' is-now' : '');
+        var label = '第' + k + c.unit + (ready(c.key, k) ? '（ノートあり）' : '（まだ）') + (done(c.key, k) ? '・済み' : '');
+        tiles.push(ready(c.key, k) || link(c.key, k) ? '<a class="' + cls + '" href="' + link(c.key, k) + '" aria-label="' + label + '">' + k + '</a>' : '<span class="' + cls + '" aria-label="' + label + '">' + k + '</span>');
+      }
+      slot.innerHTML = '<div class="lec-grid">' + tiles.join('') + '</div><button type="button" class="course-graph" data-chart-course="' + c.key + '" aria-label="' + c.name + 'の学習記録を開く"><span class="week-tag">' + caption + '</span>' + (complete ? '<span class="done-tag">✓ 完了</span>' : '') + '<span class="rec">記録 ›</span></button>';
     });
   }
   host.innerHTML = '<dialog id="progress-dialog" aria-labelledby="progress-title"><div class="progress-heading"><h2 id="progress-title"></h2><button type="button" id="progress-close">閉じる</button></div><p class="plan-note">学習した講にチェックを入れます。</p><div id="progress-list"></div><p id="plan-status" role="status"></p></dialog>';

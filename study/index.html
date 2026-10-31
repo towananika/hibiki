@@ -78,6 +78,16 @@
   #plan-status { color:var(--red); font-size:13px; }
   #plan-status:empty { display:none; }
   footer { color:var(--muted); font-size:12px; margin-top:18px; text-align:center; line-height:1.7; }
+  .lec-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:4px; margin-top:8px; }
+  .lec-tile { display:flex; align-items:center; justify-content:center; height:30px; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; background:var(--bg); color:var(--muted); border:1px dashed var(--border); }
+  .lec-tile.has-note { background:var(--blue-soft); color:var(--blue); border:1px solid var(--blue-soft); }
+  .lec-tile.is-done { background:var(--sage); color:#fff; border-color:var(--sage); }
+  .lec-tile.is-now { outline:2px solid var(--blue); outline-offset:1px; }
+  .course-graph .week-tag { color:var(--blue); font-size:12px; }
+  .course-graph .rec { float:right; font-size:12px; color:var(--muted); }
+  .course-graph .done-tag { margin-left:6px; padding:2px 7px; border-radius:999px; background:var(--sage-soft); color:var(--sage); font-weight:700; font-size:12px; }
+  .lg { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-1px; margin-right:3px; border:1px dashed var(--border); }
+  .lg-note { background:var(--blue-soft); border:1px solid var(--blue-soft); } .lg-done { background:var(--sage); border:1px solid var(--sage); } .lg-now { outline:2px solid var(--blue); border:1px solid var(--border); }
 </style>
 </head>
 <body>
@@ -87,7 +97,7 @@
   <p class="sub">受けている科目を、1つずつ</p>
 
   <div class="due" id="due"></div>
-  <p class="study-legend"><span><i class="legend-done" aria-hidden="true"></i>完了</span><span><i class="legend-goal" aria-hidden="true"></i><span id="goal-legend">今週</span></span></p>
+  <p class="study-legend"><span><i class="lg lg-note"></i>ノートあり</span><span><i class="lg lg-done"></i>済み</span><span><i class="lg lg-now"></i><span id="goal-legend">今週</span></span><span><i class="lg"></i>まだ</span></p>
   <div id="subjects"></div>
   <div class="plan" id="study-progress"></div>
   <details class="study-records"><summary>形成評価の記録</summary><div id="eval-list"></div></details>
@@ -108,7 +118,7 @@
     { k: "trad", name: "伝統社会と生活文化", href: "view.html?n=tradition10", c: "var(--blue)", ch: "食" },
     { k: "money", name: "貨幣金融論", href: "view.html?n=money11", c: "var(--red)", ch: "貨" },
     { k: "macro", name: "上級マクロ経済論", href: "view.html?n=macro8", c: "var(--wood)", ch: "マ" },
-    { k: "rel", name: "世界の宗教", href: "view.html?n=religion10", c: "var(--blue)", ch: "宗" },
+    { k: "rel", name: "世界の宗教", href: "view.html?n=religion11", c: "var(--blue)", ch: "宗" },
     { k: "open", name: "開かれた社会と21世紀", href: "view.html?n=open9", c: "var(--wood)", ch: "社" }
   ];
   function jget(k, d) { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } }
