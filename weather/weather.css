@@ -11,3 +11,5 @@
 .wx-day-range{white-space:nowrap}
 .wx-toggle{display:block;width:100%;margin-top:10px;min-height:40px;background:transparent;color:var(--blue);border:0;border-top:1px solid var(--border);border-radius:0;font:inherit;font-size:13px;cursor:pointer}.wx-day-extra{grid-column:1/-1;color:var(--muted);font-size:11px}.wx-weekend{background:var(--blue-soft);border-radius:6px;padding-left:8px;padding-right:8px}.weather-compact .wx-hero{cursor:pointer}
 @media(max-width:390px){.simple-weather{padding:14px}.wx-temp{font-size:43px}.wx-tile{padding:10px}.wx-value{font-size:17px}.wx-day{gap:6px}.wx-day-range{font-size:12px}.wx-hour{flex-basis:74px}}
+/* 週間は1行：日付・午前・午後・雨・気温 */
+.wx-week-head,.wx-day{grid-template-columns:minmax(64px,1fr) 34px 34px 40px minmax(78px,auto);gap:6px}.wx-day{padding:9px 2px}.wx-day-rain{text-align:center;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}.wx-day-rain.wx-wet{color:var(--wx-rain);font-weight:650}.wx-period-symbol{font-size:21px}.wx-code-くもり{color:var(--wx-cloud)}.wx-code-晴れ時々くもり{color:var(--wx-sun);opacity:.6}.wx-desc-range{font-variant-numeric:tabular-nums}.wx-weekend{padding-left:6px;padding-right:6px}
