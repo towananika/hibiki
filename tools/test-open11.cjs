@@ -19,7 +19,7 @@ JSON.parse(fs.readFileSync(path.join(root, 'study/glossary.json'), 'utf8'));
 const context = { window: {} };
 vm.runInNewContext(fs.readFileSync(path.join(root, 'study/materials.js'), 'utf8'), context);
 assert.equal(context.window.StudyMaterials.open[11], 'view.html?n=open11');
-for (let n = 12; n <= 15; n++) assert(!context.window.StudyMaterials.open[n], 'Deferred lesson must remain unavailable');
+for (let n = 12; n <= 15; n++) assert.equal(context.window.StudyMaterials.open[n], 'view.html?n=open' + n);
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.md': 'text/plain' };
 const server = http.createServer((req, res) => {
   const file = path.resolve(root, '.' + decodeURIComponent(new URL(req.url, 'http://localhost').pathname));
@@ -43,7 +43,7 @@ const server = http.createServer((req, res) => {
       await page.locator('#doc .mcq').first().waitFor();
       assert.equal(await page.locator('#doc .mcq').count(), 6);
       assert.equal(await page.locator('.lec a[aria-current="page"]').count(), 1);
-      assert.equal(await page.locator('.lec a').count(), 3);
+      assert.equal(await page.locator('.lec a').count(), 7);
       assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), 'Page must not overflow');
       const quiz = page.locator('.mcq').first();
       await quiz.locator('.choice').nth(0).click();
@@ -56,7 +56,7 @@ const server = http.createServer((req, res) => {
       await page.close();
       console.log(width + 'px: rendering, navigation, quiz and retry PASS');
     }
-    console.log('Open11 content and deferred availability PASS');
+    console.log('Open11 content and 12-15 availability PASS');
   } finally {
     if (browser) await browser.close();
     await new Promise(resolve => server.close(resolve));

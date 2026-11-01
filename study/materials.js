@@ -53,6 +53,10 @@ window.StudyMaterials = {
   "open": {
     "8": "view.html?n=open8",
     "9": "view.html?n=open9",
-    "11": "view.html?n=open11"
+    "11": "view.html?n=open11",
+    "12": "view.html?n=open12",
+    "13": "view.html?n=open13",
+    "14": "view.html?n=open14",
+    "15": "view.html?n=open15"
   }
 };
