@@ -76,3 +76,33 @@ $('export').onclick = () => {
 };
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 renderSummary(); renderList();
+
+let archive = [];
+async function loadArchive() {
+  const status = $('archive-status');
+  status.textContent = '記録を読み込み中';
+  const data = await window.HibikiSync?.open('personal-notes');
+  if (!data || !Array.isArray(data.entries)) {
+    archive = []; $('archive-results').replaceChildren();
+    status.textContent = '記録を開けませんでした。ログインと端末の鍵を確認してください。';
+    return;
+  }
+  archive = data.entries.filter(x => x && typeof x.title === 'string' && typeof x.text === 'string');
+  renderArchive();
+}
+function renderArchive() {
+  const root = $('archive-results'), query = $('archive-search').value.trim().toLocaleLowerCase();
+  root.replaceChildren();
+  const found = query ? archive.filter(x => (x.title + '\n' + x.text).toLocaleLowerCase().includes(query)) : [];
+  $('archive-status').textContent = query ? `${found.length}件` : '検索語を入力してください。';
+  for (const item of found) {
+    const detail = document.createElement('details'), title = document.createElement('summary'), text = document.createElement('div');
+    title.textContent = item.title; text.textContent = item.text;
+    text.style.whiteSpace = 'pre-wrap'; text.style.overflowWrap = 'anywhere';
+    detail.append(title, text); root.append(detail);
+  }
+}
+$('archive-search').addEventListener('input', renderArchive);
+$('archive-retry').addEventListener('click', loadArchive);
+loadArchive();
+
