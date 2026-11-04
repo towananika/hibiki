@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Googleログイン | 響</title>
+<meta name="theme-color" content="#74886d">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<style>
+:root{color-scheme:light dark;--bg:#f5f1e9;--surface:#fbf9f4;--text:#2b2924;--muted:#5e5a52;--border:#d3cbbc;--link:#416780;--primary:#536f56;--button:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--surface:#242119;--text:#ede8dd;--muted:#c9c0b1;--border:#554e40;--link:#a4c9e2;--primary:#a9c9aa;--button:#242119}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,sans-serif}main{max-width:480px;margin:auto;padding:28px 18px}a{color:var(--link)}h1{font-size:24px;line-height:1.4;margin:22px 0 8px}p{margin:10px 0}.panel{margin-top:22px;padding:18px;border:1px solid var(--border);border-radius:8px;background:var(--surface)}.status{font-weight:700;overflow-wrap:anywhere}.notice{color:var(--muted);font-size:14px}.btn{display:block;width:100%;min-height:48px;border:1px solid var(--primary);border-radius:6px;margin:16px 0 0;padding:10px 14px;background:var(--button);color:var(--text);font:inherit;font-weight:700;cursor:pointer}.btn:disabled{opacity:.55;cursor:default}.btn:focus-visible,a:focus-visible{outline:3px solid var(--link);outline-offset:3px}.error{color:#b33c2f;font-size:14px}footer{margin-top:24px;font-size:14px} [hidden]{display:none!important}
+</style>
+<script type="module" src="../../triathlon/login/auth.js?v=0.28"></script>
+</head>
+<body><main>
+<a href="./">‹ 響のログインへ戻る</a>
+<h1>Googleログイン</h1>
+<p class="notice">トライアスロンと同じGoogleアカウントを使います。</p>
+<section class="panel" aria-label="ログイン状態">
+<p id="status" class="status" role="status" aria-live="polite">ログイン状態を確認しています…</p>
+<button id="login" class="btn" type="button" disabled>Googleでログイン</button>
+<button id="logout" class="btn" type="button" hidden>Googleからログアウト</button>
+<p id="error" class="error" role="alert"></p>
+</section>
+<footer><p>Googleログインと個人記録の連携はまだ準備中です。記録を見るには、これまでの合言葉が必要です。</p><p class="notice">Googleからログアウトすると、同じブラウザーのトライアスロン側にも影響する場合があります。</p><a href="./">合言葉でログインする</a></footer>
+</main><script>
+(function(){
+  var status=document.getElementById('status'), login=document.getElementById('login'), logout=document.getElementById('logout'), error=document.getElementById('error');
+  function update(user){
+    status.textContent=user ? (user.email || user.name || 'Googleアカウント')+' でログイン中' : 'Googleにはログインしていません';
+    login.hidden=!!user; login.disabled=false; logout.hidden=!user;
+  }
+  document.addEventListener('tri-user',function(event){update(event.detail)});
+  if(window.TRI_USER!==undefined) update(window.TRI_USER);
+  login.addEventListener('click',function(){error.textContent='';if(!window.triLogin){error.textContent='ログインを準備できませんでした。通信環境を確認してください。';return}login.disabled=true;window.triLogin('google').catch(function(){error.textContent='ログインできませんでした。もう一度お試しください。'}).finally(function(){login.disabled=false})});
+  logout.addEventListener('click',function(){error.textContent='';if(!window.triLogout){error.textContent='ログアウトを準備できませんでした。';return}logout.disabled=true;window.triLogout().catch(function(){error.textContent='ログアウトできませんでした。'}).finally(function(){logout.disabled=false})});
+  setTimeout(function(){if(window.TRI_USER===undefined){status.textContent='Googleログインを読み込めませんでした';error.textContent='通信環境を確認して、ページを開き直してください。';}},12000);
+})();
+</script></body></html>
+
