@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#74886d">
+<title>ひびきのカリキュラム</title>
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<style>
+:root{--bg:#f5f1e9;--surface:#fbf9f4;--border:#e2dac8;--text:#2b2924;--muted:#6e685e;--sage:#52705b;--blue:#416b8d;--soft:#e2e8dd}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--surface:#242119;--border:#494235;--text:#ede8dd;--muted:#c3baaa;--sage:#b6d1af;--blue:#a6c9e5;--soft:#303a2c}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;line-height:1.75}main{max-width:480px;margin:auto;padding:28px 18px 48px}a{color:var(--blue)}.back{text-decoration:none;font-size:14px}h1{font-size:25px;line-height:1.4;margin:20px 0 4px}h2{font-size:20px;line-height:1.4;margin:0 0 12px}h3{font-size:16px;margin:18px 0 6px}p{margin:8px 0}.muted{color:var(--muted);font-size:14px}.label{font-size:13px;color:var(--sage);font-weight:700}.lesson{margin-top:26px;padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:8px}.example{padding:12px 14px;background:var(--soft);border-left:3px solid var(--sage);border-radius:2px;font-size:15px}ul,ol{padding-left:1.4em}li{margin:8px 0}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}button{font:inherit;cursor:pointer;border:1px solid var(--sage);border-radius:6px;background:var(--sage);color:var(--surface);padding:10px 15px;min-height:44px}button:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--blue);outline-offset:3px}#status{min-height:1.5em;font-size:13px;color:var(--muted)}details{border-bottom:1px solid var(--border);padding:12px 0}summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center;justify-content:space-between}summary::after{content:'＋';color:var(--sage)}details[open] summary::after{content:'−'}.after{margin-top:28px}.after p,.after li{font-size:14px}footer{margin-top:30px;color:var(--muted);font-size:13px}
+</style>
+</head>
+<body><main>
+<a class="back" href="./">‹ 勉強に戻る</a>
+<h1>ひびきのカリキュラム</h1>
+<p class="muted">会話と暮らしの中で、少しずつ育つ。</p>
+<section class="lesson" aria-labelledby="lesson-title">
+<p class="label">最初の学び · 2026年11月4日から</p>
+<h2 id="lesson-title">事実と気持ちを分ける</h2>
+<p>出来事を整理すると、自分が何を感じ、何をしたいかを見つけやすくなります。</p>
+<div class="example"><strong>例：朝、散歩をした。</strong><br>事実：30分歩いた。<br>気持ち：気分が軽くなった。<br>考え：朝の散歩は自分に合うかもしれない。</div>
+<h3>会話で試す</h3>
+<p>最近あったことを一つ話してみよう。事実・気持ち・考えを、一緒に分けてみます。分からないところは、分からないままで大丈夫。</p>
+<div class="actions"><button type="button" id="copy">会話のきっかけをコピー</button></div>
+<p id="status" role="status" aria-live="polite"></p>
+</section>
+<section class="after" aria-label="カリキュラムの詳細">
+<details><summary>会話での進め方</summary><ol><li>気になったことを話す。</li><li>気持ちや疑問を一緒に整理する。</li><li>必要な知識や別の見方を知る。</li><li>必要なら、小さな行動を選ぶ。</li><li>次の会話で、理解や感想を確かめる。</li></ol><p>読むだけ、話すだけの日も大切。完了の判定は自動ではなく、会話を通して一緒に考えます。</p></details>
+<details><summary>これから育てること</summary><h3>健康</h3><p>自分の体や心に気づき、無理なく整える。</p><h3>経済</h3><p>仕事で価値を生み、お金を納得して使い、守る。</p><h3>関係</h3><p>自分を理解し、人と尊重し合い、気持ちを伝える。</p><p>共通して、想像・理解・言語化・判断・行動を育てます。学びや創作、AIの活用もここにつながります。</p></details>
+<details><summary>長期の道筋</summary><ul><li><strong>まず３か月：</strong>自分に合う小さな学び方を探す。</li><li><strong>１年：</strong>健康・経済・関係で役立った行動を増やす。</li><li><strong>３年以上：</strong>仕事や創作にもつなげ、望む暮らしに近づく。</li></ul><p>体調や学校の予定、興味に合わせて、いつでも変更できます。</p></details>
+</section>
+<footer>会話の内容や学習状況は、このページには自動保存されません。</footer>
+</main><script>
+document.getElementById('copy').addEventListener('click',async function(){
+  const message='ひびきのカリキュラムを進めたい。最近あったことを話すので、事実・気持ち・考えを一緒に整理して、理解できたか会話で確かめて。';
+  const status=document.getElementById('status');
+  try{await navigator.clipboard.writeText(message);status.textContent='コピーしました。いつものチャットに貼り付けてね。';}
+  catch(error){status.textContent='コピーできませんでした。「事実・気持ち・考えを一緒に整理したい」とチャットで伝えてね。';}
+});
+</script></body></html>
+
