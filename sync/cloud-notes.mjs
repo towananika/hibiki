@@ -25,6 +25,7 @@ async function readArchive(id, source) {
   if (saved.format !== checked.format || saved.sha256 !== checked.sha256 || saved.entryCount !== checked.entryCount) throw new Error('invalid archive');
   const data = JSON.parse(saved.archive);
   if (source === '端末バックアップ' && (data.kind !== 'hibiki-browser-snapshot' || data.version !== 1)) throw new Error('invalid snapshot');
+  if (source === '旧ページの記録' && (data.kind !== 'hibiki-legacy-records' || data.version !== 1)) throw new Error('invalid legacy archive');
   return data.entries.map(entry => ({ title: entry.title, text: entry.text, source }));
 }
 onAuthStateChanged(auth, async user => {
@@ -37,7 +38,8 @@ onAuthStateChanged(auth, async user => {
   try {
     const results = await Promise.allSettled([
       readArchive('legacy-2026-11-03', '個人メモ'),
-      readArchive('browser-2026-11-05', '端末バックアップ')
+      readArchive('browser-2026-11-05', '端末バックアップ'),
+      readArchive('legacy-structured-2026-11-05', '旧ページの記録')
     ]);
     if (current !== generation) return;
     const unique = new Map();
@@ -50,7 +52,7 @@ onAuthStateChanged(auth, async user => {
         else unique.set(identity, { title: entry.title, text: entry.text, sources: [entry.source] });
       }
     }
-    const failed = results.map((result, index) => result.status === 'rejected' ? ['個人メモ', '端末バックアップ'][index] : null).filter(Boolean);
+    const failed = results.map((result, index) => result.status === 'rejected' ? ['個人メモ', '端末バックアップ', '旧ページの記録'][index] : null).filter(Boolean);
     if (failed.length === results.length) throw new Error('archives unavailable');
     entries = [...unique.values()]; $('records').hidden = false;
     $('status').textContent = failed.length ? `${failed.join('・')}を読み込めませんでした。表示は一部のみです。` : '本人の記録';
