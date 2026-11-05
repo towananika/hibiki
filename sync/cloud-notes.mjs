@@ -14,8 +14,18 @@ function render() {
   for (const entry of results) {
     const detail = document.createElement('details'), title = document.createElement('summary'), content = document.createElement('div');
     title.textContent = entry.title; content.textContent = entry.text; content.className = 'content';
-    detail.append(title, content); root.append(detail);
+    const source = document.createElement('small'); source.textContent = entry.sources.join('・');
+    detail.append(title, source, content); root.append(detail);
   }
+}
+async function readArchive(id, source) {
+  const snap = await getDocFromServer(doc(db, 'hibikiPrivate', uid, 'archives', id));
+  if (!snap.exists()) throw new Error('missing archive');
+  const saved = snap.data(), checked = await prepareArchive(saved.archive);
+  if (saved.format !== checked.format || saved.sha256 !== checked.sha256 || saved.entryCount !== checked.entryCount) throw new Error('invalid archive');
+  const data = JSON.parse(saved.archive);
+  if (source === '端末バックアップ' && (data.kind !== 'hibiki-browser-snapshot' || data.version !== 1)) throw new Error('invalid snapshot');
+  return data.entries.map(entry => ({ title: entry.title, text: entry.text, source }));
 }
 onAuthStateChanged(auth, async user => {
   const current = ++generation;
@@ -25,13 +35,26 @@ onAuthStateChanged(auth, async user => {
   if (user.uid !== uid || !user.emailVerified) { $('status').textContent = 'このアカウントでは記録を開けません。'; return; }
   $('status').textContent = '記録を読み込んでいます…';
   try {
-    const snap = await getDocFromServer(doc(db, 'hibikiPrivate', uid, 'archives', 'legacy-2026-11-03'));
+    const results = await Promise.allSettled([
+      readArchive('legacy-2026-11-03', '個人メモ'),
+      readArchive('browser-2026-11-05', '端末バックアップ')
+    ]);
     if (current !== generation) return;
-    if (!snap.exists()) { $('status').textContent = 'クラウドにはまだ記録がありません。'; return; }
-    const saved = snap.data(), checked = await prepareArchive(saved.archive);
-    if (current !== generation) return;
-    if (saved.format !== checked.format || saved.sha256 !== checked.sha256 || saved.entryCount !== checked.entryCount) throw new Error('invalid archive');
-    entries = JSON.parse(saved.archive).entries; $('records').hidden = false; $('status').textContent = '本人の記録'; render();
+    const unique = new Map();
+    for (const result of results) {
+      if (result.status !== 'fulfilled') continue;
+      for (const entry of result.value) {
+        const identity = JSON.stringify([entry.title, entry.text]);
+        const existing = unique.get(identity);
+        if (existing) existing.sources.push(entry.source);
+        else unique.set(identity, { title: entry.title, text: entry.text, sources: [entry.source] });
+      }
+    }
+    const failed = results.map((result, index) => result.status === 'rejected' ? ['個人メモ', '端末バックアップ'][index] : null).filter(Boolean);
+    if (failed.length === results.length) throw new Error('archives unavailable');
+    entries = [...unique.values()]; $('records').hidden = false;
+    $('status').textContent = failed.length ? `${failed.join('・')}を読み込めませんでした。表示は一部のみです。` : '本人の記録';
+    render();
   } catch { if (current === generation) $('status').textContent = '記録を確認できませんでした。通信や保存先の設定を確認してください。'; }
 });
 $('search').oninput = render;
