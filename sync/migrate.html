@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>記録の移行 | 響</title>
+<style>
+:root{color-scheme:light dark;font:16px/1.7 system-ui,sans-serif}body{margin:0;background:#f5f7f6;color:#202b29}main{max-width:560px;margin:auto;padding:24px 20px}h1{font-size:24px}p{margin:12px 0}button,input{font:inherit}button{min-height:44px;padding:8px 18px;border:1px solid #47786e;background:#fff;color:#214b43;border-radius:5px;cursor:pointer}button:disabled{opacity:.5;cursor:default}label{display:block;font-weight:600;margin:24px 0 6px}input{max-width:100%}.notice{font-size:14px;color:#455a55}.error{color:#9a3028}[hidden]{display:none!important}@media(prefers-color-scheme:dark){body{background:#1c2523;color:#edf3f1}button{background:#25322f;color:#e7f5f0;border-color:#8ebbad}.notice{color:#c0cfca}.error{color:#ffaca0}}
+</style></head><body><main>
+<a href="./">響へ戻る</a><h1>これまでの記録を移す</h1>
+<p id="status" role="status">ログインを確認しています…</p>
+<button id="login" type="button" hidden>Googleでログイン</button>
+<div id="migration" hidden><label for="archive">記録ファイル（JSON）</label><input id="archive" type="file" accept="application/json,.json"><p id="file-status" class="notice"></p>
+<p class="notice">記録には健康・お金・人間関係などの個人情報が含まれます。Firebaseの本人専用領域に保存し、同じ内容を読み戻して確認します。Googleのサーバー側で暗号化されますが、本人だけが復号できる方式ではありません。</p>
+<button id="start" type="button" disabled>記録を移して照合</button></div>
+<p id="message" role="status" aria-live="polite"></p>
+<p class="notice">元の記録は削除しません。すでに異なる記録が保存されている場合は上書きしません。</p>
+</main><script type="module" src="migrate.mjs"></script></body></html>
