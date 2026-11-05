@@ -17,13 +17,27 @@ function label(key) {
   if (/^hibiki-(vehicle|weather|home)/.test(key)) return '暮らし';
   return 'その他';
 }
+function readable(value) {
+  try { return JSON.stringify(JSON.parse(value), null, 2); } catch { return value; }
+}
 function compare() {
   if (!archive) return;
   const comparison = previewBrowserRestore(archive, localStorage);
   $('comparison').textContent = `このブラウザーとの差：未保存 ${comparison.add.length}種類、同じ ${comparison.identical.length}種類、内容が異なる ${comparison.conflicts.length}種類。`;
   const list = $('conflicts'); list.replaceChildren();
   for (const key of comparison.conflicts) {
-    const item = document.createElement('li'); item.textContent = `${label(key)}（${key}）`; list.append(item);
+    const entry = entries.find(item => item.title === key);
+    const current = localStorage.getItem(key);
+    if (!entry || current === null) continue;
+    const item = document.createElement('li'), details = document.createElement('details'), title = document.createElement('summary');
+    title.textContent = `${label(key)}（${key}）`;
+    details.append(title);
+    for (const [heading, value] of [['この端末', current], ['保管時点のバックアップ', entry.text]]) {
+      const caption = document.createElement('strong'), content = document.createElement('div');
+      caption.textContent = heading; content.className = 'content'; content.textContent = readable(value);
+      details.append(caption, content);
+    }
+    item.append(details); list.append(item);
   }
   $('conflict-details').hidden = comparison.conflicts.length === 0;
 }
