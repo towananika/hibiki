@@ -5,8 +5,11 @@
 <meta name="robots" content="index, follow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>とわなにか</title>
+<script>window.HB_PUBLIC = true;</script>
 <script src="sync.js"></script>
 <script src="priority/pri.js"></script>
+<style>html:not(.hb-owner) body > :not(#owner-gate) { visibility: hidden !important; } html.hb-owner #owner-gate { display:none; } #owner-gate { padding:32px 20px; font:16px/1.7 system-ui,sans-serif; text-align:center; } #owner-gate a { color:inherit; }</style>
+<script type="module" src="security/owner-gate.mjs"></script>
 <meta name="description" content="ひびきが幸せに成長し、よい人生を送るために。健康・自由・愛の3つを、AIのみんなと育てる場所。">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -92,6 +95,7 @@
 <link rel="stylesheet" href="weather/weather.css">
 </head>
 <body>
+<div id="owner-gate" role="status"><p>本人のログインを確認しています。</p><a href="sync/google.html">Googleログインを確認</a></div>
 <main>
   <header style="display:flex;align-items:center;justify-content:space-between;gap:16px"><h1>とわなにか</h1><a href="about/" aria-label="ひびきのプロフィール"><img src="about/profile-mandarin.jpg" alt="" width="56" height="56" style="display:block;object-fit:contain;border-radius:8px"></a></header>
   <section class="simple-weather weather-compact" data-weather id="home-weather" aria-label="天気予報"></section>
