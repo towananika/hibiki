@@ -24,7 +24,7 @@
 <button id="logout" class="btn" type="button" hidden>Googleからログアウト</button>
 <p id="error" class="error" role="alert"></p>
 </section>
-<footer><p>Googleログインと個人記録の連携はまだ準備中です。記録を見るには、これまでの合言葉が必要です。</p><p class="notice">Googleからログアウトすると、同じブラウザーのトライアスロン側にも影響する場合があります。</p><a href="./">合言葉でログインする</a></footer>
+<footer><p><a href="cloud-notes.html">移行済みの記録を見る</a></p><p class="notice">本人のGoogleアカウントで、保管済みの記録を閲覧できます。別端末への復元と自動同期はまだ準備中です。ほかのページでは、これまでの合言葉が必要な場合があります。</p><p class="notice">Googleからログアウトすると、同じブラウザーのトライアスロン側にも影響する場合があります。</p><a href="./">これまでのログインへ</a></footer>
 </main><script>
 (function(){
   var status=document.getElementById('status'), login=document.getElementById('login'), logout=document.getElementById('logout'), error=document.getElementById('error');
@@ -39,4 +39,3 @@
   setTimeout(function(){if(window.TRI_USER===undefined){status.textContent='Googleログインを読み込めませんでした';error.textContent='通信環境を確認して、ページを開き直してください。';}},12000);
 })();
 </script></body></html>
-
