@@ -99,6 +99,7 @@
   <p class="sub">暮らしを整えて、好きな人生へ。</p>
   <section class="daily-start" aria-labelledby="daily-title">
     <h2 id="daily-title">今日は、ここから</h2>
+    <a id="review-note" href="plan/" hidden><span><strong>4週の見直し</strong><small id="review-when"></small></span><span aria-hidden="true">›</span></a>
     <a href="productivity/"><span><strong>一歩進める</strong><small>仕事・学びで、今日できること</small></span><span aria-hidden="true">›</span></a>
     <a href="health/"><span><strong>体調を整える</strong><small>睡眠・食事・散歩・休息</small></span><span aria-hidden="true">›</span></a>
     <a href="dreams/"><span><strong>楽しみを描く</strong><small>やりたいこと、ほしい暮らし</small></span><span aria-hidden="true">›</span></a>
@@ -129,7 +130,7 @@ var TREE={
  health:[
   {name:"毎日の体調",items:[["健康記録","睡眠・水・食事・歩数","health/"],["睡眠メモ","寝る・起きるの記録","sleep/"]]},
   {name:"散歩と天気",items:[["散歩ルート5選","気分に合わせたコース","health/#walking-routes"],["散歩前の天気比較","気温・雨・風・体調で判断","health/#walk-weather"]]},
-  {name:"休息と自分の気持ち",items:[["メモ帳","考えを残してAIに相談","notes/"],["夢日記","願いと日々の記録","dreams/"],["これまでの道","人生タイムライン","timeline/"]]},
+  {name:"休息と自分の気持ち",items:[["メモ帳","考えを残してAIに相談","notes/"],["夢日記","願いと日々の記録","dreams/"]]},
   {name:"学びと振り返り",items:[["自分を育てる","自己理解と日々の習慣","growth/"],["聖書を読む","日常につなげて読む","bible/"]]}
  ],
  relations:[
@@ -164,19 +165,14 @@ renderTree(initialTier);
 // ▼ ページを足すときはここに1行足す。new: 足した日（7日間「NEW」が出る）
 var GROUPS = [
   { n: "毎日", pages: [
-    { key: "more", name: "3年計画", note: "ビジョン・柱ごとの順番・今週のやること", href: "plan/", new: "2026-10-26", icon: '<path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/>' },
-    { key: "more", name: "今日の一歩", note: "5分から始める・仕事と収入のきっかけ", href: "productivity/", new: "2026-10-21", icon: '<path d="M4 12l5 5L20 6"/>' },
+    { key: "more", name: "計画", note: "3年計画・今週やること・いま、これを", href: "plan/", new: "2026-10-26", icon: '<path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/>' },
     { key: "health", name: "健康", note: "毎日4つをタップ", href: "health/", icon: '<path d="M3 12h4l2-5 4 10 2-5h6"/>' },
     { key: "health", name: "睡眠メモ", note: "寝る・起きたを1タップ", href: "sleep/", new: "2026-10-17", icon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>' },
     { key: "people", name: "愛と関係", note: "連絡・ありがとう・大切な人", href: "relations/", icon: '<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>' } ]},
   { n: "お金と暮らし", pages: [
-    { key: "money", name: "お金と自由", note: "金利・配分・週間レポート", href: "money/", icon: '<circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M9 13h6M9 16h6M12 13v5"/>' },
-    { key: "money", name: "AIの疑似投資", note: "架空の1万ドルで8つのやり方を競争", href: "money/sim.html", new: "2026-10-31", icon: '<path d="M4 20h16M6 16l4-5 3 3 5-7"/><circle cx="18" cy="7" r="1.5"/>' },
-    { key: "money", name: "使える制度", note: "未来積立・税が戻る制度・やること", href: "money/support.html", new: "2026-10-18", icon: '<path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/><path d="M9 12l2 2 4-4"/>' },
+    { key: "money", name: "お金と自由", note: "金利・配分・レポート・疑似投資", href: "money/", icon: '<circle cx="12" cy="12" r="9"/><path d="M9 9l3 4 3-4M9 13h6M9 16h6M12 13v5"/>' },
     { key: "money", name: "家計", note: "所得と費用・自分で調整", href: "money/budget.html", new: "2026-10-11", icon: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>' },
     { key: "money", name: "預金と投資", note: "持っているお金を入れる", href: "money/assets.html", new: "2026-10-15", icon: '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>' },
-    { key: "money", name: "首都圏の経済価値マップ", note: "緑・赤で比較、データ不足は灰色", href: "home/value-map.html", new: "2026-10-19", icon: '<path d="M3 5l6-2 6 2 6-2v16l-6 2-6-2-6 2zM9 3v16M15 5v16"/>' },
-    { key: "money", name: "乗り物の費用", note: "スクーターの実費と月あたり", href: "money/vehicle.html", new: "2026-10-15", icon: '<circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M9 17h6l-2-8h-3M13 9h4l1 8"/>' },
     { key: "money", name: "住まい", note: "チョンセ・住まい代", href: "home/", icon: '<path d="M3 11l9-7 9 7v9H3z"/><path d="M9 20v-6h6v6"/>' } ]},
   { n: "自分", pages: [
     { key: "more", name: "自分を育てる", note: "自己理解と日々の習慣", href: "growth/", icon: '<path d="M4 20h16M6 16l4-5 3 3 5-7"/>' },
@@ -208,6 +204,15 @@ document.getElementById("all-toggle").addEventListener("click", function () {
 });
 // ▲
 var NOW = Date.now();
+// 3年計画の4週見直し（2026-11-22 から28日ごと）。7日前から3日後まで出す
+(function () {
+  var day = 864e5, base = new Date("2026-11-22T00:00:00+09:00").getTime();
+  var k = Math.max(0, Math.ceil((NOW - base - 3 * day) / (28 * day))), at = base + k * 28 * day, left = Math.ceil((at - NOW) / day);
+  if (left > 7) return;
+  var d = new Date(at + 9 * 36e5), md = (d.getUTCMonth() + 1) + "/" + d.getUTCDate();
+  document.getElementById("review-when").textContent = left > 0 ? md + "（あと" + left + "日）・4週をふり返って次を決める" : md + "・見直しの時期です";
+  document.getElementById("review-note").hidden = false;
+})();
 document.getElementById("menu").innerHTML = GROUPS.map(function (g) {
   return '<div class="grp">' + g.n + '</div><div class="menu">' + g.pages.map(function (p) {
     var fresh = p.new && NOW - new Date(p.new).getTime() < 7 * 864e5;
