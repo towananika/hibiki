@@ -48,17 +48,25 @@
   }
   // ── ログインしていない人には中身を見せない（2026-10-09 ひびき：まずは全部非表示、出していいものは後で少しずつ）
   // ページで window.HB_PUBLIC = true にすると、そのページは誰でも見られる
-  if (!ls.getItem(IDK) && !window.HB_PUBLIC) {
+  var googleAccess = null;
+  if (!window.HB_PUBLIC) {
     var st = document.createElement("style");
-    st.textContent = "body>*{display:none!important}body>#hb-gate{display:grid!important}" +
+    st.textContent = "html:not(.hb-google-owner) body>*{display:none!important}html:not(.hb-google-owner) body>#hb-gate{display:grid!important}html.hb-google-owner body>#hb-gate{display:none!important}" +
       "#hb-gate{min-height:100vh;place-items:center;padding:24px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;color:#8a8271}" +
       "#hb-gate b{display:block;font-size:22px;color:#2b2924;margin-bottom:6px}#hb-gate a{display:inline-block;margin-top:18px;padding:12px 28px;border-radius:14px;background:#74886d;color:#fff;text-decoration:none;font-weight:600}" +
       "@media (prefers-color-scheme: dark){#hb-gate b{color:#ede8dd}}";
     document.head.appendChild(st);
     document.addEventListener("DOMContentLoaded", function () {
       var g = document.createElement("div"); g.id = "hb-gate";
-      g.innerHTML = '<div><b>とわなにか</b>ひびきの個人ページです<br><a href="' + BASE + 'sync/">ログイン</a></div>';
+      g.innerHTML = '<div><b>とわなにか</b><span id="hb-gate-status">ログインを確認しています…</span><br><a href="' + BASE + 'sync/google.html">Googleでログイン</a></div>';
       document.body.appendChild(g);
+    });
+    googleAccess = new Promise(function (resolve) {
+      window.hbRegisterGoogleAccess = resolve;
+      var script = document.createElement("script");
+      script.type = "module"; script.src = BASE + "security/unified-access.mjs";
+      script.onerror = function () { resolve(null); var status = document.getElementById("hb-gate-status"); if (status) status.textContent = "ログインを確認できませんでした。再読み込みしてください。"; };
+      document.head.appendChild(script);
     });
   }
 
@@ -190,7 +198,12 @@
       });
     },
     disconnect: function () { try { ls.removeItem(IDK); ls.removeItem(EXK); ls.removeItem(PK); ls.removeItem(PUBK); } catch (e) {} },
-    open: openBox,
+    open: function (name) {
+      if (!googleAccess) return openBox(name);
+      return googleAccess.then(function (access) {
+        return access ? access.open(name, openBox) : null;
+      });
+    },
     hasKey: function () { return !!ls.getItem(PK); },
     until: function () { return +ls.getItem(EXK) || 0; },
     sync: sync,
