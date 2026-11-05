@@ -5,6 +5,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>私について — とわなにか</title>
+<script>window.HB_PUBLIC = true;</script>
 <script src="../sync.js"></script>
 <style>
   :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
@@ -34,6 +35,7 @@
   <a class="back" href="../">‹ とわなにか</a>
   <header style="display:flex;align-items:center;gap:16px;margin:18px 0 12px"><img src="profile-mandarin.jpg" alt="ひびきのプロフィール画像：みかんのかぶりものをしたキャラクター" width="88" height="88" style="display:block;object-fit:contain;border-radius:8px"><h1>私について</h1></header>
   <p class="lead">ほかのAIに貼るための説明書。コピーして、AIとの会話の最初に貼ってください。</p>
+  <p class="lead">Googleログインでは、移行時点の記録を表示します。変更の自動同期はまだ準備中です。</p>
   <div class="card" id="box"><p class="lock">読み込み中…（ログインした端末だけで開けます）</p></div>
   <div class="card" id="secs" style="display:none"></div>
 </main>
@@ -50,13 +52,13 @@ function fallback(t) { var a = document.createElement("textarea"); a.value = t; 
 function esc(s) { return s.replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
 function show(D) {
   var box = document.getElementById("box");
-  if (!D || !D.md) { box.innerHTML = '<p class="lock">🔒 ログインした端末だけで見られます。</p>'; return; }
+  if (!D || !D.md) { MD = ""; document.getElementById("secs").style.display = "none"; document.getElementById("secs").replaceChildren(); box.innerHTML = '<p class="lock">記録を開けませんでした。<a href="../sync/">ログインを確認</a></p>'; return; }
   MD = D.md;
   box.innerHTML = '<div class="btns">' +
     '<button class="main" id="all"><b>全文コピー</b><span>自分用のAIに。お金・人間関係も含む</span></button>' +
     '<button id="safe"><b>🔒 を除いてコピー</b><span>信頼できない場所に貼るとき</span></button>' +
     '<button id="url"><b>AI用URLをコピー</b><span>個人情報を抜いた公開版。URLを渡せばAIが自分で読める</span></button></div>' +
-    '<div class="msg" id="msg"></div><p class="lock" style="font-size:12px;margin:4px 0 0">更新: ' + (D.at || "") + '</p>';
+    '<div class="msg" id="msg"></div><p class="lock" style="font-size:12px;margin:4px 0 0">更新: ' + esc(String(D.at || "")) + '</p>';
   document.getElementById("all").onclick = function () { copy(MD, "全文"); };
   document.getElementById("url").onclick = function () { copy(new URL("ai.txt", location.href).href, "AI用URL"); };
   document.getElementById("safe").onclick = function () { copy(strip(MD), "🔒 を除いた文"); };
@@ -67,7 +69,7 @@ function show(D) {
     return '<details><summary>' + esc(h.replace("🔒", "").trim()) + (lock ? '<span class="tag">🔒 個人</span>' : '') + '</summary><div class="body">' + esc(p.slice(i + 1).replace(/\n---\s*$/, "").trim()) + '</div></details>';
   }).join("");
 }
-if (window.HibikiSync) HibikiSync.open("about").then(show, function () { show(null); }); else show(null);
 </script>
+<script type="module" src="about-cloud.mjs"></script>
 </body>
 </html>
