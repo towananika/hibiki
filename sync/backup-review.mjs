@@ -17,6 +17,16 @@ function label(key) {
   if (/^hibiki-(vehicle|weather|home)/.test(key)) return '暮らし';
   return 'その他';
 }
+function compare() {
+  if (!archive) return;
+  const comparison = previewBrowserRestore(archive, localStorage);
+  $('comparison').textContent = `このブラウザーとの差：未保存 ${comparison.add.length}種類、同じ ${comparison.identical.length}種類、内容が異なる ${comparison.conflicts.length}種類。`;
+  const list = $('conflicts'); list.replaceChildren();
+  for (const key of comparison.conflicts) {
+    const item = document.createElement('li'); item.textContent = `${label(key)}（${key}）`; list.append(item);
+  }
+  $('conflict-details').hidden = comparison.conflicts.length === 0;
+}
 function render() {
   const query = $('search').value.trim().toLocaleLowerCase();
   const results = entries.filter(entry => (label(entry.title) + '\n' + entry.title + '\n' + entry.text).toLocaleLowerCase().includes(query));
@@ -30,7 +40,7 @@ function render() {
 }
 onAuthStateChanged(auth, async user => {
   const current = ++generation;
-  entries = []; archive = null; $('records').hidden = true; $('list').replaceChildren(); $('comparison').textContent = '';
+  entries = []; archive = null; $('records').hidden = true; $('list').replaceChildren(); $('comparison').textContent = ''; $('conflicts').replaceChildren(); $('conflict-details').hidden = true;
   $('login').hidden = !!user;
   if (!user) { $('status').textContent = 'Googleにログインしてください。'; return; }
   if (user.uid !== uid || !user.emailVerified) { $('status').textContent = 'このアカウントでは記録を開けません。'; return; }
@@ -42,13 +52,13 @@ onAuthStateChanged(auth, async user => {
     const saved = snap.data(), checked = await prepareArchive(saved.archive);
     if (current !== generation) return;
     if (saved.format !== checked.format || saved.sha256 !== checked.sha256 || saved.entryCount !== checked.entryCount) throw new Error('invalid archive');
-    const comparison = previewBrowserRestore(saved.archive, localStorage);
     entries = JSON.parse(saved.archive).entries; archive = saved.archive;
-    $('comparison').textContent = `このブラウザーとの差：未保存 ${comparison.add.length}種類、同じ ${comparison.identical.length}種類、内容が異なる ${comparison.conflicts.length}種類。`;
+    compare();
     $('records').hidden = false; $('status').textContent = '本人のバックアップ'; render();
   } catch { if (current === generation) $('status').textContent = '記録を確認できませんでした。通信や保存先の設定を確認してください。'; }
 });
 $('search').oninput = render;
+$('refresh').onclick = () => { try { compare(); } catch { $('comparison').textContent = '端末の記録を確認できませんでした。'; } };
 $('login').onclick = () => window.triLogin('google').catch(() => { $('status').textContent = 'ログインできませんでした。'; });
 $('export').onclick = () => {
   if (!archive || !confirm('暗号化されていないJSONファイルとして保存します。健康や家計などの個人情報が含まれます。続けますか？')) return;
