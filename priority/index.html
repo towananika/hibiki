@@ -108,6 +108,25 @@
     var ul = document.querySelector(".skip");
     (D.skip || []).slice().reverse().forEach(function (t) { var li = document.createElement("li"); li.textContent = t; ul.insertBefore(li, ul.firstChild); });
     document.getElementById("pnote").textContent = D.note ? D.note + "（" + D.asof + "）" : "";
+    // 3年計画の「今週」があれば、それを先にやる3つにする（✓は計画ページと同じ hibiki-plan-v1）
+    HibikiSync.open("plan").then(function (P) {
+      if (!P || !P.weeks) return;
+      var ymd = new Date(Date.now() + 9 * 36e5).toISOString().slice(0, 10), done = {};
+      try { done = JSON.parse(localStorage.getItem("hibiki-plan-v1") || "{}") || {}; } catch (e) {}
+      var wi = P.weeks.findIndex(function (w) { return ymd >= w.from && ymd <= w.to; });
+      if (wi < 0) return;
+      var HREF = { h: "../health/", m: "../money/budget.html", r: "../relations/", s: "../study/", f: "../plan/" };
+      var rows = [];
+      P.weeks.slice(0, wi + 1).forEach(function (w, i) {
+        w.items.forEach(function (x, j) { var ok = !!done[w.from + ":" + j]; if (i === wi || !ok) rows.push({ t: x.t, k: x.k, ok: ok, old: i < wi }); });
+      });
+      rows.sort(function (a, b) { return a.ok - b.ok; });
+      var left = rows.filter(function (x) { return !x.ok; }).length;
+      function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+      document.getElementById("top").innerHTML = '<div class="card"><h2>今週やること（3年計画）</h2>' + rows.map(function (x, i) {
+        return '<a class="t3" href="' + HREF[x.k] + '"><span class="no">' + (x.ok ? "✓" : i + 1) + '</span><span><b' + (x.ok ? ' style="opacity:.5;text-decoration:line-through"' : '') + '>' + esc(x.t) + '</b>' + (x.old ? '<br><span class="note">先週からの持ちこし</span>' : '') + '</span></a>';
+      }).join("") + '<p class="note" style="margin:8px 0 0">' + (left ? "あと " + left + " つ。" : "今週はぜんぶできた。") + '<a href="../plan/" style="color:var(--wood)">✓は計画ページで</a></p></div>';
+    });
   });
 })();
 </script>
