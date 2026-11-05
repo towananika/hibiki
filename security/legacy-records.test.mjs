@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import { LEGACY_RECORDS, prepareLegacyRecords, createLegacyRecordReader } from './legacy-records.mjs';
+
+const records = { about: { title: 'example', numbers: [1, 2] }, dreams: ['one', 'two'] };
+const result = await prepareLegacyRecords(async name => records[name], ['about', 'dreams']);
+assert.equal(result.ok, true);
+assert.equal(result.entryCount, 2);
+const parsed = JSON.parse(result.archive);
+assert.equal(parsed.kind, 'hibiki-legacy-records');
+assert.deepEqual(JSON.parse(parsed.entries[0].text), records.about);
+const read = createLegacyRecordReader(result.archive);
+assert.deepEqual(await read('about'), records.about);
+const copy = await read('about'); copy.numbers.push(3);
+assert.deepEqual(await read('about'), records.about);
+assert.equal(await read('missing'), null);
+assert.throws(() => createLegacyRecordReader('{'), /invalid-archive/);
+assert.throws(() => createLegacyRecordReader(JSON.stringify({ version: 1, kind: 'hibiki-legacy-records', entries: [{ title: '../secret', text: '{}' }] })), /invalid-archive/);
+assert.deepEqual(await prepareLegacyRecords(async name => name === 'about' ? records.about : null, ['about', 'dreams']), { ok: false, unavailable: ['dreams'] });
+await assert.rejects(() => prepareLegacyRecords(async () => ({}), ['about', 'about']), /invalid-record-selection/);
+await assert.rejects(() => prepareLegacyRecords(async () => ({}), ['../secret']), /invalid-record-selection/);
+assert.deepEqual(await prepareLegacyRecords(async () => 'x'.repeat(700001), ['about']), { ok: false, unavailable: [], reason: 'too-large' });
+assert.equal(LEGACY_RECORDS.length, 15);
+console.log('legacy record preparation: ok');

@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import { makeLegacyOpener } from './legacy-decrypt.mjs';
+const receiver = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']);
+const sender = await crypto.subtle.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, true, ['deriveKey']);
+const key = await crypto.subtle.deriveKey({ name: 'ECDH', public: receiver.publicKey }, sender.privateKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+const iv = crypto.getRandomValues(new Uint8Array(12));
+const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify({ example: ['記録', 1] })));
+const box = { epk: await crypto.subtle.exportKey('jwk', sender.publicKey), iv: Buffer.from(iv).toString('base64'), ct: Buffer.from(encrypted).toString('base64') };
+const privateKey = JSON.stringify(await crypto.subtle.exportKey('jwk', receiver.privateKey));
+let request;
+const open = makeLegacyOpener({ getItem: key => key === 'hb-key' ? privateKey : null }, async (url, options) => {
+  request = { url: String(url), options }; return { ok: true, json: async () => box };
+});
+assert.deepEqual(await open('about'), { example: ['記録', 1] });
+assert.ok(request.url.endsWith('/private/about.json'));
+assert.deepEqual(request.options, { cache: 'no-store' });
+assert.ok(!JSON.stringify(request).includes(privateKey));
+await assert.rejects(() => open('../secret'), /invalid-record/);
+await assert.rejects(() => makeLegacyOpener({ getItem: () => null }, async () => { throw Error('must not fetch'); })('about'), /legacy-key-unavailable/);
+console.log('legacy decryption: ok');
