@@ -20,7 +20,6 @@ onAuthStateChanged(auth, async user => {
   try {
     let data = null;
     if (user && user.uid === uid && user.emailVerified) data = await reader.open('about');
-    else if (!user && window.HibikiSync?.on()) data = await window.HibikiSync.open('about');
     if (current === generation) window.show(data);
   } catch {
     if (current === generation) window.show(null);
