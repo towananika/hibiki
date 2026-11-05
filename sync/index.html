@@ -52,7 +52,7 @@
   <p><a class="btn sub" style="text-align:center;text-decoration:none" href="google.html">Googleでログイン</a></p>
   <p><a class="btn sub" style="text-align:center;text-decoration:none" href="cloud-notes.html">クラウドの記録を見る</a></p>
   <p><a class="btn sub" style="text-align:center;text-decoration:none" href="backup-review.html">端末のバックアップを見る</a></p>
-  <p class="note">Googleログインで、移行済みの25件の記録を開けます。ほかの記録は移行が終わるまで、これまでの合言葉を使います。</p>
+  <p class="note">Googleログインで、移行済みの記録を確認できます。一部のページや端末間の同期は、移行が終わるまで旧方式を使います。</p>
 
   <h2>これまでの記録</h2>
 
@@ -85,7 +85,7 @@ function view() {
   var on = S && S.on();
   var st = document.getElementById("state");
   st.className = "state" + (on ? " on" : "");
-  st.querySelector("span").textContent = on ? "ログイン中（" + until() + "まで）" : "ログインしていません";
+  st.querySelector("span").textContent = on ? "旧方式で接続中（" + until() + "まで）" : "旧方式には接続していません";
   document.getElementById("join").hidden = on;
   document.getElementById("joined").hidden = !on;
 }
