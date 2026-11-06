@@ -63,15 +63,67 @@
   .cad { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; text-align:center; font-size:11.5px; color:var(--muted); line-height:1.4; }
   .cad b { display:block; font-size:15px; color:var(--wood); }
   #lock { text-align:center; color:var(--muted); }
+  .plan-tools { margin:18px 0 24px; }
+  .plan-tools details { border-bottom:1px solid var(--border); }
+  .plan-tools summary { cursor:pointer; padding:14px 0; font-weight:700; }
+  .plan-tools summary small { display:block; padding-left:18px; color:var(--muted); font-weight:400; }
+  .plan-tools iframe { display:block; width:100%; height:min(75vh,720px); min-height:400px; border:1px solid var(--border); background:var(--surface); }
+  .plan-tools .open-page { display:block; margin:8px 0 14px; font-size:13px; }
+  .directory { margin:24px 0; border-top:1px solid var(--border); padding-top:18px; }
+  .directory input { box-sizing:border-box; width:100%; padding:11px; font:inherit; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:5px; }
+  .directory h3 { font-size:14px; margin:18px 0 6px; color:var(--muted); }
+  .directory a { display:block; padding:9px 0; border-bottom:1px solid var(--border); text-decoration:none; color:var(--text); }
+  .directory a span { display:block; color:var(--muted); font-size:12px; }
+  .directory [hidden] { display:none; }
 </style>
 </head>
 <body>
 <main>
   <a class="back" href="../">← 入口</a>
-  <h1>3年計画</h1>
-  <p class="lead">2026年11月 → 2029年10月。健康・豊か・関係を、毎週すこしずつ。</p>
+  <h1>これからの計画</h1>
+  <p class="lead">長期の目標と、今日の一歩をここに。</p>
+  <section class="plan-tools" aria-labelledby="plan-tools-title">
+    <h2 id="plan-tools-title">計画と振り返り</h2>
+    <details><summary>今日の優先事項<small>いま取り組むこと</small></summary><iframe data-src="../priority/" title="今日の優先事項"></iframe><a class="open-page" href="../priority/">別のページで開く</a></details>
+    <details><summary>ひびきのカリキュラム<small>会話を通じた学び</small></summary><iframe data-src="../study/growth.html" title="ひびきのカリキュラム"></iframe><a class="open-page" href="../study/growth.html">別のページで開く</a></details>
+    <details><summary>自分を育てる<small>日々の記録と自己理解</small></summary><iframe data-src="../growth/" title="自分を育てる"></iframe><a class="open-page" href="../growth/">別のページで開く</a></details>
+  </section>
+  <h2>3年計画</h2>
+  <p class="lead">2026年11月 → 2029年10月</p>
   <div id="plan"><p class="card" id="lock">ログインした端末で、計画が出ます。</p></div>
 
+  <section class="directory" aria-labelledby="directory-title">
+    <h2 id="directory-title">関連するページ</h2>
+    <label class="note" for="directory-search">ページを検索</label>
+    <input id="directory-search" type="search" placeholder="健康、家計、夢など">
+    <div id="directory-list">
+      <div data-group><h3>健康</h3><a href="../health/">健康<span>食事・運動・体調</span></a><a href="../sleep/">睡眠<span>睡眠の記録</span></a></div>
+      <div data-group><h3>経済</h3><a href="../money/">お金と自由<span>経済の全体像</span></a><a href="../money/budget.html">家計<span>収入・支出</span></a><a href="../money/assets.html">資産と負債<span>貯蓄・投資</span></a><a href="../home/">住まい<span>暮らしと住居費</span></a><a href="../money/vehicle.html">乗り物<span>移動と費用</span></a></div>
+      <div data-group><h3>関係</h3><a href="../about/">自分との関係<span>自分の説明書</span></a><a href="../relations/">他の人との関係<span>大切な人・つながり</span></a><a href="../timeline/">これまでの道<span>振り返り</span></a></div>
+      <div data-group><h3>夢と学び</h3><a href="../dreams/">夢<span>望む暮らし・やりたいこと</span></a><a href="../study/">勉強<span>教材と学習</span></a><a href="../notes/">メモ帳<span>考えを記録する</span></a></div>
+    </div>
+    <p id="directory-empty" class="note" hidden>該当するページはありません。</p>
+  </section>
+  <script>
+  document.querySelectorAll('.plan-tools details').forEach(function(detail) {
+    detail.addEventListener('toggle', function() {
+      var frame = detail.querySelector('iframe');
+      if (detail.open && !frame.hasAttribute('src')) frame.src = frame.dataset.src;
+    });
+  });
+  document.getElementById('directory-search').addEventListener('input', function() {
+    var query = this.value.trim().toLocaleLowerCase(), visible = 0;
+    document.querySelectorAll('#directory-list [data-group]').forEach(function(group) {
+      var groupName = group.querySelector('h3').textContent.toLocaleLowerCase(), count = 0;
+      group.querySelectorAll('a').forEach(function(link) {
+        var match = !query || (groupName + ' ' + link.textContent.toLocaleLowerCase()).includes(query);
+        link.hidden = !match; if (match) { count++; visible++; }
+      });
+      group.hidden = count === 0;
+    });
+    document.getElementById('directory-empty').hidden = visible !== 0;
+  });
+  </script>
   <div class="card">
     <h2>記録の輪</h2>
     <div class="loop">
