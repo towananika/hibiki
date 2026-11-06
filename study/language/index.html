@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>一文、四つの言葉</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Zen+Kaku+Gothic+New:wght@700;900&display=swap">
+<style>
+/* 1画面の練習帳。上に4言語のタブと進み具合、中央に1問、下に選択肢 */
+:root{
+  --bg:#F3F1EC; --paper:#FFFFFF; --ink:#23262B; --sub:#6A6F78; --rule:#DEDBD3;
+  --en:#3B6FB6; --de:#C9873A; --ja:#C2463E; --zh:#3E8A6B;
+  --ok:#2F8A5B; --ng:#B9473F; --soft:#ECE9E2;
+  --f-display:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic UI",sans-serif;
+  --f-body:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic UI","Meiryo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#17191C; --paper:#202328; --ink:#E8E9EB; --sub:#9AA0A8; --rule:#33373D;
+  --en:#7FA8E3; --de:#E2AD6B; --ja:#E6817A; --zh:#77C2A2; --ok:#6CC795; --ng:#EE8B83; --soft:#2A2E34; color-scheme:dark}}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.7;padding-inline:16px;padding-block:calc(16px + env(safe-area-inset-top,0px)) calc(32px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:900;font-size:22px;margin:0;letter-spacing:.04em}
+.sub{color:var(--sub);font-size:13px}
+
+button{font-family:inherit;font-size:15px;color:var(--ink);background:var(--paper);border:1.5px solid var(--rule);border-radius:12px;padding:10px 14px;cursor:pointer;transition:transform .08s,border-color .15s,background .15s}
+button:active{transform:translateY(1px)}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tab{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:10px 8px;text-align:center}
+.tab .nm{font-weight:700;font-size:14px}
+.tab .meter{height:5px;border-radius:3px;background:var(--soft);overflow:hidden}
+.tab .meter i{display:block;height:100%;width:0;background:var(--c);transition:width .6s}
+.tab .cnt{font-size:11.5px;color:var(--sub);font-variant-numeric:tabular-nums}
+.tab[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c)}
+
+.panel{background:var(--paper);border:1px solid var(--rule);border-radius:16px;padding:20px 16px;display:flex;flex-direction:column;gap:14px}
+.home h2{font-family:var(--f-display);font-size:20px;margin:0}
+.home p{margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.primary{background:var(--c);border-color:var(--c);color:#fff;font-weight:700;padding:14px 18px;font-size:16px;flex:1}
+.ghost{background:transparent}
+.speed{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--sub)}
+.speed button{padding:5px 10px;font-size:13px}
+.speed button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.qhead{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--sub)}
+.dots{display:flex;gap:4px}
+.dots i{width:9px;height:9px;border-radius:50%;background:var(--soft)}
+.dots i.ok{background:var(--ok)} .dots i.ng{background:var(--ng)} .dots i.now{background:var(--c)}
+.combo{font-family:var(--f-display);font-weight:900;color:var(--c);min-width:4em;text-align:right}
+.combo.bump{animation:bump .35s ease}
+@keyframes bump{40%{transform:scale(1.35)}}
+.kind{font-size:12.5px;color:var(--sub);letter-spacing:.08em}
+.prompt{font-size:21px;font-weight:700;line-height:1.5;min-height:2.6em;display:flex;align-items:center;gap:12px}
+.play{flex:none;width:58px;height:58px;border-radius:50%;background:var(--c);border-color:var(--c);color:#fff;font-size:22px;display:flex;align-items:center;justify-content:center;padding:0}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;padding:12px 14px;font-size:16px;line-height:1.5}
+.opt.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,var(--paper))}
+.opt.ng{border-color:var(--ng);background:color-mix(in srgb,var(--ng) 10%,var(--paper))}
+.opt:disabled{cursor:default;opacity:1}
+.answer{border-top:1px dashed var(--rule);padding-top:12px;display:flex;flex-direction:column;gap:4px}
+.answer .t{font-size:18px;font-weight:700;display:flex;gap:10px;align-items:center}
+.answer .r{font-size:14px;color:var(--sub)}
+.mini{padding:4px 10px;font-size:13px;border-radius:999px}
+
+.result .big{font-family:var(--f-display);font-weight:900;font-size:56px;line-height:1;color:var(--c)}
+.result ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.result li{display:flex;justify-content:space-between;gap:10px;align-items:center;border-bottom:1px solid var(--rule);padding-bottom:8px}
+.result li div{min-width:0}
+.result li small{display:block;color:var(--sub)}
+
+.list .scene{font-size:12.5px;color:var(--sub);letter-spacing:.1em;margin-top:6px}
+.card{border:1px solid var(--rule);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.card .line{display:flex;gap:8px;align-items:baseline}
+.card .lg{flex:none;width:2.2em;font-size:11px;font-weight:700;color:var(--lc)}
+.card .tx{min-width:0}
+.card .tx small{color:var(--sub);margin-left:6px}
+.card button{padding:2px 8px;font-size:12px;margin-left:auto;flex:none}
+.note{font-size:12.5px;color:var(--sub);margin:0}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+.today{display:flex;gap:10px}
+.today .box{flex:1;border:1px solid var(--rule);border-radius:12px;padding:10px 12px}
+.today .box b{display:block;font-family:var(--f-display);font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums}
+.today .box span{font-size:12.5px;color:var(--sub)}
+.bar2{height:6px;border-radius:3px;background:var(--soft);overflow:hidden}
+.bar2 i{display:block;height:100%;background:var(--c);transition:width .4s}
+.newtag{align-self:flex-start;font-size:12px;color:#fff;background:var(--c);border-radius:999px;padding:1px 10px}
+.target{font-size:24px;font-weight:700;line-height:1.45}
+.grade{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grade button{padding:14px 10px;font-weight:700;font-size:16px}
+.grade .no{border-color:var(--ng);color:var(--ng)}
+.grade .yes{background:var(--ok);border-color:var(--ok);color:#fff}
+details{font-size:13.5px;color:var(--sub)}
+details summary{cursor:pointer}
+details p{margin:6px 0 0}
+.sched{list-style:none;margin:0;padding:0;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.sched li{display:flex;justify-content:space-between;border-bottom:1px dotted var(--rule)}
+</style>
+</head>
+<body>
+<main class="wrap" id="app">
+  <header>
+    <h1>一文、四つの言葉</h1>
+    <span class="sub" id="total"></span>
+  </header>
+  <div class="tabs" id="tabs"></div>
+  <section id="view"></section>
+  <p class="note" id="voiceNote" hidden></p>
+</main>
+
+<script>
+"use strict";
+/* ---------- 文（場面ごと） ---------- */
+const P = [
+ ["あいさつ","おはようございます。","","Good morning.","Guten Morgen.","早上好。","zǎoshang hǎo"],
+ ["あいさつ","お疲れさまです。","おつかれさまです","Thanks for your hard work.","Danke für deine Arbeit.","辛苦了。","xīnkǔ le"],
+ ["あいさつ","はじめまして。","","Nice to meet you.","Freut mich, Sie kennenzulernen.","很高兴认识你。","hěn gāoxìng rènshi nǐ"],
+ ["あいさつ","また明日。","またあした","See you tomorrow.","Bis morgen.","明天见。","míngtiān jiàn"],
+ ["あいさつ","ありがとうございます。","","Thank you very much.","Vielen Dank.","非常感谢。","fēicháng gǎnxiè"],
+ ["あいさつ","すみません、ちょっといいですか。","","Excuse me, do you have a minute?","Entschuldigung, haben Sie kurz Zeit?","不好意思，你现在有空吗？","bù hǎoyìsi, nǐ xiànzài yǒu kòng ma"],
+ ["あいさつ","元気？","げんき？","How are you?","Wie geht's?","最近怎么样？","zuìjìn zěnmeyàng"],
+ ["あいさつ","また会いましょう。","またあいましょう","Let's meet again.","Lass uns uns wiedersehen.","我们再见面吧。","wǒmen zài jiànmiàn ba"],
+ ["あいさつ","気をつけて。","きをつけて","Take care.","Pass auf dich auf.","路上小心。","lùshang xiǎoxīn"],
+ ["カフェ・食事","アイスコーヒーを一つください。","アイスコーヒーをひとつください","One iced coffee, please.","Einen Kaffee mit Eiswürfeln, bitte.","请给我一杯冰咖啡。","qǐng gěi wǒ yì bēi bīng kāfēi"],
+ ["カフェ・食事","持ち帰りでお願いします。","もちかえりでおねがいします","To go, please.","Zum Mitnehmen, bitte.","我要外带。","wǒ yào wàidài"],
+ ["カフェ・食事","お会計お願いします。","おかいけいおねがいします","Can I have the check, please?","Die Rechnung, bitte.","请结账。","qǐng jiézhàng"],
+ ["カフェ・食事","カードで払えますか。","カードではらえますか","Can I pay by card?","Kann ich mit Karte zahlen?","可以刷卡吗？","kěyǐ shuākǎ ma"],
+ ["カフェ・食事","辛くしないでください。","からくしないでください","Not spicy, please.","Bitte nicht scharf.","请不要辣。","qǐng bú yào là"],
+ ["カフェ・食事","これは何ですか。","これはなんですか","What is this?","Was ist das?","这是什么？","zhè shì shénme"],
+ ["カフェ・食事","おすすめは何ですか。","おすすめはなんですか","What do you recommend?","Was empfehlen Sie?","你推荐什么？","nǐ tuījiàn shénme"],
+ ["カフェ・食事","お腹が空きました。","おなかがすきました","I'm hungry.","Ich habe Hunger.","我饿了。","wǒ è le"],
+ ["仕事","少し考えさせてください。","すこしかんがえさせてください","Let me think about it for a bit.","Lassen Sie mich kurz darüber nachdenken.","让我想一想。","ràng wǒ xiǎng yi xiǎng"],
+ ["仕事","もう一度言ってもらえますか。","もういちどいってもらえますか","Could you say that again?","Können Sie das bitte wiederholen?","你能再说一遍吗？","nǐ néng zài shuō yí biàn ma"],
+ ["仕事","締め切りはいつですか。","しめきりはいつですか","When is the deadline?","Wann ist die Frist?","截止日期是什么时候？","jiézhǐ rìqī shì shénme shíhou"],
+ ["仕事","今日中に送ります。","きょうじゅうにおくります","I'll send it by the end of today.","Ich schicke es heute noch.","我今天之内发给你。","wǒ jīntiān zhīnèi fā gěi nǐ"],
+ ["仕事","確認してから連絡します。","かくにんしてかられんらくします","I'll check and get back to you.","Ich prüfe das und melde mich dann.","我确认一下再联系你。","wǒ quèrèn yíxià zài liánxì nǐ"],
+ ["仕事","助けてくれてありがとう。","たすけてくれてありがとう","Thanks for helping me.","Danke, dass du mir geholfen hast.","谢谢你帮我。","xièxie nǐ bāng wǒ"],
+ ["仕事","会議は何時からですか。","かいぎはなんじからですか","What time does the meeting start?","Um wie viel Uhr beginnt das Meeting?","会议几点开始？","huìyì jǐ diǎn kāishǐ"],
+ ["仕事","問題ありません。","もんだいありません","No problem.","Kein Problem.","没问题。","méi wèntí"],
+ ["移動","駅はどこですか。","えきはどこですか","Where is the station?","Wo ist der Bahnhof?","车站在哪里？","chēzhàn zài nǎlǐ"],
+ ["移動","ここで降ります。","ここでおります","I'll get off here.","Ich steige hier aus.","我在这里下车。","wǒ zài zhèlǐ xià chē"],
+ ["移動","歩いて何分ですか。","あるいてなんぷんですか","How many minutes on foot?","Wie viele Minuten zu Fuß?","走路要几分钟？","zǒulù yào jǐ fēnzhōng"],
+ ["移動","道に迷いました。","みちにまよいました","I'm lost.","Ich habe mich verlaufen.","我迷路了。","wǒ mílù le"],
+ ["移動","次の電車は何時ですか。","つぎのでんしゃはなんじですか","When is the next train?","Wann fährt der nächste Zug?","下一班车几点？","xià yì bān chē jǐ diǎn"],
+ ["買い物","いくらですか。","","How much is it?","Wie viel kostet das?","多少钱？","duōshao qián"],
+ ["買い物","もう少し安くなりますか。","もうすこしやすくなりますか","Can you make it a little cheaper?","Geht es etwas günstiger?","能便宜一点吗？","néng piányi yìdiǎn ma"],
+ ["買い物","見ているだけです。","みているだけです","I'm just looking.","Ich schaue nur.","我只是看看。","wǒ zhǐshì kànkan"],
+ ["買い物","袋はいりません。","ふくろはいりません","I don't need a bag.","Ich brauche keine Tüte.","不用袋子。","bú yòng dàizi"],
+ ["買い物","これにします。","","I'll take this one.","Ich nehme das.","我要这个。","wǒ yào zhège"],
+ ["気持ち","少し疲れました。","すこしつかれました","I'm a little tired.","Ich bin ein bisschen müde.","我有点累了。","wǒ yǒudiǎn lèi le"],
+ ["気持ち","今日は休みます。","きょうはやすみます","I'll rest today.","Heute ruhe ich mich aus.","今天我休息。","jīntiān wǒ xiūxi"],
+ ["気持ち","楽しかったです。","たのしかったです","I had a great time.","Es hat mir viel Spaß gemacht.","我玩得很开心。","wǒ wán de hěn kāixīn"],
+ ["気持ち","よく分かりません。","よくわかりません","I don't really understand.","Ich verstehe das nicht ganz.","我不太明白。","wǒ bú tài míngbai"],
+ ["気持ち","ゆっくり話してください。","ゆっくりはなしてください","Please speak slowly.","Bitte sprechen Sie langsam.","请说慢一点。","qǐng shuō màn yìdiǎn"],
+].map((r,i)=>({id:i, scene:r[0], ja:r[1], jr:r[2], en:r[3], de:r[4], zh:r[5], py:r[6]}));
+
+const L = {
+  ja:{name:"日本語", tag:"JA", code:"ja-JP", c:"var(--ja)"},
+  zh:{name:"中国語", tag:"ZH", code:"zh-CN", c:"var(--zh)"},
+  de:{name:"ドイツ語",tag:"DE", code:"de-DE", c:"var(--de)"},
+  en:{name:"英語",   tag:"EN", code:"en-US", c:"var(--en)"},
+};
+const ROUND = 10;
+const STEPS = [1,3,7,14,30,60];          // 次に出すまでの日数。思い出せるたびに右へ進む
+const NEW_PER_DAY = 5, KNOWN = 3;        // 1日の新しい文／3回の別の日に思い出せたら「覚えた」
+
+/* ---------- 保存（この端末の中だけ） ---------- */
+let S = { lang:"zh", rate:1, card:{ja:{},zh:{},de:{},en:{}}, newDay:{date:"", n:{}} };
+try{ const s = JSON.parse(localStorage.getItem("yotsu2") || "null"); if(s) S = Object.assign(S, s); }catch(e){}
+Object.keys(L).forEach(lg=>{ S.card[lg] = S.card[lg] || {}; });
+function save(){ try{ localStorage.setItem("yotsu2", JSON.stringify(S)); }catch(e){} }
+
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const today = () => ymd(new Date());
+const addDays = n => { const d = new Date(); d.setDate(d.getDate()+n); return ymd(d); };
+const known   = lg => P.filter(p=>S.card[lg][p.id] && S.card[lg][p.id].s>=KNOWN).length;
+const dueList = lg => P.filter(p=>S.card[lg][p.id] && S.card[lg][p.id].due<=today());
+const unseen  = lg => P.filter(p=>!S.card[lg][p.id]);
+const newUsed = lg => S.newDay.date===today() ? (S.newDay.n[lg]||0) : 0;
+const newLeft = lg => Math.min(unseen(lg).length, Math.max(0, NEW_PER_DAY - newUsed(lg)));
+const shuffle = a => a.map(x=>[Math.random(),x]).sort((a,b)=>a[0]-b[0]).map(x=>x[1]);
+const meaning = (lg,p) => lg==="ja" ? p.en : p.ja;       // 日本語は英語から、他は日本語から
+const reading = (lg,p) => lg==="zh" ? p.py : (lg==="ja" ? (p.jr||"") : "");
+
+/* ---------- 音声 ---------- */
+let voices = [];
+function loadVoices(){ voices = (window.speechSynthesis && speechSynthesis.getVoices()) || []; if(view==="home") show("home"); else renderTabs(); voiceNote(); }
+function voiceFor(lg){
+  const pre = L[lg].code.slice(0,2);
+  return voices.find(v=>v.lang.replace("_","-")===L[lg].code) || voices.find(v=>v.lang.toLowerCase().startsWith(pre)) || null;
+}
+const canSpeak = lg => !!(window.speechSynthesis && voiceFor(lg));
+function speak(lg, text){
+  if(!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voiceFor(lg); if(v) u.voice = v;
+  u.lang = L[lg].code; u.rate = S.rate * (lg==="zh"||lg==="ja" ? 0.95 : 1);
+  speechSynthesis.speak(u);
+}
+function voiceNote(){
+  const n = document.getElementById("voiceNote");
+  const missing = Object.keys(L).filter(lg=>!canSpeak(lg)).map(lg=>L[lg].name);
+  n.hidden = !missing.length || !voices.length;
+  n.textContent = missing.length ? `この端末には ${missing.join("・")} の読み上げ音声がない。その言語は音なしで練習する。` : "";
+}
+
+/* ---------- 効果音（その場で合成） ---------- */
+let ac = null;
+function tone(freqs, dur=0.18, type="sine", gain=0.16){
+  try{
+    ac = ac || new (window.AudioContext||window.webkitAudioContext)();
+    const t0 = ac.currentTime;
+    freqs.forEach((f,i)=>{
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = type; o.frequency.value = f;
+      g.gain.setValueAtTime(0, t0+i*0.07); g.gain.linearRampToValueAtTime(gain, t0+i*0.07+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0+i*0.07+dur);
+      o.connect(g).connect(ac.destination); o.start(t0+i*0.07); o.stop(t0+i*0.07+dur+0.02);
+    });
+  }catch(e){}
+}
+const SCALE = [523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.51,1567.98,1760];
+const chime = n => { const f = SCALE[Math.min(Math.max(n,1)-1, SCALE.length-1)]; tone([f, f*1.5], 0.22); };
+const thud  = () => tone([196, 147], 0.2, "triangle", 0.2);
+
+/* ---------- 画面 ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let view = "home", R = null, T = null;
+
+function renderTabs(){
+  const t = $("tabs"); t.innerHTML = "";
+  Object.keys(L).forEach(lg=>{
+    const k = known(lg), d = dueList(lg).length + newLeft(lg);
+    const b = document.createElement("button");
+    b.className = "tab"; b.style.setProperty("--c", L[lg].c);
+    b.setAttribute("aria-pressed", String(S.lang===lg));
+    b.innerHTML = `<span class="nm">${L[lg].name}</span><span class="meter"><i style="width:${k/P.length*100}%"></i></span><span class="cnt">${k} / ${P.length}</span><span class="cnt">${d?`今日 ${d}`:"　"}</span>`;
+    b.onclick = ()=>{ if(view==="session"||view==="quiz") return; S.lang = lg; save(); show("home"); };
+    t.appendChild(b);
+  });
+  const all = Object.keys(L).reduce((a,lg)=>a+known(lg),0);
+  $("total").textContent = `覚えた ${all} / ${P.length*4}`;
+  document.documentElement.style.setProperty("--c", L[S.lang].c);
+}
+function show(v){ view = v; renderTabs(); ({home, session, done, quiz, result, list})[v](); }
+
+function nextDue(lg){
+  const ds = Object.values(S.card[lg]).map(c=>c.due).filter(d=>d>today()).sort();
+  if(!ds.length) return "";
+  const days = Math.round((new Date(ds[0]) - new Date(today()))/86400000);
+  return `次の復習は ${days===1?"明日":days+"日後"}（${ds.filter(d=>d===ds[0]).length}文）`;
+}
+
+function home(){
+  const lg = S.lang, due = dueList(lg).length, nw = newLeft(lg), left = unseen(lg).length;
+  const todo = due + nw;
+  $("view").innerHTML = `<div class="panel home">
+    <h2>${L[lg].name}</h2>
+    <div class="today">
+      <div class="box"><b>${due}</b><span>今日の復習</span></div>
+      <div class="box"><b>${nw}</b><span>新しい文</span></div>
+      <div class="box"><b>${known(lg)}</b><span>覚えた</span></div>
+    </div>
+    ${todo ? `<div class="row"><button class="primary" id="go">今日の分をはじめる（${todo}文）</button></div>`
+           : `<p>今日の分は終わり。${esc(nextDue(lg))}</p>${left?`<div class="row"><button class="ghost" id="more">新しい文をあと${Math.min(5,left)}つ足す</button></div>`:""}`}
+    <div class="row" style="justify-content:space-between;align-items:center">
+      <span class="row"><button class="ghost" id="toQuiz">4択で腕試し</button><button class="ghost" id="toList">一覧</button></span>
+      <span class="speed">速さ <button data-r="0.75">ゆっくり</button><button data-r="1">ふつう</button></span>
+    </div>
+    <details><summary>この練習のやり方について</summary>
+      <p>答えを見る前に、自分で思い出す。思い出せた文は、1日後・3日後・7日後…と間を空けてもう一度出る。3回、別の日に思い出せたら「覚えた」に数える。</p>
+      <p>10種類の勉強法を比べた総説（Dunlosky ほか 2013）で評価が高かったのは「思い出す練習」と「間を空ける練習」の2つ。組み合わせた実験（Rawson ほか 2013）では、3日に分けて1回ずつ思い出した人は1週間後に68%、1日で3回思い出した人は26%覚えていた。</p>
+    </details>
+  </div>`;
+  if($("go")) $("go").onclick = ()=>startSession(false);
+  if($("more")) $("more").onclick = ()=>startSession(true);
+  $("toQuiz").onclick = startQuiz;
+  $("toList").onclick = ()=>show("list");
+  document.querySelectorAll(".speed button").forEach(b=>{
+    b.setAttribute("aria-pressed", String(+b.dataset.r===S.rate));
+    b.onclick = ()=>{ S.rate = +b.dataset.r; save(); home(); };
+  });
+}
+
+/* ---------- 今日の分：思い出す → 答え合わせ → 日を空けてもう一度 ---------- */
+function startSession(extra){
+  tone([0],0.01);
+  const lg = S.lang;
+  const news = unseen(lg).slice(0, extra ? 5 : newLeft(lg));
+  const due = shuffle(dueList(lg));
+  const Q = [];
+  news.forEach(p=>Q.push({p, type:"study"}));
+  due.forEach(p=>Q.push({p, type:"recall", fails:0, isNew:false}));
+  T = { lg, Q, total: news.length + due.length, finished:0, first:0, retried:0, streak:0 };
+  if(!Q.length) return show("home");
+  show("session");
+}
+function session(){
+  const lg = T.lg, it = T.Q[0], p = it.p;
+  const head = `<div class="qhead"><span>${T.finished} / ${T.total}</span><span class="combo">${T.streak>=2?T.streak+"連続":""}</span></div><div class="bar2"><i style="width:${T.finished/T.total*100}%"></i></div>`;
+  if(it.type==="study"){
+    $("view").innerHTML = `<div class="panel">${head}
+      <span class="newtag">新しい文</span>
+      <div class="target" lang="${L[lg].code}">${esc(p[lg])}</div>
+      ${reading(lg,p)?`<div class="sub">${esc(reading(lg,p))}</div>`:""}
+      <div>${esc(meaning(lg,p))}</div>
+      <div class="row">${canSpeak(lg)?'<button class="ghost" id="hear">▶ 聞く</button>':""}<button class="primary" id="ok">声に出してみた。次へ</button></div>
+      <p class="note">このあと、少し間を置いて「思い出す」問題として出る。</p></div>`;
+    if(canSpeak(lg)){ $("hear").onclick = ()=>speak(lg,p[lg]); setTimeout(()=>speak(lg,p[lg]),200); }
+    $("ok").onclick = ()=>{
+      T.Q.shift(); T.Q.push({p, type:"recall", fails:0, isNew:true});
+      if(S.newDay.date!==today()) S.newDay = {date:today(), n:{}};
+      S.newDay.n[lg] = (S.newDay.n[lg]||0) + 1; save();
+      session();
+    };
+    return;
+  }
+  const c = S.card[lg][p.id];
+  const listen = canSpeak(lg) && !it.isNew && c && c.s%2===1;       // 復習は「言う」と「聞く」を交互に
+  $("view").innerHTML = `<div class="panel">${head}
+    <div class="kind">${listen ? "聞いて、意味を思い出す" : `${L[lg].name}で言ってみる`}</div>
+    <div class="prompt">${listen ? `<button class="play" id="play" aria-label="もう一度聞く">▶</button><span class="sub">意味を頭の中で言ってから、答えを見る</span>` : `<span${lg==="ja"?' lang="en"':""}>${esc(meaning(lg,p))}</span>`}</div>
+    <div class="row" id="revealRow"><button class="primary" id="reveal">答えを見る</button></div>
+    <div class="answer" id="answer" hidden></div>
+    <div class="grade" id="grade" hidden>
+      <button class="no" id="no">${listen?"分からなかった":"言えなかった"}</button>
+      <button class="yes" id="yes">${listen?"分かった":"言えた"}</button>
+    </div></div>`;
+  if(listen){ $("play").onclick = ()=>speak(lg,p[lg]); setTimeout(()=>speak(lg,p[lg]),200); }
+  $("reveal").onclick = ()=>{
+    $("revealRow").hidden = true;
+    const a = $("answer"); a.hidden = false;
+    a.innerHTML = `<div class="t"><span lang="${L[lg].code}">${esc(p[lg])}</span>${canSpeak(lg)?'<button class="mini" id="again">▶ 聞く</button>':""}</div>
+      ${reading(lg,p)?`<div class="r">${esc(reading(lg,p))}</div>`:""}<div class="r">${esc(meaning(lg,p))}</div>`;
+    if(canSpeak(lg)){ $("again").onclick = ()=>speak(lg,p[lg]); if(!listen) setTimeout(()=>speak(lg,p[lg]),150); }
+    $("grade").hidden = false;
+    $("yes").onclick = ()=>grade(true); $("no").onclick = ()=>grade(false);
+  };
+}
+function grade(ok){
+  const lg = T.lg, it = T.Q.shift(), p = it.p;
+  if(window.speechSynthesis) speechSynthesis.cancel();
+  if(!ok){
+    it.fails++; T.streak = 0; thud();
+    T.Q.splice(Math.min(3, T.Q.length), 0, it);            // 少し後でもう一度。思い出せるまで終わらない
+    return session();
+  }
+  const c = S.card[lg][p.id] || {s:-1};
+  const s = it.isNew ? 0 : (it.fails===0 ? Math.min(c.s+1, STEPS.length-1) : Math.max(0, c.s-1));
+  S.card[lg][p.id] = { s, due: addDays(STEPS[s]) }; save();
+  T.finished++; T.streak++; if(it.fails===0) T.first++; else T.retried++;
+  chime(T.streak);
+  if(T.Q.length) session(); else show("done");
+}
+function done(){
+  const lg = T.lg, cnt = {};
+  Object.values(S.card[lg]).forEach(c=>{ cnt[c.due] = (cnt[c.due]||0)+1; });
+  const rows = Object.keys(cnt).sort().slice(0,5).map(d=>{
+    const days = Math.round((new Date(d) - new Date(today()))/86400000);
+    return `<li><span>${days<=0?"今日":days===1?"明日":days+"日後"}</span><span>${cnt[d]}文</span></li>`;
+  }).join("");
+  $("view").innerHTML = `<div class="panel result">
+    <div class="row" style="align-items:flex-end;justify-content:space-between">
+      <div><div class="big">${T.total}<span style="font-size:22px">文</span></div><div class="sub">今日の分は終わり</div></div>
+      <div class="sub" style="text-align:right">一度で思い出せた ${T.first}<br>やり直して思い出せた ${T.retried}</div>
+    </div>
+    <div class="kind">次に出る日</div><ul class="sched">${rows}</ul>
+    <div class="row"><button class="primary" id="home">戻る</button></div></div>`;
+  tone([783.99,987.77,1174.66,1567.98],0.3);
+  $("home").onclick = ()=>show("home");
+}
+
+/* ---------- 4択で腕試し（進み具合には数えない） ---------- */
+function distract(p, n){
+  const same = P.filter(x=>x.id!==p.id && x.scene===p.scene), other = P.filter(x=>x.id!==p.id && x.scene!==p.scene);
+  return shuffle([...shuffle(same).slice(0,2), ...shuffle(other)]).slice(0,n);
+}
+function makeQ(lg, p, i){
+  const listen = canSpeak(lg) && i%2===0;
+  const opts = shuffle([p, ...distract(p,3)]);
+  if(listen) return {p, kind:"listen", label:"聞いて、意味を選ぶ", show:"ja", opts};
+  return {p, kind:"read", label: lg==="ja" ? "英語に合う日本語を選ぶ" : `日本語に合う${L[lg].name}を選ぶ`, show: lg, opts};
+}
+function startQuiz(){
+  tone([0],0.01);
+  const lg = S.lang;
+  R = { lg, qs: shuffle(P).slice(0,ROUND).map((p,i)=>makeQ(lg,p,i)), i:0, ok:0, combo:0, best:0, marks:[], miss:[] };
+  show("quiz");
+}
+function quiz(){
+  const q = R.qs[R.i], lg = R.lg, p = q.p;
+  const promptHTML = q.kind==="listen"
+    ? `<button class="play" id="play" aria-label="もう一度聞く">▶</button><span class="sub">音を聞いて選ぶ</span>`
+    : (lg==="ja" ? `<span lang="en">${esc(p.en)}</span>` : `<span>${esc(p.ja)}</span>`);
+  const optText = x => q.show==="ja" ? esc(x.ja) : `<span lang="${L[lg].code}">${esc(x[lg])}</span>`;
+  $("view").innerHTML = `<div class="panel">
+    <div class="qhead"><span class="dots">${R.qs.map((_,k)=>`<i class="${R.marks[k]||(k===R.i?'now':'')}"></i>`).join("")}</span><span class="combo" id="combo">${R.combo>=2?R.combo+"連続":""}</span></div>
+    <div class="kind">${q.label}</div>
+    <div class="prompt">${promptHTML}</div>
+    <div class="opts" id="opts">${q.opts.map((x,k)=>`<button class="opt" data-k="${k}">${optText(x)}</button>`).join("")}</div>
+    <div class="answer" id="answer" hidden></div>
+    <div class="row" id="nextRow" hidden><button class="primary" id="next">${R.i===ROUND-1?"結果を見る":"次へ"}</button></div>
+  </div>`;
+  if(q.kind==="listen"){ $("play").onclick = ()=>speak(lg, p[lg]); setTimeout(()=>speak(lg, p[lg]), 150); }
+  document.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(+b.dataset.k));
+}
+function answer(k){
+  const q = R.qs[R.i], lg = R.lg, p = q.p, right = q.opts[k].id===p.id;
+  document.querySelectorAll(".opt").forEach((b,j)=>{
+    b.disabled = true;
+    if(q.opts[j].id===p.id) b.classList.add("ok"); else if(j===k) b.classList.add("ng");
+  });
+  if(right){
+    R.ok++; R.combo++; R.best = Math.max(R.best, R.combo); R.marks[R.i] = "ok"; chime(R.combo);
+    const c = $("combo"); c.textContent = R.combo>=2 ? R.combo+"連続" : ""; c.classList.remove("bump"); void c.offsetWidth; c.classList.add("bump");
+  } else { R.combo = 0; R.marks[R.i] = "ng"; R.miss.push(p); thud(); $("combo").textContent = ""; }
+  const a = $("answer"); a.hidden = false;
+  a.innerHTML = `<div class="t"><span lang="${L[lg].code}">${esc(p[lg])}</span>${canSpeak(lg)?'<button class="mini" id="again">▶ 聞く</button>':""}</div>
+    ${reading(lg,p)?`<div class="r">${esc(reading(lg,p))}</div>`:""}<div class="r">${esc(meaning(lg,p))}</div>`;
+  if(canSpeak(lg)){ $("again").onclick = ()=>speak(lg, p[lg]); setTimeout(()=>speak(lg, p[lg]), right ? 350 : 500); }
+  $("nextRow").hidden = false;
+  $("next").onclick = ()=>{ if(window.speechSynthesis) speechSynthesis.cancel(); R.i++; if(R.i>=ROUND) show("result"); else quiz(); };
+}
+function result(){
+  const lg = R.lg;
+  $("view").innerHTML = `<div class="panel result">
+    <div><div class="big">${R.ok}<span style="font-size:22px">/10</span></div><div class="sub">最高 ${R.best}連続 ・ 腕試しは進み具合には数えない</div></div>
+    ${R.miss.length ? `<div class="kind">間違えた文</div><ul>${R.miss.map(p=>`<li><div><span lang="${L[lg].code}">${esc(p[lg])}</span><small>${esc(meaning(lg,p))}</small></div>${canSpeak(lg)?`<button class="mini" data-id="${p.id}">▶</button>`:""}</li>`).join("")}</ul>` : `<p>間違えた文はなし。</p>`}
+    <div class="row"><button class="primary" id="again2">もう10問</button><button class="ghost" id="home">戻る</button></div>
+  </div>`;
+  if(R.ok===10) tone([783.99,987.77,1174.66,1567.98],0.3);
+  document.querySelectorAll(".result .mini").forEach(b=>b.onclick=()=>speak(lg, P[+b.dataset.id][lg]));
+  $("again2").onclick = startQuiz; $("home").onclick = ()=>show("home");
+}
+
+function list(){
+  let html = `<div class="panel list"><div class="row" style="justify-content:space-between;align-items:center"><span class="kind">同じ一文を、四つの言葉で</span><button class="ghost mini" id="back">戻る</button></div>`;
+  let scene = "";
+  P.forEach(p=>{
+    if(p.scene!==scene){ scene = p.scene; html += `<div class="scene">${esc(scene)}</div>`; }
+    html += `<div class="card">` + Object.keys(L).map(lg=>{
+      const sub = reading(lg,p);
+      return `<div class="line" style="--lc:${L[lg].c}"><span class="lg">${L[lg].tag}</span><span class="tx" lang="${L[lg].code}">${esc(p[lg])}${sub?`<small>${esc(sub)}</small>`:""}</span>${canSpeak(lg)?`<button data-lg="${lg}" data-id="${p.id}">▶</button>`:""}</div>`;
+    }).join("") + `</div>`;
+  });
+  $("view").innerHTML = html + `</div>`;
+  $("back").onclick = ()=>show("home");
+  document.querySelectorAll(".card button").forEach(b=>b.onclick=()=>speak(b.dataset.lg, P[+b.dataset.id][b.dataset.lg]));
+}
+
+show("home");
+if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+voiceNote();
+</script>
+</body>
+</html>
