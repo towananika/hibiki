@@ -2,7 +2,7 @@ import '../../triathlon/login/auth.js?v=0.28';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
 import { getFirestore, doc, getDocFromServer } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
 import { prepareArchive } from '../security/cloud-archive.mjs';
-import { previewBrowserRestore } from '../security/browser-snapshot.mjs';
+import { previewBrowserRestore, restoreMissingBrowserRecords } from '../security/browser-snapshot.mjs?v=2';
 
 const uid = '3wzoIaBNjLf9x0BW3HRUcqOHCAG2', auth = getAuth(), db = getFirestore();
 const $ = id => document.getElementById(id);
@@ -73,6 +73,24 @@ onAuthStateChanged(auth, async user => {
 });
 $('search').oninput = render;
 $('refresh').onclick = () => { try { compare(); } catch { $('comparison').textContent = '端末の記録を確認できませんでした。'; } };
+$('restore').onclick = () => {
+  const user = auth.currentUser;
+  if (!archive || !user || user.uid !== uid || !user.emailVerified) return;
+  if (localStorage.getItem('hb-sync-id') !== null) {
+    $('restore-message').textContent = '旧方式の同期が有効なため、復元を止めました。記録は変更していません。';
+    return;
+  }
+  const comparison = previewBrowserRestore(archive, localStorage);
+  if (!comparison.add.length) { $('restore-message').textContent = '復元が必要な未保存の項目はありません。'; return; }
+  if (!confirm(`保管時点の記録から、未保存の${comparison.add.length}種類をこのブラウザーに追加します。異なる記録は変更しません。続けますか？`)) return;
+  try {
+    const result = restoreMissingBrowserRecords(archive, localStorage);
+    $('restore-message').textContent = `${result.restored.length}種類を追加しました。異なる${result.conflicts.length}種類は変更していません。`;
+  } catch {
+    $('restore-message').textContent = '復元が途中で止まりました。すでに追加した項目は残しています。差を再確認してください。';
+  }
+  try { compare(); } catch { $('comparison').textContent = '端末との差を確認できませんでした。'; }
+};
 $('login').onclick = () => window.triLogin('google').catch(() => { $('status').textContent = 'ログインできませんでした。'; });
 $('export').onclick = () => {
   if (!archive || !confirm('暗号化されていないJSONファイルとして保存します。健康や家計などの個人情報が含まれます。続けますか？')) return;

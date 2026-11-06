@@ -14,7 +14,7 @@ export function snapshotBrowserRecords(storage) {
   return JSON.stringify({ version: 1, kind: 'hibiki-browser-snapshot', entries });
 }
 
-// A future restore must resolve every conflict explicitly before writing.
+// Compare without changing either copy; differing values require review.
 export function previewBrowserRestore(snapshot, storage) {
   let data;
   try { data = JSON.parse(snapshot); } catch { throw new Error('invalid-snapshot'); }
@@ -30,4 +30,22 @@ export function previewBrowserRestore(snapshot, storage) {
     else result.conflicts.push(key);
   }
   return result;
+}
+
+// Restore missing keys only; never run alongside the legacy sync session.
+export function restoreMissingBrowserRecords(snapshot, storage) {
+  if (storage.getItem('hb-sync-id') !== null) throw new Error('legacy-sync-active');
+  const preview = previewBrowserRestore(snapshot, storage);
+  const entries = JSON.parse(snapshot).entries;
+  const wanted = new Set(preview.add);
+  const written = [];
+  for (const entry of entries) {
+    if (!wanted.has(entry.title)) continue;
+    if (storage.getItem('hb-sync-id') !== null) throw new Error('legacy-sync-active');
+    if (storage.getItem(entry.title) !== null) continue;
+    try { storage.setItem(entry.title, entry.text); }
+    catch { throw new Error('restore-incomplete'); }
+    written.push(entry.title);
+  }
+  return { restored: written, identical: preview.identical, conflicts: preview.conflicts };
 }
