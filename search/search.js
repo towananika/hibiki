@@ -27,7 +27,7 @@
   var pages = null, pending = null;
   function load() {
     if (pages) return Promise.resolve(pages);
-    if (!pending) pending = fetch('search/index.json', {cache:'no-cache'}).then(function (r) { if (!r.ok) throw new Error('index'); return r.json(); }).then(function (data) { pages=data; pending=null; return data; }, function (err) { pending=null; throw err; });
+    if (!pending) pending = fetch('search/index.json', {cache:'no-cache'}).then(function (r) { if (!r.ok) throw new Error('index'); return r.json(); }).then(function (data) { data.push({url:'sns/',title:'SNSと届いた人たち',description:'フォロワーを一人ずつ可視化し、発信を振り返る',keywords:'SNS 戦略 フォロワー 発信 リミテク Instagram X YouTube TikTok Facebook'}); pages=data; pending=null; return data; }, function (err) { pending=null; throw err; });
     return pending;
   }
   function render() {
