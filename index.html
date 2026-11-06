@@ -102,20 +102,14 @@
   
   <p class="sub">暮らしを整えて、好きな人生へ。</p>
   <section class="daily-start" aria-labelledby="daily-title">
-    <h2 id="daily-title">今日は、ここから</h2>
+    <h2 id="daily-title">よく使うページ</h2>
     <a id="review-note" href="plan/" hidden><span><strong>4週の見直し</strong><small id="review-when"></small></span><span aria-hidden="true">›</span></a>
-    <a href="productivity/"><span><strong>一歩進める</strong><small>仕事・学びで、今日できること</small></span><span aria-hidden="true">›</span></a>
-    <a href="health/"><span><strong>体調を整える</strong><small>睡眠・食事・散歩・休息</small></span><span aria-hidden="true">›</span></a>
-    <a href="dreams/"><span><strong>楽しみを描く</strong><small>やりたいこと、ほしい暮らし</small></span><span aria-hidden="true">›</span></a>
-  </section>
-  <section class="hier" aria-labelledby="hier-title">
-    <h2 id="hier-title">暮らしを見直す</h2>
-    <div class="tier-top" role="tablist" aria-label="上位カテゴリー">
-      <button class="tier-tab" type="button" role="tab" data-tier="health" aria-selected="true">健康</button>
-      <button class="tier-tab" type="button" role="tab" data-tier="relations" aria-selected="false">関係</button>
-      <button class="tier-tab" type="button" role="tab" data-tier="economy" aria-selected="false">経済</button>
-    </div>
-    <div id="tier-middle" class="tier-mid" role="tabpanel" aria-label="中位カテゴリーとページ"></div>
+    <a href="productivity/"><span><strong>今日の一歩</strong><small>今の自分に合うことを選ぶ</small></span><span aria-hidden="true">›</span></a>
+    <a href="health/"><span><strong>健康</strong><small>体調・食事・散歩・休息</small></span><span aria-hidden="true">›</span></a>
+    <a href="sleep/"><span><strong>睡眠</strong><small>寝る・起きるの記録</small></span><span aria-hidden="true">›</span></a>
+    <a href="relations/"><span><strong>大切な人</strong><small>つながりを大切にする</small></span><span aria-hidden="true">›</span></a>
+    <a href="money/"><span><strong>お金と自由</strong><small>家計・預金・これから</small></span><span aria-hidden="true">›</span></a>
+    <a href="dreams/"><span><strong>夢と楽しみ</strong><small>やりたいこと、ほしい暮らし</small></span><span aria-hidden="true">›</span></a>
   </section>
   <form id="site-search" class="site-search" role="search">
     <label for="site-query">ページ・教材を探す</label>
@@ -129,42 +123,6 @@
   <footer><a href="sync/" id="login" style="color:inherit">ログイン</a></footer>
 </main>
 <script>
-
-var TREE={
- health:[
-  {name:"毎日の体調",items:[["健康記録","睡眠・水・食事・歩数","health/"],["睡眠メモ","寝る・起きるの記録","sleep/"]]},
-  {name:"散歩と天気",items:[["散歩ルート5選","気分に合わせたコース","health/#walking-routes"],["散歩前の天気比較","気温・雨・風・体調で判断","health/#walk-weather"]]},
-  {name:"休息と自分の気持ち",items:[["メモ帳","考えを残してAIに相談","notes/"],["夢日記","願いと日々の記録","dreams/"]]},
-  {name:"学びと振り返り",items:[["自分を育てる","自己理解と日々の習慣","growth/"],["聖書を読む","日常につなげて読む","bible/"]]}
- ],
- relations:[
-  {name:"大切な人とのつながり",items:[["愛と関係","連絡・ありがとう・大切な人","relations/"]]},
-  {name:"自分を理解する",items:[["私について","自分の説明書","about/"],["これまでの道","振り返り","timeline/"]]}
- ],
- economy:[
-  {name:"日々のお金",items:[["家計","収入と支出","money/budget.html"],["お金と自由","お金の全体像","money/"]]},
-  {name:"資産と制度",items:[["預金と投資","資産を整理","money/assets.html"],["使える制度","積立・税・支援","money/support.html"]]},
-  {name:"住まいと移動",items:[["住まい","家と住まい代","home/"],["首都圏の経済価値マップ","地域を比較","home/value-map.html"],["乗り物の費用","移動コスト","money/vehicle.html"]]},
-  {name:"学びと道具",items:[["勉強","経済・金融など","study/"],["駐車タイマー","入庫時刻・経過時間・料金の目安","stopwatch/"],["円とウォン","両替と仕組み","money/yen.html"],["Instagram Reader","チャット連携・このPC専用","instagram/"],["道具箱","計算ツール","../tool/"]]}
- ]
-};
-function renderTree(kind){
- var root=document.getElementById("tier-middle");root.textContent="";
- TREE[kind].forEach(function(group,i){
-  var details=document.createElement("details");details.className="tier-group";details.open=i===0;
-  var summary=document.createElement("summary");summary.textContent=group.name;details.appendChild(summary);
-  var leaves=document.createElement("div");leaves.className="tier-leaves";
-  group.items.forEach(function(item){
-   var a=document.createElement("a");a.className="tier-leaf";a.href=item[2];
-   var b=document.createElement("b");b.textContent=item[0];var s=document.createElement("small");s.textContent=item[1];a.appendChild(b);a.appendChild(s);leaves.appendChild(a);
-  });details.appendChild(leaves);root.appendChild(details);
- });
- document.querySelectorAll(".tier-tab").forEach(function(b){b.setAttribute("aria-selected",String(b.dataset.tier===kind));});
- try{localStorage.setItem("hibiki-tier-v1",kind)}catch(e){}
-}
-document.querySelectorAll(".tier-tab").forEach(function(b){b.addEventListener("click",function(){renderTree(b.dataset.tier)})});
-var initialTier="health";try{var st=localStorage.getItem("hibiki-tier-v1");if(TREE[st])initialTier=st}catch(e){}
-renderTree(initialTier);
 
 // ▼ ページを足すときはここに1行足す。new: 足した日（7日間「NEW」が出る）
 var GROUPS = [

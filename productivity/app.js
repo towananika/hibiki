@@ -56,6 +56,10 @@
   }
   var idea=null;
   var ideas=[
+    {title:'少し目を休める',kind:'rest',minutes:2,why:'休むことも、今日の大切な選択です。',href:''},
+    {title:'何もしない時間を少し取る',kind:'rest',minutes:5,why:'自分のペースに戻る時間を作れます。',href:''},
+    {title:'水を飲み、体調をひとこと確かめる',kind:'life',minutes:2,why:'今の自分の状態に気づくきっかけになります。',href:'../health/'},
+    {title:'大切な人を思い浮かべ、伝えたい言葉を下書きする',kind:'relations',minutes:5,why:'送るかどうかは、自分で決められます。',href:'../relations/'},
     {title:'ペンを3本しまう',kind:'life',minutes:2,why:'小さく片づけて、次の作業を始めやすくする。',href:''},
     {title:'机の上で今使わないものを3つ戻す',kind:'life',minutes:5,why:'作業する場所を一か所だけ空ける。',href:''},
     {title:'明日必要なものをひとまとめにする',kind:'life',minutes:5,why:'出かける前の探し物を減らす。',href:''},
@@ -81,6 +85,7 @@
     idea=pool[Math.floor(Math.random()*pool.length)];document.getElementById('idea-title').textContent=idea.title+'（約'+idea.minutes+'分）';
     document.getElementById('idea-why').textContent=idea.why;document.getElementById('idea-result').hidden=false;this.textContent='ほかの一歩も見る';
   };
+  document.getElementById('rest-idea').onclick=function(){document.getElementById('idea-kind').value='rest';clearIdea();document.getElementById('draw-idea').click();};
   document.getElementById('take-idea').onclick=function(){if(!idea)return;var before=S.items.length;add(idea.title,idea.href);if(S.items.length>before){clearIdea();document.getElementById('tasks').scrollIntoView({block:'nearest'});}};
   day.value=StudyPlan.today();day.onchange=function(){try{StudyPlan.date(day.value);load();}catch(e){message('日付を選んでください。');}};
   document.getElementById('add').onsubmit=function(e){e.preventDefault();var input=document.getElementById('task'),t=input.value.trim();if(!t)return;var before=S.items.length;add(t,links[document.getElementById('area').value]);if(S.items.length>before)input.value='';};
