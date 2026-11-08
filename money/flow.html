@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>お金の流れ — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+:root{--bg:#f5f1e9;--surface:#fbf9f4;--border:#e2dac8;--text:#2b2924;--muted:#8a8271;--wood:#93704b;--wood-soft:#ece1d0;--sage:#74886d;--sage-soft:#e2e8dd;--blue:#5b7a99;--blue-soft:#e0e7ee;--red:#b5583f;--red-soft:#f3e2db}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--surface:#242119;--border:#38332a;--text:#ede8dd;--muted:#a89e8a;--wood:#c99f74;--wood-soft:#382d20;--sage:#9db394;--sage-soft:#26301f;--blue:#8fb0cf;--blue-soft:#1f2a35;--red:#e08b70;--red-soft:#3a2520}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 -apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}main{max-width:560px;margin:auto;padding:28px 16px 64px}a{color:var(--blue)}.back{font-size:14px;text-decoration:none;color:var(--muted)}h1{font-size:28px;margin:14px 0 4px}.sub{color:var(--muted);font-size:14px;margin:0 0 20px}.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:17px;margin-top:14px}h2{font-size:18px;margin:0 0 8px}.hint{font-size:13px;color:var(--muted);margin:0}.money{display:flex;align-items:center;gap:10px;margin-top:12px}.money input{width:150px;max-width:48vw;padding:9px 10px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:9px;font:inherit;font-size:20px;font-weight:700}.money span{color:var(--muted)}.summary{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;margin-top:12px;padding:12px;border-radius:12px;background:var(--bg)}.summary b{font-size:20px}.flow{display:grid;gap:9px;margin-top:13px}.row{display:grid;grid-template-columns:30px 1fr 92px;gap:8px;align-items:center}.mark{height:30px;width:30px;border-radius:10px;display:grid;place-items:center;font-size:16px}.row label{font-weight:700;font-size:15px}.row small{display:block;color:var(--muted);font-weight:400;font-size:12px;line-height:1.35}.row input{width:92px;min-width:0;padding:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);border-radius:8px;font:inherit;text-align:right}.bar{height:11px;background:var(--border);border-radius:999px;overflow:hidden;margin:3px 0 0 38px}.bar i{display:block;height:100%;border-radius:inherit}.protect{background:var(--sage-soft)}.grow{background:var(--wood-soft)}.learn{background:var(--blue-soft)}.live{background:var(--red-soft)}.protect .mark,.protect i{background:var(--sage)}.grow .mark,.grow i{background:var(--wood)}.learn .mark,.learn i{background:var(--blue)}.live .mark,.live i{background:var(--red)}.question{width:100%;margin-top:8px;min-height:80px;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text);font:inherit;resize:vertical}.button{border:0;border-radius:999px;background:var(--wood);color:white;padding:10px 17px;font:inherit;font-weight:700;cursor:pointer;margin-top:12px}.reset{background:transparent;color:var(--muted);border:1px solid var(--border);margin-left:6px}.status{color:var(--sage);font-size:13px;margin-left:8px}.rule{margin:8px 0 0;padding-left:1.2em}.rule li+li{margin-top:4px}.privacy{font-size:12px;color:var(--muted);margin:14px 0 0}
+</style>
+</head>
+<body>
+<main>
+<a class="back" href="./">← お金と自由</a>
+<h1>お金の流れ</h1>
+<p class="sub">お金をただ減らさず、未来の選択肢へ流すための月ごとのメモ。</p>
+
+<section class="card">
+<h2>今月、自由に配分できるお金</h2>
+<p class="hint">生活に必要な固定費を除いた、今月の配分額。正確でなくて大丈夫。</p>
+<div class="money"><input id="total" inputmode="numeric" type="number" min="0" step="1000" placeholder="0" aria-label="今月の配分額"><span>ウォン</span></div>
+<div class="summary"><span>まだ行き先を決めていないお金</span><b id="left">0ウォン</b></div>
+</section>
+
+<section class="card">
+<h2>どこへ流すか</h2>
+<p class="hint">正しい割合はありません。今の自分に必要な場所へ。</p>
+<div class="flow">
+<div class="protect"><div class="row"><span class="mark">🛟</span><label>守る<small>生活防衛・返済・保険・予備費</small></label><input data-k="protect" inputmode="numeric" type="number" min="0" step="1000" placeholder="0" aria-label="守るお金"></div><div class="bar"><i></i></div></div>
+<div class="grow"><div class="row"><span class="mark">🌱</span><label>育てる<small>長期投資・事業・将来の資産</small></label><input data-k="grow" inputmode="numeric" type="number" min="0" step="1000" placeholder="0" aria-label="育てるお金"></div><div class="bar"><i></i></div></div>
+<div class="learn"><div class="row"><span class="mark">🧭</span><label>自分を育てる<small>学び・健康・道具・作品づくり</small></label><input data-k="learn" inputmode="numeric" type="number" min="0" step="1000" placeholder="0" aria-label="自分を育てるお金"></div><div class="bar"><i></i></div></div>
+<div class="live"><div class="row"><span class="mark">☀️</span><label>暮らす・分かち合う<small>楽しみ・大切な人・寄付・経験</small></label><input data-k="live" inputmode="numeric" type="number" min="0" step="1000" placeholder="0" aria-label="暮らすお金"></div><div class="bar"><i></i></div></div>
+</div>
+</section>
+
+<section class="card">
+<h2>月末に一つだけ</h2>
+<label class="hint" for="reflection">このお金は、未来の選択肢を増やしたか？　何がよかったか？</label>
+<textarea id="reflection" class="question" placeholder="例：健康に使ったことで、午後も集中できた。"></textarea>
+<button id="save" class="button" type="button">この月の流れを保存</button><button id="reset" class="button reset" type="button">入力を消す</button><span id="status" class="status" role="status"></span>
+<p class="privacy">入力はこのブラウザ内だけに保存され、外部には送信されません。投資判断は自分の状況とリスクを確認して決めてください。</p>
+</section>
+
+<section class="card">
+<h2>覚えておくこと</h2>
+<ul class="rule"><li>守るお金があれば、焦って売ったり借りたりしにくくなる。</li><li>育てるお金は、短期で増やすより長く続ける。</li><li>学び・健康・創作も、未来の選択肢を増やす投資になり得る。</li><li>楽しみや人との時間も、人生を良くするための大切な使い道。</li></ul>
+</section>
+</main>
+<script>
+(function(){
+var KEY='hibiki-money-flow-v1',keys=['protect','grow','learn','live'];
+var q=function(s){return document.querySelector(s)},qa=function(s){return[].slice.call(document.querySelectorAll(s))};
+var data={};try{data=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+q('#total').value=data.total||'';keys.forEach(function(k){q('[data-k="'+k+'"]').value=data[k]||''});q('#reflection').value=data.reflection||'';
+function n(v){return Math.max(0,Number(v)||0)}
+function draw(){var total=n(q('#total').value),used=0;keys.forEach(function(k){used+=n(q('[data-k="'+k+'"]').value)});var left=total-used;q('#left').textContent=(left>=0?left:'超過 '+Math.abs(left)).toLocaleString()+'ウォン';q('#left').style.color=left<0?'var(--red)':'var(--text)';qa('.flow>div').forEach(function(box){var v=n(box.querySelector('input').value);box.querySelector('.bar i').style.width=(total?Math.min(100,v/total*100):0)+'%'});}
+function save(){var out={total:q('#total').value,reflection:q('#reflection').value};keys.forEach(function(k){out[k]=q('[data-k="'+k+'"]').value});localStorage.setItem(KEY,JSON.stringify(out));q('#status').textContent='保存しました';setTimeout(function(){q('#status').textContent=''},2200)}
+qa('input').forEach(function(x){x.addEventListener('input',draw)});q('#save').onclick=save;q('#reset').onclick=function(){if(!confirm('このページの入力を消しますか？'))return;localStorage.removeItem(KEY);q('#total').value='';keys.forEach(function(k){q('[data-k="'+k+'"]').value=''});q('#reflection').value='';draw()};draw();
+})();
+</script>
+</body>
+</html>
