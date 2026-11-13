@@ -256,11 +256,14 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   PLAY.tradition7 = PLAY.tradition8 = [TRAD, "4択ゲーム"];
   if (PLAY[n] && t) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n][0]; a.target = "_blank"; a.rel = "noopener";
     a.innerHTML = "▶ Claude に聞く<small>質問バー・Claude が作る問題（claude.ai で開く）</small>"; t.after(a); }
-  var dc = n.match(/^ch(\d+)$/);
+  var dc = n.match(/^ch(\d+)(t?)$/);
   if (dc) {
     var DIGITAL_NOTES = { 7: "AI", 8: "ブロックチェーン", 9: "ゲーム", 10: "メディア", 11: "共有", 12: "移動", 13: "利益", 14: "仕事", 15: "格差" }, nav = document.createElement("div"); nav.className = "toc lec";
-    nav.innerHTML = Object.keys(DIGITAL_NOTES).map(function (k) { return '<a href="?n=ch' + k + '"' + (+k === +dc[1] ? ' aria-current="page"' : '') + '>' + k + '講 ' + DIGITAL_NOTES[k] + '</a>'; }).join('');
+    nav.innerHTML = Object.keys(DIGITAL_NOTES).map(function (k) { return '<a href="?n=ch' + k + dc[2] + '"' + (+k === +dc[1] ? ' aria-current="page"' : '') + '>' + k + '講 ' + DIGITAL_NOTES[k] + '</a>'; }).join('');
     doc.insertBefore(nav, doc.firstChild);
+    var dsw = document.createElement("div"); dsw.className = "toc lec";
+    dsw.innerHTML = dc[2] ? '<a href="?n=ch' + dc[1] + '">ふつうのノート（4択つき）へ</a>' : '<a href="?n=ch' + dc[1] + 't">会話で読む（5〜10分）へ</a>';
+    doc.insertBefore(dsw, doc.firstChild);
   }
   // 上級マクロ経済論は 8〜15講をならべて、となりの講へ行けるようにする
   var SERIES = { macro: { 0:"やさしい土台", 8:"消費", 9:"投資", 10:"労働", 11:"お金", 12:"一般均衡", 13:"均衡の波", 14:"不均衡の波", 15:"成長" }, tradition: { 7:"食の暮らし", 8:"訴え状", 9:"学校と試験", 10:"役人と両班", 11:"女性と結婚", 12:"奴婢", 13:"生まれる・結婚", 14:"葬式と祭り", 15:"村と家の神" } };
