@@ -56,6 +56,20 @@
   .eq i { font-style:normal; color:var(--muted); }
   .flow { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin:10px 0; font-size:calc(16px*var(--k,1)); }
   .flow span { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:5px 10px; } .flow i { font-style:normal; color:var(--muted); }
+  /* 会話・要点カード・穴うめ（2026-11-13） */
+  .talk { display:grid; gap:10px; margin:12px 0; }
+  .talk .m { display:flex; gap:8px; align-items:flex-start; }
+  .talk .m .av { flex:0 0 auto; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px; background:var(--c,var(--blue)); }
+  .talk .m .bub { min-width:0; background:var(--bg); border:1px solid var(--border); border-radius:4px 14px 14px 14px; padding:7px 11px; font-size:calc(16px*var(--k,1)); line-height:1.7; overflow-wrap:anywhere; }
+  .talk .m .bub small { display:block; color:var(--c,var(--blue)); font-weight:700; font-size:calc(12px*var(--k,1)); }
+  .kcard { border:2px solid var(--sage); border-radius:14px; padding:8px 14px 8px; margin:12px 0; background:var(--card,transparent); }
+  .kcard b { display:block; color:var(--sage); font-size:calc(14px*var(--k,1)); margin-bottom:2px; }
+  .kcard ul { margin:0; padding-left:1.2em; } .kcard li { margin:3px 0; font-size:calc(17px*var(--k,1)); line-height:1.7; }
+  .cloze { border:1px dashed var(--blue); border-radius:14px; padding:8px 14px; margin:12px 0; }
+  .cloze b { display:block; color:var(--blue); font-size:calc(14px*var(--k,1)); }
+  .cloze p { margin:8px 0; font-size:calc(17px*var(--k,1)); line-height:2; }
+  .cloze .blank { font:inherit; color:var(--blue); background:none; border:0; border-bottom:2px solid var(--blue); min-width:3.2em; padding:0 4px; cursor:pointer; }
+  .cloze .blank.on { color:var(--text); background:rgba(80,120,160,.14); border-radius:6px; font-weight:700; }
   .q { border-top:1px solid var(--border); padding:10px 0; }
   .q:first-child { border-top:0; }
   .q b { display:block; font-size:calc(18px*var(--k,1)); }
@@ -139,6 +153,27 @@ var BLOCK = {
   // A → B → C
   flow: function (t) {
     return '<div class="flow">' + t.trim().split(/\s*→\s*/).map(function (w) { return '<span>' + esc(w) + '</span>'; }).join("<i>→</i>") + '</div>';
+  },
+  // 会話。A: / B: / C: の役を、日替わりで アカリ・ツバサ・シオン にわりあてる
+  talk: function (t) {
+    var N = ["アカリ", "ツバサ", "シオン"], CL = { "アカリ": "var(--red)", "ツバサ": "var(--blue)", "シオン": "var(--sage)" };
+    var day = Math.floor((Date.now() + 9 * 3600000) / 86400000);
+    return '<div class="talk">' + t.trim().split("\n").map(function (l) {
+      var m = l.match(/^([ABC])[:：]\s*(.*)$/); if (!m) return "";
+      var nm = N[(m[1].charCodeAt(0) - 65 + day) % 3];
+      return '<div class="m" style="--c:' + CL[nm] + '"><span class="av">' + nm.charAt(0) + '</span><div class="bub"><small>' + nm + '</small>' + inl(m[2]) + '</div></div>';
+    }).join("") + '</div>';
+  },
+  // 要点カード。1行目がタイトル、あとは1行1項目
+  card: function (t) {
+    var r = t.trim().split("\n"), title = r.shift();
+    return '<div class="kcard"><b>' + esc(title) + '</b><ul>' + r.map(function (x) { return "<li>" + inl(x.replace(/^[-*]\s*/, "")) + "</li>"; }).join("") + '</ul></div>';
+  },
+  // 穴うめ。{{答え}} をさわると答えが出る
+  cloze: function (t) {
+    return '<div class="cloze"><b>穴うめ：思い出してから、さわる</b>' + t.trim().split("\n").filter(Boolean).map(function (l) {
+      return "<p>" + esc(l).replace(/\{\{(.+?)\}\}/g, function (_, a) { return '<button type="button" class="blank" data-a="' + a + '">' + "＿".repeat(Math.min(Math.max(a.length, 2), 8)) + "</button>"; }) + "</p>";
+    }).join("") + '</div>';
   },
   // 4択は Q / 1〜4 / C（正答番号）/ E（解説）。従来の Q / A も読める。
   quiz: function (t) {
@@ -262,6 +297,8 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   });
 }).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
 document.addEventListener("click", function (e) {
+  var bl = e.target.closest(".cloze .blank");
+  if (bl) { if (bl.classList.toggle("on")) { bl.dataset.h = bl.textContent; bl.textContent = bl.dataset.a; } else bl.textContent = bl.dataset.h; return; }
   var b = e.target.closest(".q button"); if (!b) return;
   var q = b.closest(".q");
   if (!q.classList.contains("mcq")) { q.classList.add("open"); return; }
