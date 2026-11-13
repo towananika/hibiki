@@ -14,7 +14,7 @@ YouTube Reader：`youtube/` の既存ブックマーク方式に加え、PC内�
 - 世界の宗教8講「仏教」：`study/view.html?n=religion8`（四聖諦・五蘊・八正道を、身近な例と図で学ぶ）
 - `timeline/` これまでの道（人生タイムライン）。できごとは `private/timeline.json`（暗号）、本人が足した分は `hibiki-timeline-v1`
 - `plan/` 3年計画（ビジョン・柱ごとの優先順・3年→季節→4週）。中身は `private/plan.json`（暗号）、4週の✓は `hibiki-plan-v1`。`priority/` の「先にやる3つ」は計画の1週目から
-- `about/` 私について（ほかのAIに貼る説明書）。中身は `private/about.json`（暗号、平文は共有フォルダの `hibiki/about-me.md`）。全文コピーと🔒を除いたコピー。公開版 `about/ai.txt`（お金・人間関係・本名・地域を抜いた文。URLを渡せばほかのAIが読める）
+- `about/` 私について（ほかのAIに貼る説明書）。中身は `private/about.json`（暗号、平文は共有フォルダの `hibiki/about-me.md`）。全文コピーと🔒を除いたコピー。公開版 `about/ai.txt`（お金・人間関係・本名・地域を抜いた文。URLを渡せばほかのAIが読める）。ログイン後に「AIに番号で読ませる」：4けたの確認番号を発行（5分・1回・3回まちがいで消える・読むだけ、`worker/ai-code.js`）
 
 ## ほしいものと夢の区分
 

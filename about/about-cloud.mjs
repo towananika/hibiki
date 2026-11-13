@@ -25,3 +25,13 @@ onAuthStateChanged(auth, async user => {
     if (current === generation) window.show(null);
   }
 });
+
+// AI用の確認番号（4けた）。発行・状態・取消は本人の Google ログインのトークンを Worker に見せる（2026-11-13）
+const AI_URL = 'https://hibiki-sync.jaykim-can.workers.dev/ai/';
+window.hbAi = async (action, body) => {
+  const user = auth.currentUser;
+  if (!(user && user.uid === uid && user.emailVerified)) return { error: 'login' };
+  const token = await user.getIdToken();
+  const r = await fetch(AI_URL + action, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token }, body: JSON.stringify(body || {}) });
+  try { return await r.json(); } catch { return { error: 'net' }; }
+};
