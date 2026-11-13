@@ -26,6 +26,13 @@
   summary { cursor:pointer; font-weight:600; }
   .body { white-space:pre-wrap; word-break:break-word; font-size:13px; color:var(--text); margin-top:6px; }
   .tag { font-size:11px; color:var(--red); background:var(--red-soft); border-radius:999px; padding:0 8px; margin-left:6px; font-weight:400; }
+  .seg { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:8px 0; }
+  .seg button { text-align:center; padding:8px; font-size:14px; }
+  .seg button.on { background:var(--sage-soft); border-color:var(--sage); font-weight:600; }
+  .code { font-size:44px; font-weight:700; letter-spacing:.25em; text-align:center; color:var(--wood); margin:4px 0 0; font-variant-numeric:tabular-nums; }
+  .meter { height:6px; background:var(--border); border-radius:999px; overflow:hidden; margin:6px 0 10px; } .meter i { display:block; height:100%; background:var(--sage); transition:width 1s linear; }
+  .row2 { display:grid; grid-template-columns:2fr 1fr; gap:8px; } .row2 button { text-align:center; }
+  .log { list-style:none; padding:0; margin:10px 0 0; font-size:12px; color:var(--muted); } .log li { display:flex; justify-content:space-between; border-top:1px solid var(--border); padding:4px 0; }
 </style>
 </head>
 <body>
@@ -35,6 +42,7 @@
   <p class="lead">ほかのAIに貼るための説明書。コピーして、AIとの会話の最初に貼ってください。</p>
   <p class="lead">Googleログインでは、移行時点の記録を表示します。変更の自動同期はまだ準備中です。</p>
   <div class="card" id="box"><p class="lock">読み込み中…（ログインした端末だけで開けます）</p></div>
+  <div class="card" id="ai" style="display:none"></div>
   <div class="card" id="secs" style="display:none"></div>
 </main>
 <script>
@@ -50,7 +58,7 @@ function fallback(t) { var a = document.createElement("textarea"); a.value = t; 
 function esc(s) { return s.replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }); }
 function show(D) {
   var box = document.getElementById("box");
-  if (!D || !D.md) { MD = ""; document.getElementById("secs").style.display = "none"; document.getElementById("secs").replaceChildren(); box.innerHTML = '<p class="lock">記録を開けませんでした。<a href="../sync/">ログインを確認</a></p>'; return; }
+  if (!D || !D.md) { MD = ""; document.getElementById("secs").style.display = "none"; document.getElementById("secs").replaceChildren(); aiDraw(null); box.innerHTML = '<p class="lock">記録を開けませんでした。<a href="../sync/">ログインを確認</a></p>'; return; }
   MD = D.md;
   box.innerHTML = '<div class="btns">' +
     '<button class="main" id="all"><b>全文コピー</b><span>自分用のAIに。お金・人間関係も含む</span></button>' +
@@ -60,6 +68,7 @@ function show(D) {
   document.getElementById("all").onclick = function () { copy(MD, "全文"); };
   document.getElementById("url").onclick = function () { copy(new URL("ai.txt", location.href).href, "AI用URL"); };
   document.getElementById("safe").onclick = function () { copy(strip(MD), "🔒 を除いた文"); };
+  aiLoad();
   var parts = MD.split(/\n(?=## )/).slice(1);
   var s = document.getElementById("secs"); s.style.display = "block";
   s.innerHTML = parts.map(function (p) {
@@ -67,7 +76,60 @@ function show(D) {
     return '<details><summary>' + esc(h.replace("🔒", "").trim()) + (lock ? '<span class="tag">🔒 個人</span>' : '') + '</summary><div class="body">' + esc(p.slice(i + 1).replace(/\n---\s*$/, "").trim()) + '</div></details>';
   }).join("");
 }
+
+// AI用の確認番号（4けた・5分・1回・3回まちがいで消える・読むだけ）
+var AI = { scope: "safe", t: null, data: null };
+var AI_READ = "https://hibiki-sync.jaykim-can.workers.dev/ai/read";
+var AI_END = { read: "AIが読んだ", expired: "時間切れ", locked: "3回まちがいで消えた", revoked: "取り消し", replaced: "新しい番号に交代" };
+function hm(t) { var d = new Date(t); return (d.getMonth() + 1) + "/" + d.getDate() + " " + d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0"); }
+function aiAsk(code) {
+  return "ひびきの説明書（私について）を読んでください。確認番号は " + code + " です（5分以内・1回だけ）。\n" +
+    "読み方: curl -s -X POST " + AI_READ + " -H \"X-Hibiki-Code: " + code + "\"\n" +
+    "番号はURLに入れず、ヘッダーで送ってください。読んだ文は会話の中だけで使い、ほかに保存しないでください。";
+}
+function aiDraw(st) {
+  var el = document.getElementById("ai"); clearInterval(AI.t);
+  if (!MD) { el.style.display = "none"; return; }
+  el.style.display = "block";
+  var a = st && st.active, log = (st && st.log) || [];
+  var h = '<b>AIに番号で読ませる</b><p class="lock" style="font-size:12px;margin:2px 0 0">4けた・5分・1回だけ。3回まちがえると消える。読むだけ。</p>';
+  if (a) {
+    h += '<p class="code">' + esc(a.code) + '</p><p class="lock" style="text-align:center;font-size:12px;margin:0">' + (a.scope === "all" ? "全文" : "🔒 を除く") + '・のこり <span id="ai-left"></span></p>' +
+      '<div class="meter"><i id="ai-bar"></i></div><div class="row2"><button class="main" id="ai-copy"><b>AIへの頼み方をコピー</b></button><button id="ai-stop"><b>取り消し</b></button></div>';
+  } else {
+    h += '<div class="seg"><button data-s="safe">🔒 を除く</button><button data-s="all">全文</button></div><button class="main" id="ai-new" style="width:100%;text-align:center"><b>番号を発行</b></button>';
+  }
+  h += '<div class="msg" id="ai-msg"></div>';
+  if (log.length) h += '<ul class="log">' + log.slice(0, 5).map(function (e) { return '<li><span>' + hm(e.at) + '・' + (e.scope === "all" ? "全文" : "🔒除く") + '</span><span>' + (AI_END[e.end] || "") + '</span></li>'; }).join("") + '</ul>';
+  el.innerHTML = h;
+  if (a) {
+    var tick = function () {
+      var left = Math.max(0, a.exp - Date.now()), s = Math.ceil(left / 1000);
+      document.getElementById("ai-left").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      document.getElementById("ai-bar").style.width = (left / 3000) + "%";
+      if (!left) aiLoad();
+    };
+    tick(); AI.t = setInterval(tick, 1000);
+    document.getElementById("ai-copy").onclick = function () { copy(aiAsk(a.code), "頼み方"); document.getElementById("ai-msg").textContent = "コピーしました。AIとの会話に貼ってください"; };
+    document.getElementById("ai-stop").onclick = function () { aiCall("revoke", {}); };
+  } else {
+    [].forEach.call(el.querySelectorAll(".seg button"), function (b) {
+      b.classList.toggle("on", b.dataset.s === AI.scope);
+      b.onclick = function () { AI.scope = b.dataset.s; aiDraw(st); };
+    });
+    document.getElementById("ai-new").onclick = function () { aiCall("issue", { scope: AI.scope, text: AI.scope === "all" ? MD : strip(MD) }); };
+  }
+}
+function aiCall(action, body) {
+  var m = document.getElementById("ai-msg"); if (m) m.textContent = "…";
+  if (!window.hbAi) return;
+  window.hbAi(action, body).then(function (r) {
+    if (r && r.error) { if (m) m.textContent = r.error === "login" ? "ログインを確認してください" : "うまくいきませんでした（" + r.error + "）"; return; }
+    aiLoad();
+  }, function () { if (m) m.textContent = "通信できませんでした"; });
+}
+function aiLoad() { if (!window.hbAi || !MD) return aiDraw(null); window.hbAi("status").then(function (st) { aiDraw(st && !st.error ? st : null); }, function () { aiDraw(null); }); }
 </script>
-<script type="module" src="about-cloud.mjs?v=2"></script>
+<script type="module" src="about-cloud.mjs?v=3"></script>
 </body>
 </html>
