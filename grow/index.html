@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>アカリと育つ — とわなにか</title>
+<meta name="description" content="今日したことを1つ押すと、アカリがその日を一緒に過ごし、少しずつ育つ。">
+<link rel="apple-touch-icon" href="../icon-180.png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<meta name="theme-color" content="#74886d">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --sage:#74886d; --sage-soft:#e2e8dd; --blue:#5b7a99; --red:#b5583f;
+          --sky:#dfe7ea; --ground:#d9dfc9; --skin:#f1d3b8; --hair:#2f2a26; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --sage:#9db394; --sage-soft:#26301f; --blue:#8fb0cf; --red:#e08b70;
+            --sky:#26303a; --ground:#2a3324; --skin:#e3c2a6; --hair:#141210; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:28px 16px 32px; }
+  .top { display:flex; justify-content:space-between; align-items:baseline; }
+  .brand { color:var(--sage); font-size:14px; letter-spacing:.1em; font-weight:600; text-decoration:none; }
+  .date { color:var(--muted); font-size:13px; }
+  h1 { font-size:26px; margin:14px 0 0; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:16px; margin-top:14px; }
+  .label { color:var(--muted); font-size:13px; margin:0 0 10px; display:flex; justify-content:space-between; }
+  .label b { color:var(--sage); }
+
+  .scene { border-radius:16px; overflow:hidden; display:block; width:100%; height:auto; }
+  .say { margin:12px 2px 0; font-size:16px; line-height:1.6; min-height:1.6em; }
+  .say::before { content:"「"; color:var(--red); } .say::after { content:"」"; color:var(--red); }
+  .stage { display:flex; justify-content:space-between; align-items:baseline; margin-top:6px; font-size:13px; color:var(--muted); }
+  .stage b { color:var(--text); font-size:15px; }
+
+  .acts { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+  .a { border:0; font:inherit; color:var(--text); background:var(--bg); border-radius:14px; padding:12px 4px 10px;
+       display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; }
+  .a svg { width:26px; height:26px; fill:none; stroke:var(--muted); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  .a b { font-size:13px; font-weight:600; }
+  .a.on { background:var(--sage-soft); } .a.on svg { stroke:var(--c); }
+
+  .bar { height:10px; border-radius:99px; background:var(--bg); overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--sage); border-radius:99px; transition:width .4s; }
+  .album { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .d { aspect-ratio:1; border-radius:8px; background:var(--bg); position:relative; overflow:hidden; }
+  .d.today { outline:2px solid var(--sage); outline-offset:1px; }
+  .d span { position:absolute; inset:0; display:flex; flex-wrap:wrap; }
+  .d span i { flex:1 1 50%; }
+  .note { color:var(--muted); font-size:12px; margin:10px 0 0; line-height:1.6; }
+  .keys { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:10px; font-size:12px; color:var(--muted); }
+  .keys i { display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:4px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a class="brand" href="../">とわなにか</a><span class="date" id="date"></span></div>
+  <h1>アカリと育つ</h1>
+
+  <div class="card">
+    <svg class="scene" id="scene" viewBox="0 0 320 200" role="img" aria-label="アカリ"></svg>
+    <p class="say" id="say"></p>
+    <div class="stage"><b id="stName"></b><span id="stAge"></span></div>
+  </div>
+
+  <div class="card">
+    <p class="label"><span>今日したこと（1つでいい）</span><b id="cnt"></b></p>
+    <div class="acts" id="acts"></div>
+  </div>
+
+  <div class="card">
+    <p class="label"><span>いっしょに過ごした日</span><b id="days"></b></p>
+    <div class="bar"><i id="bar"></i></div>
+    <p class="note" id="next"></p>
+  </div>
+
+  <div class="card">
+    <p class="label"><span>アルバム（4週間）</span></p>
+    <div class="album" id="album"></div>
+    <div class="keys" id="keys"></div>
+    <p class="note">休んだ日があっても、何も減りません。</p>
+  </div>
+</main>
+<script>
+var KEY = "hibiki-grow-v1";
+var ACTS = [
+  { k:"walk",  n:"散歩",     c:"var(--sage)", ic:'<circle cx="13" cy="4" r="2"/><path d="M10 21l2-6-2-3 1-4 3 2 3 1M12 15l3 6M9 10l-2 3"/>',
+    say:["風、気持ちよかったね。あたしも朝練のあと、よく川まで歩くんだ","歩くと、頭の中が静かになるよね","いい景色、見つけた？"] },
+  { k:"meal",  n:"朝ごはん", c:"var(--wood)", ic:'<path d="M4 11h16a8 8 0 0 1-16 0zM12 3v4M8 5v2M16 5v2"/>',
+    say:["朝ごはん、えらい！ あたしは焼きそばパン","おなかが元気だと、一日が長く持つよ","食べられた日は、それだけで勝ちだね"] },
+  { k:"sleep", n:"早く寝た", c:"var(--blue)", ic:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+    say:["よく眠れた？ あたしは寝るの、得意なんだ","夜にちゃんと休めたね","早く寝た次の朝って、汽笛がきれいに聞こえる"] },
+  { k:"food",  n:"おいしいもの", c:"var(--red)", ic:'<path d="M5 13h14l-2 7H7zM8 13c0-3 2-5 4-5s4 2 4 5M12 8V5"/>',
+    say:["おいしかった？ 今度あたしにも教えてよ","ごはんもの、いいなあ","おいしいって思えるの、大事なことだよ"] },
+  { k:"like",  n:"好きなこと", c:"#a8853a", ic:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',
+    say:["好きなこと、できたんだね。顔が明るいよ","それ、あたしも見てみたい","好きって気持ちは、ちゃんと力になる"] },
+  { k:"rest",  n:"休んだ",   c:"var(--muted)", ic:'<path d="M3 18h18M5 18v-5a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v5M7 10V7"/>',
+    say:["休むのも、ちゃんとした一日だよ","あたし、待つの苦手だったけど……いまは待てる。ゆっくりでいい","今日はとなりに座ってるね"] }
+];
+// アカリの一生（triathlon/lives/akari.html）。過ごした日数で進む。減らない。
+var STAGES = [
+  { d:0,   age:6,  n:"ツバサと会う",     h:.62, say:"あたし、アカリ。今日からよろしくね" },
+  { d:5,   age:12, n:"からだが変わる",   h:.78, say:"背がのびてきた。ちょっとこわいけど、うれしい" },
+  { d:14,  age:15, n:"川守隊の見習い",   h:.9,  say:"見回り、はじめたんだ。一発いこ！" },
+  { d:30,  age:17, n:"泣いた日",         h:.95, say:"負けた日もあった。でも、となりにいてくれる人がいた" },
+  { d:50,  age:22, n:"タクミが生まれる", h:1,   say:"強さって、勝つことじゃなくて、そばにいることかも" },
+  { d:80,  age:38, n:"待つことを覚える", h:1,   say:"渡し場で待つの、前より上手になったよ" },
+  { d:120, age:45, n:"川守隊の隊長",     h:1,   say:"あせらなくていい。いっしょに行こう" },
+  { d:200, age:62, n:"拳を置く",         h:.97, say:"朝練は、散歩になった。焼きそばパンは半分こ" },
+  { d:300, age:83, n:"汽笛の朝に",       h:.94, say:"いい一生だった。ずっと、いっしょに過ごしてくれてありがとう" }
+];
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || { days:{} }; } catch (e) { return { days:{} }; } }
+function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+function ds(t) { var d = new Date(t); return d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0"+d.getDate()).slice(-2); }
+var TODAY = ds(Date.now()), S = load(), lastTap = null;
+
+function total() { return Object.keys(S.days).filter(function (k) { return S.days[k].length; }).length; }
+function stageOf(n) { var s = STAGES[0]; STAGES.forEach(function (x) { if (n >= x.d) s = x; }); return s; }
+function act(k) { return ACTS.filter(function (a) { return a.k === k; })[0]; }
+function seed(str) { var h = 0; for (var i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) | 0; return Math.abs(h); }
+
+function scene(st, today) {
+  var col = today.length ? act(today[today.length-1]).c : "var(--sage)";
+  var old = st.age >= 62, h = st.h, cx = 160, base = 168, H = 120 * h, top = base - H;
+  var hair = old ? "#b9b2a6" : "var(--hair)", hr = 17 + 4 * h;
+  var hy = top + hr;
+  var sun = st.age >= 62 ? 'var(--wood)' : 'var(--red)';
+  return '<rect width="320" height="200" fill="var(--sky)"/>' +
+    '<circle cx="262" cy="46" r="18" fill="' + sun + '" opacity=".35"/>' +
+    '<path d="M0 150 Q80 128 160 146 T320 140 V200 H0z" fill="var(--ground)"/>' +
+    '<path d="M0 176 Q120 164 320 178 V200 H0z" fill="' + col + '" opacity=".25"/>' +
+    '<path d="M36 160 l14-34 14 34z M58 162 l10-24 10 24z" fill="var(--sage)" opacity=".55"/>' +
+    '<path d="M250 164 l12-28 12 28z" fill="var(--sage)" opacity=".5"/>' +
+    // からだ
+    '<rect x="' + (cx-14*h) + '" y="' + (hy+hr-2) + '" width="' + 28*h + '" height="' + (base-hy-hr-10*h) + '" rx="' + 10*h + '" fill="' + col + '"/>' +
+    '<rect x="' + (cx-9*h) + '" y="' + (base-12*h) + '" width="' + 7*h + '" height="' + 12*h + '" rx="3" fill="var(--text)" opacity=".7"/>' +
+    '<rect x="' + (cx+2*h) + '" y="' + (base-12*h) + '" width="' + 7*h + '" height="' + 12*h + '" rx="3" fill="var(--text)" opacity=".7"/>' +
+    // あたま
+    '<circle cx="' + cx + '" cy="' + hy + '" r="' + hr + '" fill="var(--skin)"/>' +
+    '<path d="M' + (cx-hr) + ' ' + (hy+2) + ' A' + hr + ' ' + hr + ' 0 0 1 ' + (cx+hr) + ' ' + (hy+2) + ' L' + (cx+hr) + ' ' + (hy+6) + ' Q' + cx + ' ' + (hy-hr*.55) + ' ' + (cx-hr) + ' ' + (hy+6) + 'z" fill="' + hair + '"/>' +
+    '<rect x="' + (cx+hr*.35) + '" y="' + (hy-hr*.75) + '" width="' + hr*.5 + '" height="' + hr*.22 + '" rx="2" fill="var(--red)"/>' +
+    '<circle cx="' + (cx-hr*.35) + '" cy="' + (hy+hr*.2) + '" r="1.8" fill="var(--hair)"/><circle cx="' + (cx+hr*.35) + '" cy="' + (hy+hr*.2) + '" r="1.8" fill="var(--hair)"/>' +
+    '<path d="M' + (cx-4) + ' ' + (hy+hr*.5) + ' q4 3 8 0" stroke="var(--hair)" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+    (old ? '<path d="M' + (cx+26) + ' ' + (hy+hr) + ' v' + (base-hy-hr) + '" stroke="var(--wood)" stroke-width="3" stroke-linecap="round"/>' : '');
+}
+
+function render() {
+  var today = S.days[TODAY] || [], n = total(), st = stageOf(n);
+  var nxt = STAGES.filter(function (x) { return x.d > n; })[0];
+  document.getElementById("date").textContent = TODAY.slice(5).replace("-", "/");
+  document.getElementById("scene").innerHTML = scene(st, today);
+  var line = st.say;
+  if (lastTap) { var L = act(lastTap).say; line = L[seed(TODAY + lastTap) % L.length]; }
+  else if (today.length) { var a = act(today[today.length-1]).say; line = a[seed(TODAY) % a.length]; }
+  document.getElementById("say").textContent = line;
+  document.getElementById("stName").textContent = st.n;
+  document.getElementById("stAge").textContent = "アカリ " + st.age + "歳";
+  document.getElementById("cnt").textContent = today.length ? today.length + "こ" : "";
+  document.getElementById("acts").innerHTML = ACTS.map(function (a) {
+    return '<button class="a' + (today.indexOf(a.k) >= 0 ? ' on' : '') + '" style="--c:' + a.c + '" data-k="' + a.k + '"><svg viewBox="0 0 24 24">' + a.ic + '</svg><b>' + a.n + '</b></button>';
+  }).join("");
+  document.getElementById("days").textContent = n + "日";
+  var prev = st.d, goal = nxt ? nxt.d : st.d;
+  document.getElementById("bar").style.width = (nxt ? Math.round((n - prev) / (goal - prev) * 100) : 100) + "%";
+  document.getElementById("next").textContent = nxt ? "あと" + (nxt.d - n) + "日で、アカリは" + nxt.age + "歳に。" : "アカリの一生を、さいごまで一緒に過ごしました。";
+  var cells = "", t = Date.now();
+  var dow = (new Date(t).getDay() + 6) % 7; // 月曜はじまり
+  for (var i = 27 - (6 - dow); i >= -(6 - dow); i--) {
+    var k = ds(t - i * 864e5), v = i < 0 ? [] : (S.days[k] || []);
+    cells += '<div class="d' + (k === TODAY ? ' today' : '') + '" title="' + k + '"' + (i < 0 ? ' style="opacity:.35"' : '') + '><span>' +
+      v.map(function (x) { return '<i style="background:' + act(x).c + '"></i>'; }).join("") + '</span></div>';
+  }
+  document.getElementById("album").innerHTML = cells;
+  document.getElementById("keys").innerHTML = ACTS.map(function (a) { return '<span><i style="background:' + a.c + '"></i>' + a.n + '</span>'; }).join("");
+}
+
+document.getElementById("acts").addEventListener("click", function (e) {
+  var b = e.target.closest(".a"); if (!b) return;
+  var k = b.dataset.k, t = S.days[TODAY] || [], i = t.indexOf(k);
+  if (i >= 0) { t.splice(i, 1); lastTap = null; } else { t.push(k); lastTap = k; }
+  if (t.length) S.days[TODAY] = t; else delete S.days[TODAY];
+  save(S); render();
+});
+render();
+</script>
+</body>
+</html>
