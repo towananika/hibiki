@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IS-LMを動かす — とわなにか</title>
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<script src="../sync.js"></script>
+<meta name="theme-color" content="#5b7a99">
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271;
+          --wood:#93704b; --sage:#74886d; --blue:#5b7a99; --blue-soft:#e0e7ee; --red:#b5583f; --glow:#e8b84d; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a;
+            --wood:#c99f74; --sage:#9db394; --blue:#8fb0cf; --blue-soft:#1f2a35; --red:#e08b70; --glow:#e8c068; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); line-height:1.65; font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
+  main { max-width:480px; margin:0 auto; padding:18px 16px 40px; }
+  .top { display:flex; justify-content:space-between; font-size:14px; }
+  .top a { color:var(--muted); text-decoration:none; }
+  h1 { font-size:22px; line-height:1.4; margin:12px 0 2px; }
+  .sub { color:var(--muted); font-size:14px; margin:0 0 8px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:12px 14px; margin-top:12px; }
+  svg { width:100%; height:auto; display:block; }
+  .read { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
+  .read div { background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:6px 10px; font-size:13px; color:var(--muted); }
+  .read b { display:block; font-size:22px; color:var(--text); font-variant-numeric:tabular-nums; }
+  .read em { font-style:normal; font-size:13px; font-weight:700; }
+  .up { color:var(--sage); } .dn { color:var(--red); }
+  label { display:flex; justify-content:space-between; font-size:15px; font-weight:600; margin-top:10px; }
+  label span { color:var(--muted); font-weight:500; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--blue); height:34px; }
+  .seg { display:flex; gap:6px; margin-top:6px; }
+  .seg button { all:unset; box-sizing:border-box; cursor:pointer; flex:1; text-align:center; padding:8px 4px; border:1.5px solid var(--border); border-radius:10px; font-size:13px; line-height:1.3; background:var(--surface); }
+  .seg button[aria-pressed=true] { border-color:var(--blue); background:var(--blue-soft); font-weight:700; }
+  h2 { font-size:16px; margin:0 0 4px; }
+  .who { display:flex; gap:10px; align-items:flex-start; }
+  .av { flex:0 0 auto; width:38px; height:38px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:700; background:var(--c); }
+  .bub { background:var(--bg); border:1px solid var(--border); border-radius:4px 14px 14px 14px; padding:8px 12px; font-size:15px; flex:1; min-width:0; overflow-wrap:anywhere; }
+  .bub small { display:block; color:var(--c); font-weight:700; font-size:12px; }
+  .ms { list-style:none; padding:0; margin:6px 0 0; }
+  .ms li { display:flex; gap:8px; font-size:14px; padding:5px 0; border-bottom:1px solid var(--border); }
+  .ms li:last-child { border:0; }
+  .ms i { font-style:normal; flex:0 0 1.4em; color:var(--muted); }
+  .ms li.ok i { color:var(--sage); }
+  .ms li.ok span { color:var(--muted); text-decoration:line-through; }
+  .btn { all:unset; box-sizing:border-box; cursor:pointer; display:block; text-align:center; width:100%; padding:10px; border-radius:12px; border:1px solid var(--border); background:var(--surface); font-size:14px; margin-top:10px; color:var(--muted); }
+  .ax { fill:var(--muted); font-size:11px; } .gl { stroke:var(--border); }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><a href="view.html?n=money14">← 14講のノートへ</a><span id="cnt"></span></div>
+  <h1>国の経済担当になろう</h1>
+  <p class="sub">IS-LMを、動かして理解する。つまみを動かすと、グラフが動きます。</p>
+
+  <div class="card">
+    <svg id="g" viewBox="0 0 340 250" role="img" aria-label="ISとLMのグラフ"></svg>
+    <div class="read">
+      <div>国民所得 Y（兆ウォン）<b id="y">150</b><em id="dy"></em></div>
+      <div>金利 i（％）<b id="i">2.0</b><em id="di"></em></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>政策のつまみ</h2>
+    <label>政府支出 G（財政政策） <span id="gv"></span></label>
+    <input type="range" id="G" min="20" max="60" step="1" value="40">
+    <label>貨幣供給 M（金融政策） <span id="mv"></span></label>
+    <input type="range" id="M" min="5" max="45" step="1" value="25">
+  </div>
+
+  <div class="card">
+    <div class="who" id="say" style="--c:var(--blue)"><span class="av">灯</span><div class="bub"><small>ヒント</small>つまみを動かしてみよう。まずは、政府支出 G を右へ。</div></div>
+  </div>
+
+  <div class="card">
+    <h2>国の性格を変える</h2>
+    <div class="sub" style="margin:0">投資は、金利に敏感？（IS曲線の形）</div>
+    <div class="seg" id="sd">
+      <button data-v="0.02">まったく<br>敏感でない</button><button data-v="1" aria-pressed="true">ふつう</button><button data-v="3">とても<br>敏感</button>
+    </div>
+    <div class="sub" style="margin:10px 0 0">お金の持ち方は？（LM曲線の形）</div>
+    <div class="seg" id="sh">
+      <button data-v="0.02">金利に無関係<br>（古典派）</button><button data-v="1" aria-pressed="true">ふつう</button><button data-v="trap">流動性<br>のわな</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>ミッション</h2>
+    <ul class="ms" id="ms"></ul>
+    <button class="btn" id="reset">元にもどす</button>
+  </div>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-study-islm-v1", MM = 2.5, KK = 0.5;
+  var CH = [{ n: "アカリ", c: "var(--red)" }, { n: "ツバサ", c: "var(--blue)" }, { n: "シオン", c: "var(--sage)" }];
+  var day = Math.floor((Date.now() + 9 * 3600000) / 86400000), say = 0;
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } }
+  function save(s) { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch (e) {} }
+  var S = { G: 40, M: 25, d: 1, h: 1 }, prev = null, done = load().done || {};
+  var MS = [
+    { id: "fiscal", t: "政府支出を増やして、所得が増えるのを見る（金利も上がる）" },
+    { id: "crowd", t: "LMを「金利に無関係」にして、政府支出を増やす。所得が増えない（完全な押し出し）" },
+    { id: "trap", t: "LMを「流動性のわな」にして、貨幣供給を増やす。何も起きない" },
+    { id: "isv", t: "ISを「まったく敏感でない」にして、貨幣供給を増やす。所得が増えない" },
+    { id: "mon", t: "ISを「とても敏感」にして、貨幣供給を増やす。所得が大きく増える" }
+  ];
+  function eq(s) {
+    var A = 40 + s.G, i, Y;
+    if (s.h === "trap") { i = 1.5; Y = MM * (A - 10 * s.d * i); }
+    else { i = (KK * MM * A - s.M) / (10 * s.d * KK * MM + 25 * s.h); Y = MM * (A - 10 * s.d * i); }
+    return { Y: Y, i: i };
+  }
+  var X0 = 36, X1 = 326, Y0 = 220, Y1 = 14, XM = 300, IM = 10;
+  function px(y) { return X0 + (X1 - X0) * y / XM; } function py(i) { return Y0 - (Y0 - Y1) * i / IM; }
+  function line(pts, col, w) { return '<polyline fill="none" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="round" points="' + pts.map(function (p) { return px(p[0]).toFixed(1) + "," + py(p[1]).toFixed(1); }).join(" ") + '"/>'; }
+  function draw(s, e) {
+    var A = 40 + s.G, is = [], lm = [], k, i, Y;
+    for (k = 0; k <= 20; k++) { i = IM * k / 20; Y = MM * (A - 10 * s.d * i); if (Y >= 0 && Y <= XM) is.push([Y, i]); }
+    if (s.h === "trap") lm = [[0, 1.5], [XM, 1.5]];
+    else for (k = 0; k <= 30; k++) { Y = XM * k / 30; i = (KK * Y - s.M) / (25 * s.h); if (i >= 0 && i <= IM) lm.push([Y, i]); }
+    var g = '<line class="gl" x1="' + X0 + '" y1="' + Y0 + '" x2="' + X1 + '" y2="' + Y0 + '"/><line class="gl" x1="' + X0 + '" y1="' + Y1 + '" x2="' + X0 + '" y2="' + Y0 + '"/>';
+    [0, 5, 10].forEach(function (v) { g += '<text class="ax" x="' + (X0 - 6) + '" y="' + (py(v) + 4) + '" text-anchor="end">' + v + '</text>'; });
+    [0, 100, 200, 300].forEach(function (v) { g += '<text class="ax" x="' + px(v) + '" y="' + (Y0 + 14) + '" text-anchor="middle">' + v + '</text>'; });
+    g += '<text class="ax" x="' + (X0 + 6) + '" y="10">金利 i</text><text class="ax" x="' + X1 + '" y="' + (Y0 + 28) + '" text-anchor="end">国民所得 Y</text>';
+    if (prev) {
+      var pe = prev.e, pA = 40 + prev.s.G, pis = [], plm = [];
+      for (k = 0; k <= 20; k++) { i = IM * k / 20; Y = MM * (pA - 10 * prev.s.d * i); if (Y >= 0 && Y <= XM) pis.push([Y, i]); }
+      if (prev.s.h === "trap") plm = [[0, 1.5], [XM, 1.5]];
+      else for (k = 0; k <= 30; k++) { Y = XM * k / 30; i = (KK * Y - prev.s.M) / (25 * prev.s.h); if (i >= 0 && i <= IM) plm.push([Y, i]); }
+      g += '<g opacity=".25">' + line(pis, "var(--blue)", 2) + line(plm, "var(--red)", 2) + '</g>';
+    }
+    g += line(is, "var(--blue)", 3) + line(lm, "var(--red)", 3);
+    g += '<text x="' + (px(is.length ? is[is.length - 1][0] : 0) + 4) + '" y="' + (py(is.length ? is[is.length - 1][1] : 0) - 4) + '" fill="var(--blue)" font-size="13" font-weight="700">IS</text>';
+    if (lm.length) g += '<text x="' + (px(lm[lm.length - 1][0]) - 4) + '" y="' + (py(lm[lm.length - 1][1]) - 6) + '" fill="var(--red)" font-size="13" font-weight="700" text-anchor="end">LM</text>';
+    g += '<line x1="' + px(e.Y) + '" y1="' + py(e.i) + '" x2="' + px(e.Y) + '" y2="' + Y0 + '" stroke="var(--glow)" stroke-dasharray="4 3"/><line x1="' + X0 + '" y1="' + py(e.i) + '" x2="' + px(e.Y) + '" y2="' + py(e.i) + '" stroke="var(--glow)" stroke-dasharray="4 3"/>';
+    g += '<circle cx="' + px(e.Y) + '" cy="' + py(e.i) + '" r="6" fill="var(--glow)" stroke="var(--text)" stroke-width="1.5"/>';
+    document.getElementById("g").innerHTML = g;
+  }
+  function delta(a, b, f, unit) { var d = b - a; if (Math.abs(d) < 0.05) return '<em>変化なし</em>'; return '<em class="' + (d > 0 ? "up" : "dn") + '">' + (d > 0 ? "▲ +" : "▼ ") + d.toFixed(f) + unit + '</em>'; }
+  function speak(t) { var c = CH[(day + say++) % 3]; var el = document.getElementById("say"); el.style.setProperty("--c", c.c); el.innerHTML = '<span class="av">' + c.n.charAt(0) + '</span><div class="bub"><small>' + c.n + '</small>' + t + '</div>'; }
+  function got(id) { if (!done[id]) { done[id] = 1; var s = load(); s.done = done; save(s); return true; } return false; }
+
+  function update(why) {
+    var e = eq(S), p = prev ? prev.e : e;
+    document.getElementById("y").textContent = e.Y.toFixed(0); document.getElementById("i").textContent = e.i.toFixed(1);
+    document.getElementById("dy").innerHTML = prev ? delta(p.Y, e.Y, 0, "") : ""; document.getElementById("di").innerHTML = prev ? delta(p.i, e.i, 1, "") : "";
+    document.getElementById("gv").textContent = S.G + " 兆"; document.getElementById("mv").textContent = S.M + " 兆";
+    draw(S, e);
+    var dY = e.Y - p.Y, di = e.i - p.i, msg = "", newly = [];
+    if (prev && why) {
+      if (why === "G" && S.G !== prev.s.G) {
+        var up = S.G > prev.s.G;
+        if (S.h !== "trap" && S.h < 0.1) { msg = "LMが垂直。政府支出を" + (up ? "増やしても" : "減らしても") + "、所得は動かず、金利だけが" + (up ? "上がる" : "下がる") + "。民間の投資が、同じだけ押し出された（完全な押し出し効果）。"; if (S.G - prev.s.G >= 5 && Math.abs(dY) < 2) newly.push("crowd"); }
+        else if (S.h === "trap") msg = "LMが水平（流動性のわな）。金利が動かないので、押し出しが起きない。財政政策の効果は最大。所得は " + dY.toFixed(0) + " 動いた。";
+        else { msg = "政府支出で、IS曲線が" + (up ? "右" : "左") + "へ。所得が " + dY.toFixed(0) + "、金利が " + di.toFixed(1) + " 動いた。金利の変化で、民間の投資が一部押し出される。"; if (S.G - prev.s.G >= 5 && dY >= 5 && di > 0) newly.push("fiscal"); }
+      } else if (why === "M" && S.M !== prev.s.M) {
+        var upm = S.M > prev.s.M;
+        if (S.h === "trap") { msg = "流動性のわなでは、お金をふやしても金利が下がらない。LMは動かず、所得も変わらない。金融政策は無力。"; if (S.M - prev.s.M >= 5 && Math.abs(dY) < 0.5) newly.push("trap"); }
+        else if (S.d < 0.1) { msg = "ISが垂直（投資が金利に反応しない）。金利は" + (upm ? "下がった" : "上がった") + "が、投資が変わらないので、所得は動かない。金融政策の道が、途中で止まった。"; if (S.M - prev.s.M >= 5 && Math.abs(dY) < 2) newly.push("isv"); }
+        else { msg = "貨幣供給で、LM曲線が" + (upm ? "右" : "左") + "へ。金利が " + di.toFixed(1) + "、所得が " + dY.toFixed(0) + " 動いた。金利→投資→所得、の道を通る。"; if (S.d > 2 && S.M - prev.s.M >= 8 && dY >= 8) newly.push("mon"); }
+      } else msg = "性格を変えた。ISとLMの形が変わって、政策の効き方も変わる。もう一度、つまみを動かしてみよう。";
+    }
+    if (msg) { if (newly.length) { var anyNew = newly.filter(got); if (anyNew.length) msg += "<br><b>ミッション達成！</b>"; } speak(msg); }
+    renderMs();
+  }
+  function renderMs() {
+    var n = 0; document.getElementById("ms").innerHTML = MS.map(function (m) { var ok = done[m.id]; if (ok) n++; return '<li class="' + (ok ? "ok" : "") + '"><i>' + (ok ? "✔" : "○") + '</i><span>' + m.t + '</span></li>'; }).join("");
+    document.getElementById("cnt").textContent = "ミッション " + n + " / " + MS.length;
+  }
+  var snap = { s: JSON.parse(JSON.stringify(S)), e: eq(S) };
+  function change(why) { prev = snap; update(why); if (why === "kind") snap = { s: JSON.parse(JSON.stringify(S)), e: eq(S) }; }
+  document.getElementById("G").oninput = function () { S.G = +this.value; change("G"); };
+  document.getElementById("M").oninput = function () { S.M = +this.value; change("M"); };
+  function seg(id, key) { Array.prototype.forEach.call(document.querySelectorAll("#" + id + " button"), function (b) { b.onclick = function () { S[key] = b.dataset.v === "trap" ? "trap" : +b.dataset.v; Array.prototype.forEach.call(document.querySelectorAll("#" + id + " button"), function (x) { x.setAttribute("aria-pressed", x === b); }); change("kind"); }; }); }
+  seg("sd", "d"); seg("sh", "h");
+  document.getElementById("reset").onclick = function () {
+    S = { G: 40, M: 25, d: 1, h: 1 }; document.getElementById("G").value = 40; document.getElementById("M").value = 25;
+    ["sd", "sh"].forEach(function (id) { Array.prototype.forEach.call(document.querySelectorAll("#" + id + " button"), function (x) { x.setAttribute("aria-pressed", x.dataset.v === "1"); }); });
+    prev = null; snap = { s: JSON.parse(JSON.stringify(S)), e: eq(S) }; update(""); speak("元にもどした。ふつうの国に、政策を試そう。");
+  };
+  update("");
+})();
+</script>
+</body>
+</html>
