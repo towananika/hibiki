@@ -45,27 +45,34 @@ async function googleKeys(fetchFn) {
 }
 export function resetKeyCache() { jwksCache = null; }
 
-// Firebase の ID トークンを確かめる。本人（uid・メール確認ずみ）のときだけ true
-export async function isOwnerToken(token, { fetchFn = fetch, now = Date.now(), owner = OWNER } = {}) {
+// Firebase の ID トークンを確かめ、中身（uid など）を返す。だめなら null（2026-11-16 光さがし用に分けた）
+export async function tokenClaims(token, { fetchFn = fetch, now = Date.now(), project = OWNER.project } = {}) {
   try {
     const parts = String(token || "").split(".");
-    if (parts.length !== 3) return false;
+    if (parts.length !== 3) return null;
     const head = JSON.parse(new TextDecoder().decode(b64url(parts[0])));
     const body = JSON.parse(new TextDecoder().decode(b64url(parts[1])));
-    if (head.alg !== "RS256" || !head.kid) return false;
+    if (head.alg !== "RS256" || !head.kid) return null;
     const jwk = (await googleKeys(fetchFn)).find((k) => k.kid === head.kid);
-    if (!jwk) return false;
+    if (!jwk) return null;
     const key = await crypto.subtle.importKey("jwk", { kty: "RSA", n: jwk.n, e: jwk.e, alg: "RS256", ext: true },
       { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
     const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64url(parts[2]), new TextEncoder().encode(parts[0] + "." + parts[1]));
-    if (!ok) return false;
+    if (!ok) return null;
     const t = Math.floor(now / 1000);
-    return body.aud === owner.project && body.iss === "https://securetoken.google.com/" + owner.project &&
-      body.sub === owner.uid && body.email_verified === true &&
+    const good = body.aud === project && body.iss === "https://securetoken.google.com/" + project &&
+      typeof body.sub === "string" && body.sub.length > 0 && body.sub.length <= 128 &&
       typeof body.exp === "number" && body.exp > t && typeof body.iat === "number" && body.iat <= t + 60;
+    return good ? body : null;
   } catch (e) {
-    return false;
+    return null;
   }
+}
+
+// 本人（uid・メール確認ずみ）のときだけ true
+export async function isOwnerToken(token, { fetchFn = fetch, now = Date.now(), owner = OWNER } = {}) {
+  const c = await tokenClaims(token, { fetchFn, now, project: owner.project });
+  return !!c && c.sub === owner.uid && c.email_verified === true;
 }
 
 // storage: { get(k), put(k,v), delete(k) }（Durable Object の storage と同じ形）
