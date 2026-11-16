@@ -12,10 +12,12 @@
 //       POST /owner { id, pub }     → 空のときか、同じ id のときだけ置ける（2026-10-09）
 // 守り: 同じ IP から、中身のない id を1時間に10回読んだら（合言葉の当てずっぽう）、1時間すべて止める。
 //       IP は SHA-256 にしてから持つ（2026-10-09 ひびき：ボットの連続試しをブロック）
+// 光さがし: /hikari/sync /hikari/wipe（トライアスロンのログインの人ごと。くわしくは hikari.js、2026-11-16）
 // AI用の確認番号: /ai/issue /ai/read /ai/status /ai/revoke（くわしくは ai-code.js、2026-11-13）
 
 import { DurableObject } from "cloudflare:workers";
-import { aiHandle, isOwnerToken } from "./ai-code.js";
+import { aiHandle, isOwnerToken, tokenClaims } from "./ai-code.js";
+import { hikariHandle } from "./hikari.js";
 
 const ALLOWED = ["https://towananika.github.io", "http://localhost:8899", "http://127.0.0.1:8899"];
 const MAX_BODY = 512 * 1024;
@@ -47,6 +49,7 @@ export default {
         return json(out, out.error ? 403 : 200, origin);
       }
     }
+    if (url.pathname.startsWith("/hikari/") && request.method === "POST") return hikari(url.pathname.slice(8), request, env, origin);
     if (url.pathname.startsWith("/ai/") && request.method === "POST") return ai(url.pathname.slice(4), request, env, origin);
     if (url.pathname === "/price" && request.method === "GET") return json(await prices(url.searchParams.get("s") || ""), 200, origin);
     if (url.pathname === "/search" && request.method === "GET") return json(await search(url.searchParams.get("q") || ""), 200, origin);
@@ -93,7 +96,27 @@ async function ai(action, request, env, origin) {
   return json(out, out.error ? 400 : 200, origin);
 }
 
+// 光さがし。ログインした人の uid ごとの箱にだけ読み書きする（ほかの人の箱は開けない）
+async function hikari(action, request, env, origin) {
+  if (!["sync", "wipe"].includes(action)) return json({ error: "bad" }, 400, origin);
+  if (!ALLOWED.includes(origin)) return json({ error: "origin" }, 403, origin);
+  const guard = env.BOX.get(env.BOX.idFromName("guard"));
+  const who = await sha(request.headers.get("CF-Connecting-IP") || "none");
+  if (await guard.blocked(who)) return json({ error: "blocked" }, 429, origin);
+  const claims = await tokenClaims((request.headers.get("Authorization") || "").replace(/^Bearer /, ""));
+  if (!claims) { await guard.miss(who); return json({ error: "login" }, 401, origin); }
+  const text = await request.text();
+  if (text.length > MAX_BODY) return json({ error: "too_big" }, 413, origin);
+  let b = {}; try { b = text ? JSON.parse(text) : {}; } catch (e) { return json({ error: "bad_json" }, 400, origin); }
+  const box = env.BOX.get(env.BOX.idFromName("hikari:" + claims.sub));
+  const out = await box.hikari(action, b || {});
+  return json(out, out.error ? 400 : 200, origin);
+}
+
 export class SyncBox extends DurableObject {
+  // "hikari:<uid>" の箱だけが使う
+  async hikari(action, input) { return hikariHandle(this.ctx.storage, action, input); }
+
   // "ai" の箱だけが使う
   async ai(action, input) { return aiHandle(this.ctx.storage, action, input); }
 
