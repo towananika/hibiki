@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YouTube Reader — とわなにか</title>
+<title>YouTube・Instagram Reader — とわなにか</title>
 <link rel="apple-touch-icon" href="../icon-180.png">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <script src="../sync.js"></script>
@@ -31,12 +31,16 @@
   .open input { flex:1; min-width:0; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:8px; padding:8px 10px; font:inherit; font-size:14px; }
   .open button { border:0; border-radius:8px; background:var(--sage); color:var(--bg); padding:8px 14px; font:inherit; font-weight:700; cursor:pointer; }
   .note { margin-top:24px; font-size:13px; color:var(--muted); }
+  .ig { margin-top:40px; padding-top:20px; border-top:1px solid var(--border); }
+  .ig h2 { font-size:20px; font-weight:600; margin:0 0 4px; }
+  .ig details { margin-top:12px; font-size:14px; } .ig summary { cursor:pointer; }
 </style>
 </head>
 <body>
 <main>
 <a class="back" href="../">← とわなにか</a>
 <h1>YouTube Reader</h1>
+<p class="sub" style="margin:0 0 12px"><a href="#instagram" style="color:inherit">Instagram Reader はこのページの下 ↓</a></p>
 <a class="bm" href="http://127.0.0.1:9032/" target="_blank" rel="noopener">リンクから字幕を取得 ↗</a>
 <p class="note">このPC専用。取得ツールの起動が必要です。字幕がない場合やYouTubeの制限時には取得できません。下のブックマーク方式も引き続き使えます。</p>
 <p class="note"><a href="notes.html">YouTubeノート（仮）を見る →</a><br>動画から残した考えと、暮らし・仕事へのつながりを整理します。</p>
@@ -49,6 +53,12 @@
   <li><b>Claudeのチャットに貼る</b><small>「これ読んで」と一言そえて。</small></li>
 </ol>
 <p class="note">字幕は、YouTubeの「文字起こしを表示」と同じものを読みます。字幕のない動画は、題名と説明だけになります。何も外へ送りません。</p>
+<section class="ig" id="instagram" aria-labelledby="ig-title">
+<h2 id="ig-title">Instagram Reader</h2>
+<p class="sub">チャット連携 · このPC専用</p>
+<a class="bm" href="http://127.0.0.1:9031/" target="_blank" rel="noopener">専用画面を開く ↗</a>
+<details><summary>接続できない場合</summary><p class="note">このPCのCodexチャットで「Instagramのリンクを読んで」と伝えてください。ローカルツールを起動して取得します。他の端末からはこのPCへ接続できません。</p></details>
+</section>
 </main>
 <script type="text/plain" id="code">(async()=>{const d=document;if(location.pathname.startsWith('/shorts/')){location.href='/watch?v='+location.pathname.split('/')[2];alert('ふつうの動画として開きました。もう一度ボタンを押してください。');return}
 function show(t){let o=d.getElementById('hbk-yt');if(o)o.remove();o=d.createElement('div');o.id='hbk-yt';o.style.cssText='position:fixed;top:8%;left:8%;right:8%;bottom:8%;z-index:2147483647;background:#fbf9f4;color:#2b2924;padding:16px;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:10px;font:14px sans-serif';const ta=d.createElement('textarea');ta.value=t;ta.style.cssText='flex:1;width:100%;font:13px/1.6 sans-serif;color:#2b2924;background:#fff;border:1px solid #e2dac8;border-radius:8px;padding:8px';const b=d.createElement('button');b.textContent='コピーして閉じる';b.style.cssText='padding:10px;border:0;border-radius:8px;background:#b5583f;color:#fff;font:700 15px sans-serif;cursor:pointer';b.onclick=()=>{ta.select();(navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).catch(()=>d.execCommand('copy')).finally(()=>o.remove())};o.append(ta,b);d.body.append(o);ta.focus();ta.select()}

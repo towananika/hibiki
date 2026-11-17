@@ -7,7 +7,7 @@ YouTube Reader：`youtube/` の既存ブックマーク方式に加え、PC内�
 - `index.html` 入口。先頭は今日の行動・体調・夢の3つ。健康・関係・経済の分類と全機能一覧は残し、円とウォンは道具へ、読み物は分類の中へ整理。ページを足すときは `GROUPS` に1行（`new:` で7日間NEW）。
 - `productivity/` 今日の一歩。時間・気分から小さな行動を提案し、1日3つまで選んで集中・成果を記録。既存の優先順位と学習教材を活用。日別データは `hibiki-productivity-v1:YYYY-MM-DD`。
 - `agi/` AGI観測所。到来を断定せず、早い・中心・慎重な仮説の幅、観測すること、今週の小さな備えを記録する。端末どうしの記録は `hibiki-agi-observatory-v1`。
-- `grow/` アカリと育つ。今日したこと（散歩・朝ごはん・早寝・おいしいもの・好きなこと・休んだ）を押すと、アカリが一緒に過ごし、過ごした日数で一生が進む（減らない）。記録は `hibiki-grow-v1`。
+- `grow/` アカリと育つ。今日したこと（散歩・朝ごはん・早寝・おいしいもの・好きなこと・休んだ）を押すと、アカリが一緒に過ごし、過ごした日数で一生が進む（減らない）。記録は `hibiki-grow-v1`。同じページの下に「自分を育てる」（毎日のふり返り `hibiki-growth-v1`・性格と心理の記録 `hibiki-personality-v1`）を統合。旧 `growth/` は `grow/#growth` へ転送する（2026-11-17）。
 - `money/` お金（金利メーター、配分、週間レポート `money/report.html`）／円とウォン `money/yen.html`（`hibiki-yen-v1`）／使える制度 `money/support.html`（韓国の制度おすすめ、`hibiki-support-v1`）／AIの疑似投資 `money/sim.html`（架空の1万ドルで8つのやり方を比べる。データは `money/sim.json`、週間レポートのルーチンが毎週足す）
 - `health/` 健康、`sleep/` 睡眠メモ（`hibiki-sleep-v1`）、`relations/` 愛と関係、`home/` 住まい（入居チェック）
 - `study/` 勉強（7章は `study/ch7.html` にくわしく。放送大学「デジタル経済の理解」全15章、進み具合は `hibiki-study-digital-v1`。貨幣金融論8講は `study/view.html?n=money8`、上級マクロ経済論8〜15講は `study/view.html?n=macro8`〜`macro15`）
@@ -28,7 +28,7 @@ YouTube Reader：`youtube/` の既存ブックマーク方式に加え、PC内�
 
 ## メモ帳
 
-Instagram Reader：入口 `instagram/`、公開ソース `tools/instagram-reader/`（MIT）。取得処理はPC内のNode.js＋Playwrightで動作し、GitHub Pagesでは実行しない。`read-post.cjs <投稿URL>` は必要時にlocalhostサーバーを起動し、本文と取得状況をJSONで返す。`--images` は画像を公開リポジトリ外に保存。ログイン用プロファイルもPC内のみ。チャットAIが取得結果を引用資料として分析する。取得制限を回避せず、全スライド・動画は未対応。ローカルCodex用スキル `instagram-reader` を用意。単体テスト `node --test tools/instagram-reader/test.cjs`、ブラウザ検証 `node tools/instagram-reader/browser-test.cjs`（サーバー起動後）。
+Instagram Reader：入口は `youtube/#instagram`（YouTube Readerと同じページに統合、旧 `instagram/` は転送）、公開ソース `tools/instagram-reader/`（MIT）。取得処理はPC内のNode.js＋Playwrightで動作し、GitHub Pagesでは実行しない。`read-post.cjs <投稿URL>` は必要時にlocalhostサーバーを起動し、本文と取得状況をJSONで返す。`--images` は画像を公開リポジトリ外に保存。ログイン用プロファイルもPC内のみ。チャットAIが取得結果を引用資料として分析する。取得制限を回避せず、全スライド・動画は未対応。ローカルCodex用スキル `instagram-reader` を用意。単体テスト `node --test tools/instagram-reader/test.cjs`、ブラウザ検証 `node tools/instagram-reader/browser-test.cjs`（サーバー起動後）。
 YouTube Reader：入口 `youtube/`。ブックマークレットで、開いている動画の題名・説明・字幕（YouTubeの「文字起こし」）を画面に出してコピーする。外へは何も送らない。コピーした文をチャットに貼るとClaudeが読める（クラウドからはYouTubeの字幕取得が止められているため）。
 
 `notes/` は入力原文を保持し、350ms後に端末内の語句ルールで簡易分類する。AI要約は未接続。選択した保存メモと入力中のメモから相談文を確認・コピーし、ChatGPTへ手動で渡せる。外部AIへの自動送信や有料API呼び出しは行わない。

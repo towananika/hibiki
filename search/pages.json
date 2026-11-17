@@ -51,7 +51,7 @@
     "url": "dreams/",
     "title": "夢日記",
     "description": "ねがいや目標を書き、かなったことを記録する",
-    "keywords": "夢 ゆめ 願い ねがい 希望 目標 将来 やりたいこと ほしいもの 達成 日記"
+    "keywords": "夢 ゆめ 願い ねがい 希望 目標 将来 やりたいこと ほしいもの 達成 日記 欲しい 買い物 購入 ウィッシュリスト"
   },
   {
     "url": "timeline/",
@@ -136,5 +136,77 @@
     "title": "AGI観測所",
     "description": "AIの変化を見ながら、予測の幅と今できる備えを考える",
     "keywords": "AGI AI 人工知能 未来 予測 到来 カウントダウン 技術 変化 学ぶ 作る 備え"
+  },
+  {
+    "url": "plan/",
+    "title": "3年計画",
+    "description": "ビジョン・柱・3年→季節→4週の計画と見直し",
+    "keywords": "計画 目標 ビジョン 3年 4週 見直し 今週 やること 予定"
+  },
+  {
+    "url": "grow/",
+    "title": "アカリと育つ・自分を育てる",
+    "description": "今日したことを押してアカリと育つ。毎日のふり返りと性格・心理の記録も",
+    "keywords": "成長 育てる アカリ 習慣 ふり返り 振り返り チェックイン 自己理解 性格 心理 価値観 強み TCI 説明書"
+  },
+  {
+    "url": "notes/",
+    "title": "メモ帳",
+    "description": "考えを残して、AIに相談する文を作る",
+    "keywords": "メモ ノート 考え 書く 相談 AI ChatGPT"
+  },
+  {
+    "url": "youtube/",
+    "title": "YouTube・Instagram Reader",
+    "description": "動画の字幕や投稿の本文をコピーしてチャットで読ませる",
+    "keywords": "YouTube ユーチューブ 動画 字幕 文字起こし Instagram インスタ 投稿 読む ブックマークレット"
+  },
+  {
+    "url": "stopwatch/",
+    "title": "駐車タイマー",
+    "description": "入庫時刻・経過時間・駐車料金の目安と駐車券の比較",
+    "keywords": "駐車 駐車場 タイマー ストップウォッチ 料金 駐車券 車"
+  },
+  {
+    "url": "money/yen.html",
+    "title": "円とウォン",
+    "description": "100円は何ウォン？しくみと両替",
+    "keywords": "円 ウォン 為替 両替 レート 換算 通貨"
+  },
+  {
+    "url": "money/support.html",
+    "title": "使える制度",
+    "description": "韓国の制度から使えそうなものを確認する",
+    "keywords": "制度 支援 補助 給付 手当 控除 申請 福祉"
+  },
+  {
+    "url": "money/sim.html",
+    "title": "AIの疑似投資",
+    "description": "架空の1万ドルで8つのやり方を比べる",
+    "keywords": "投資 シミュレーション 疑似 株 運用 比較"
+  },
+  {
+    "url": "money/flow.html",
+    "title": "お金の流れ",
+    "description": "お金がどこから来てどこへ行くかを見る",
+    "keywords": "お金 流れ 収入 支出 キャッシュフロー"
+  },
+  {
+    "url": "home/value-map.html",
+    "title": "首都圏の暮らしマップ",
+    "description": "ソウル・京畿道・仁川の地域を比べる",
+    "keywords": "地図 マップ 地域 不動産 住まい 家賃 ソウル 京畿道 仁川 比較"
+  },
+  {
+    "url": "bible/",
+    "title": "聖書を読む",
+    "description": "日常につなげて読む",
+    "keywords": "聖書 キリスト教 信仰 読む 祈り"
+  },
+  {
+    "url": "sns/",
+    "title": "SNSと届いた人たち",
+    "description": "フォロワーを一人ずつ可視化し、発信を振り返る",
+    "keywords": "SNS 戦略 フォロワー 発信 リミテク Instagram X YouTube TikTok Facebook"
   }
 ]

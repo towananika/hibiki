@@ -11,6 +11,9 @@
 4. ページで保存する値は localStorage の `hibiki-` で始まる鍵に入れる（`sync.js` が端末どうしでそろえる）。
 5. スマホ幅（390px）で Playwright のスクリーンショットを撮って確かめる。`sync.js` は route で空にするか、`HibikiSync.open` を平文で差し替える。
 6. ブランチ → PR → squash マージ（自分でマージしてよい）。README の一覧にも1行。
+7. 検索に出したいページは `search/pages.json` に1件足し、`node tools/build-search.mjs` で `search/index.json` を作り直す。
+
+同じカテゴリのページは新しく分けず、既存ページの下に節として足す（例：`grow/#growth`、`youtube/#instagram`）。ページを統合したら旧URLは転送ページ（`wishes/` `growth/` `instagram/` と同じ形）で残す。
 
 ## 個人情報
 - リポジトリは公開。住所・お金の額・人生のできごとなど個人のことは平文で置かない。
