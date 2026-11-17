@@ -32,7 +32,7 @@
   .code { font-size:44px; font-weight:700; letter-spacing:.25em; text-align:center; color:var(--wood); margin:4px 0 0; font-variant-numeric:tabular-nums; }
   .meter { height:6px; background:var(--border); border-radius:999px; overflow:hidden; margin:6px 0 10px; } .meter i { display:block; height:100%; background:var(--sage); transition:width 1s linear; }
   .row2 { display:grid; grid-template-columns:2fr 1fr; gap:8px; } .row2 button { text-align:center; }
-  .log { list-style:none; padding:0; margin:10px 0 0; font-size:12px; color:var(--muted); } .log li { display:flex; justify-content:space-between; border-top:1px solid var(--border); padding:4px 0; }
+  .log { list-style:none; padding:0; margin:10px 0 0; font-size:12px; color:var(--muted); } .log li { display:flex; justify-content:space-between; align-items:center; gap:8px; border-top:1px solid var(--border); padding:4px 0; }
 </style>
 </head>
 <body>
@@ -78,30 +78,49 @@ function show(D) {
 }
 
 // AI用の確認番号（4けた・5分・1回・3回まちがいで消える・読むだけ）
-var AI = { scope: "safe", t: null, data: null };
+// 2026-11-17: AIには番号を言うだけ。読めたAIは名前つきで「許可したAI」に残り、1件ずつ取り消せる
+var AI = { scope: "safe", ttl: 86400000, t: null, data: null };
+var AI_TTLS = [[0, "1回だけ"], [3600000, "1時間"], [86400000, "24時間"], [604800000, "7日"]];
+function ttlName(t) { for (var i = 0; i < AI_TTLS.length; i++) if (AI_TTLS[i][0] === t) return AI_TTLS[i][1]; return ""; }
 var AI_READ = "https://hibiki-sync.jaykim-can.workers.dev/ai/read";
-var AI_END = { read: "AIが読んだ", expired: "時間切れ", locked: "3回まちがいで消えた", revoked: "取り消し", replaced: "新しい番号に交代" };
+var AI_END = { read: "AIが読んだ", expired: "時間切れ", locked: "3回まちがいで消えた", revoked: "取り消し", replaced: "新しい番号に交代", unlinked: "許可を取り消し", "pass-expired": "許可の期限が来た", "pushed-out": "古い許可を整理" };
 function hm(t) { var d = new Date(t); return (d.getMonth() + 1) + "/" + d.getDate() + " " + d.getHours() + ":" + String(d.getMinutes()).padStart(2, "0"); }
-function aiAsk(code) {
-  return "ひびきの説明書（私について）を読んでください。確認番号は " + code + " です（5分以内・1回だけ）。\n" +
-    "読み方: curl -s -X POST " + AI_READ + " -H \"X-Hibiki-Code: " + code + "\"\n" +
-    "番号はURLに入れず、ヘッダーで送ってください。読んだ文は会話の中だけで使い、ほかに保存しないでください。";
-}
+function left(t) { var m = Math.max(0, Math.round((t - Date.now()) / 60000)); return m >= 60 ? "のこり" + Math.floor(m / 60) + "時間" : "のこり" + m + "分"; }
+var AI_SETUP = "これから私が「番号は1234」のように4けたの番号を言ったら、" + AI_READ + "?code=番号&ai=あなたの名前 を開いて、ひびきの説明書（私について）を読んでください。" +
+  "番号は5分・1回だけ有効です。読んだ文は会話の中だけで使い、ほかに保存しないでください。";
 function aiDraw(st) {
-  var el = document.getElementById("ai"); clearInterval(AI.t);
+  var el = document.getElementById("ai"); clearInterval(AI.t); clearTimeout(AI.poll);
   if (!MD) { el.style.display = "none"; return; }
   el.style.display = "block";
-  var a = st && st.active, log = (st && st.log) || [];
+  var a = st && st.active, log = (st && st.log) || [], grants = (st && st.grants) || [];
   var h = '<b>AIに番号で読ませる</b><p class="lock" style="font-size:12px;margin:2px 0 0">4けた・5分・1回だけ。3回まちがえると消える。読むだけ。</p>';
   if (a) {
-    h += '<p class="code">' + esc(a.code) + '</p><p class="lock" style="text-align:center;font-size:12px;margin:0">' + (a.scope === "all" ? "全文" : "🔒 を除く") + '・のこり <span id="ai-left"></span></p>' +
-      '<div class="meter"><i id="ai-bar"></i></div><div class="row2"><button class="main" id="ai-copy"><b>AIへの頼み方をコピー</b></button><button id="ai-stop"><b>取り消し</b></button></div>';
+    h += '<p class="code">' + esc(a.code) + '</p><p class="lock" style="text-align:center;font-size:12px;margin:0">' + (a.scope === "all" ? "全文" : "🔒 を除く") + '・読み直し ' + (ttlName(a.ttl) || "—") + '・のこり <span id="ai-left"></span></p>' +
+      '<div class="meter"><i id="ai-bar"></i></div><p style="text-align:center;font-size:14px;margin:0 0 8px">AIに「番号は ' + esc(a.code) + '」と伝えるだけ</p>' +
+      '<button id="ai-stop" style="width:100%;text-align:center"><b>この番号を取り消し</b></button>';
   } else {
-    h += '<div class="seg"><button data-s="safe">🔒 を除く</button><button data-s="all">全文</button></div><button class="main" id="ai-new" style="width:100%;text-align:center"><b>番号を発行</b></button>';
+    h += '<div class="seg"><button data-s="safe">🔒 を除く</button><button data-s="all">全文</button></div>' +
+      '<p class="lock" style="font-size:12px;margin:4px 0 0">読んだAIが読み直せる期限</p><div class="seg ttl" style="grid-template-columns:repeat(4,1fr)">' +
+      AI_TTLS.map(function (x) { return '<button data-t="' + x[0] + '">' + x[1] + '</button>'; }).join("") + '</div>' +
+      '<button class="main" id="ai-new" style="width:100%;text-align:center"><b>番号を発行</b></button>';
   }
   h += '<div class="msg" id="ai-msg"></div>';
-  if (log.length) h += '<ul class="log">' + log.slice(0, 5).map(function (e) { return '<li><span>' + hm(e.at) + '・' + (e.scope === "all" ? "全文" : "🔒除く") + '</span><span>' + (AI_END[e.end] || "") + '</span></li>'; }).join("") + '</ul>';
+  h += '<details id="ai-first"><summary style="font-size:13px">はじめてのAIには、先に一度だけこう伝える</summary><p class="body" style="user-select:all">' + esc(AI_SETUP) + '</p>' +
+    '<p class="lock" style="font-size:12px;margin:4px 0 0">AIの「覚えておくこと」（カスタム指示・メモリー）に入れておけば、次からは番号だけで読めます。</p></details>';
+  h += '<p style="font-weight:600;font-size:14px;margin:12px 0 0">許可したAI</p>';
+  if (grants.length) {
+    h += '<ul class="log">' + grants.map(function (g) {
+      return '<li><span>' + esc(g.name) + '・' + (g.scope === "all" ? "全文" : "🔒除く") + '<br>' + hm(g.at) + 'に許可・' + hm(g.exp) + 'まで（' + left(g.exp) + '）' + (g.reads > 1 ? '・' + g.reads + '回読んだ' : '') + '</span>' +
+        '<button class="ai-un" data-id="' + esc(g.id) + '" style="padding:4px 10px;font-size:12px;text-align:center;white-space:nowrap;flex-shrink:0">取り消し</button></li>';
+    }).join("") + '</ul>';
+  } else h += '<p class="lock" style="font-size:12px;margin:2px 0 0">いまはありません。</p>';
+  if (log.length) h += '<p style="font-weight:600;font-size:14px;margin:12px 0 0">記録</p><ul class="log">' + log.slice(0, 10).map(function (e) {
+    return '<li><span>' + hm(e.readAt || e.at) + '・' + (e.scope === "all" ? "全文" : "🔒除く") + (e.ai ? '・' + esc(e.ai) : '') + '</span><span>' + (AI_END[e.end] || "") +
+      (e.id ? ' <button class="ai-forget" data-id="' + esc(e.id) + '" aria-label="この記録を消す" style="padding:0 8px;font-size:12px">×</button>' : '') + '</span></li>';
+  }).join("") + '</ul>';
   el.innerHTML = h;
+  [].forEach.call(el.querySelectorAll(".ai-un"), function (b) { b.onclick = function () { aiCall("unlink", { id: b.dataset.id }); }; });
+  [].forEach.call(el.querySelectorAll(".ai-forget"), function (b) { b.onclick = function () { aiCall("forget", { id: b.dataset.id }); }; });
   if (a) {
     var tick = function () {
       var left = Math.max(0, a.exp - Date.now()), s = Math.ceil(left / 1000);
@@ -110,14 +129,19 @@ function aiDraw(st) {
       if (!left) aiLoad();
     };
     tick(); AI.t = setInterval(tick, 1000);
-    document.getElementById("ai-copy").onclick = function () { copy(aiAsk(a.code), "頼み方"); document.getElementById("ai-msg").textContent = "コピーしました。AIとの会話に貼ってください"; };
+    // 番号が読まれたら一覧に出るよう、表示中はときどき確かめる
+    AI.poll = setTimeout(aiLoad, 10000);
     document.getElementById("ai-stop").onclick = function () { aiCall("revoke", {}); };
   } else {
-    [].forEach.call(el.querySelectorAll(".seg button"), function (b) {
+    [].forEach.call(el.querySelectorAll(".seg button[data-s]"), function (b) {
       b.classList.toggle("on", b.dataset.s === AI.scope);
       b.onclick = function () { AI.scope = b.dataset.s; aiDraw(st); };
     });
-    document.getElementById("ai-new").onclick = function () { aiCall("issue", { scope: AI.scope, text: AI.scope === "all" ? MD : strip(MD) }); };
+    [].forEach.call(el.querySelectorAll(".seg button[data-t]"), function (b) {
+      b.classList.toggle("on", Number(b.dataset.t) === AI.ttl);
+      b.onclick = function () { AI.ttl = Number(b.dataset.t); aiDraw(st); };
+    });
+    document.getElementById("ai-new").onclick = function () { aiCall("issue", { scope: AI.scope, ttl: AI.ttl, text: AI.scope === "all" ? MD : strip(MD) }); };
   }
 }
 function aiCall(action, body) {
