@@ -19,7 +19,7 @@ server.listen(0, '127.0.0.1', async () => {
     await page.route('**/triathlon/login/auth.js*', route => route.fulfill({ contentType: 'text/javascript', body: '' }));
     await page.route('**/firebase-auth.js', route => route.fulfill({ contentType: 'text/javascript', headers: { 'Access-Control-Allow-Origin': '*' }, body: `const auth={currentUser:null};export function getAuth(){return auth};export function onAuthStateChanged(a,cb){window.changeAuth=u=>{auth.currentUser=u;cb(u)};window.changeAuth(null)}` }));
     await page.route('**/firebase-firestore.js', route => route.fulfill({ contentType: 'text/javascript', headers: { 'Access-Control-Allow-Origin': '*' }, body: `export function getFirestore(){return {}};export function doc(){return {}};export async function getDocFromServer(){return {exists:()=>true,data:()=>(${JSON.stringify(saved)})}}` }));
-    let active = null, grants = []; const calls = [];
+    let active = null, grants = [], readBy = null; const calls = [];
     await page.route('**/hibiki-sync.jaykim-can.workers.dev/ai/*', route => {
       const req = route.request(), action = req.url().split('/ai/')[1];
       calls.push({ action, auth: req.headers()['authorization'] || '', body: req.postData() || '' });
@@ -27,6 +27,7 @@ server.listen(0, '127.0.0.1', async () => {
       if (action === 'revoke') { active = null; grants = [{ id: 'g1', name: '<i>GPT</i>', scope: 'safe', at: Date.now(), exp: Date.now() + 86400000, reads: 2 }]; }
       if (action === 'unlink') grants = grants.filter(g => g.id !== JSON.parse(req.postData()).id);
       const log = active ? [] : [{ id: 'l1', at: Date.now(), scope: 'safe', end: 'revoked' }];
+      if (readBy) log.unshift(readBy);
       route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(action === 'issue' ? active : { active, grants, log }) });
     });
     await page.goto(`http://127.0.0.1:${server.address().port}/about/index.html`, { waitUntil: 'domcontentloaded' });
@@ -48,6 +49,20 @@ server.listen(0, '127.0.0.1', async () => {
     if (issue.auth !== 'Bearer tok' || JSON.parse(issue.body).scope !== 'safe' || JSON.parse(issue.body).ttl !== 3600000) throw Error('issue request wrong');
     if (!(await page.locator('#ai').innerText()).includes('読み直し 1時間')) throw Error('ttl not shown');
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT, fullPage: true });
+    if (!(await page.locator('.wait').innerText()).includes('待機中')) throw Error('waiting state missing');
+    const issuedAt = active.at = Date.now();
+    readBy = { id: 'r1', at: issuedAt, scope: 'safe', end: 'read', readAt: Date.now(), ai: 'Claude' };
+    active = null;
+    await page.locator('.joined').waitFor({ timeout: 6000 });
+    const joinedText = await page.locator('#ai').innerText();
+    if (!joinedText.includes('接続されました') || !joinedText.includes('Claude')) throw Error('connected state missing');
+    if (joinedText.includes('0427') || await page.locator('.code').count()) throw Error('code still shown after connect');
+    if (process.env.SHOT3) await page.screenshot({ path: process.env.SHOT3, fullPage: true });
+    await page.locator('#ai-ok').click();
+    if (await page.locator('.joined').count()) throw Error('connected banner not dismissed');
+    await page.locator('.seg button[data-t="3600000"]').click();
+    await page.locator('#ai-new').click();
+    await page.locator('.code').waitFor();
     await page.locator('#ai-stop').click();
     await page.locator('#ai-new').waitFor();
     if (!(await page.locator('#ai').innerText()).includes('取り消し')) throw Error('revoke log missing');
