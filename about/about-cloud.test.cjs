@@ -23,7 +23,7 @@ server.listen(0, '127.0.0.1', async () => {
     await page.route('**/hibiki-sync.jaykim-can.workers.dev/ai/*', route => {
       const req = route.request(), action = req.url().split('/ai/')[1];
       calls.push({ action, auth: req.headers()['authorization'] || '', body: req.postData() || '' });
-      if (action === 'issue') active = { code: '0427', scope: JSON.parse(req.postData()).scope, exp: Date.now() + 300000, fails: 0 };
+      if (action === 'issue') active = { code: '0427', scope: JSON.parse(req.postData()).scope, ttl: JSON.parse(req.postData()).ttl, exp: Date.now() + 300000, fails: 0 };
       if (action === 'revoke') { active = null; grants = [{ id: 'g1', name: '<i>GPT</i>', scope: 'safe', at: Date.now(), exp: Date.now() + 86400000, reads: 2 }]; }
       if (action === 'unlink') grants = grants.filter(g => g.id !== JSON.parse(req.postData()).id);
       const log = active ? [] : [{ id: 'l1', at: Date.now(), scope: 'safe', end: 'revoked' }];
@@ -40,11 +40,13 @@ server.listen(0, '127.0.0.1', async () => {
     await page.evaluate(() => window.changeAuth({ uid:'3wzoIaBNjLf9x0BW3HRUcqOHCAG2', emailVerified:true, getIdToken: async () => 'tok' }));
     await page.locator('#all').waitFor();
     if (!(await page.locator('#secs').innerText()).includes('Sample')) throw Error('owner data missing');
+    await page.locator('.seg button[data-t="3600000"]').click();
     await page.locator('#ai-new').click();
     await page.locator('.code').waitFor();
     if ((await page.locator('.code').innerText()) !== '0427') throw Error('code not shown');
     const issue = calls.find(c => c.action === 'issue');
-    if (issue.auth !== 'Bearer tok' || JSON.parse(issue.body).scope !== 'safe') throw Error('issue request wrong');
+    if (issue.auth !== 'Bearer tok' || JSON.parse(issue.body).scope !== 'safe' || JSON.parse(issue.body).ttl !== 3600000) throw Error('issue request wrong');
+    if (!(await page.locator('#ai').innerText()).includes('読み直し 1時間')) throw Error('ttl not shown');
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT, fullPage: true });
     await page.locator('#ai-stop').click();
     await page.locator('#ai-new').waitFor();

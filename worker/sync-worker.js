@@ -114,7 +114,7 @@ async function aiReadGet(url, request, env) {
   let foot = "";
   if (out.pass) {
     const again = url.origin + "/ai/read?pass=" + out.pass;
-    foot = "\n\n---\n読み直すとき（" + new Date(out.passExp).toISOString() + " まで、本人が取り消すまで）: " + again +
+    foot = "\n\n---\n読み直すとき（" + new Date(out.passExp).toISOString() + " まで。本人が取り消すとその時点で終わり）: " + again +
       "\nこの許可証は、この会話の中だけで使ってください。";
   }
   return text(out.text + foot, 200);

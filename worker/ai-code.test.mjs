@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, createSign } from 'node:crypto';
-import { aiHandle, newCode, isOwnerToken, resetKeyCache, aiName, AI_TTL, GRANT_TTL, OWNER } from './ai-code.js';
+import { aiHandle, newCode, isOwnerToken, resetKeyCache, aiName, AI_TTL, GRANT_TTL, GRANT_TTLS, OWNER } from './ai-code.js';
 
 function store() { const m = new Map(); return { m, get: async k => m.get(k), put: async (k, v) => { m.set(k, structuredClone(v)); }, delete: async k => { m.delete(k); } }; }
 const fixed = n => ({ getRandomValues: a => { a[0] = n; return a; } });
@@ -126,4 +126,26 @@ test('AIの名前は短く、空なら名前なし', () => {
   assert.equal(aiName('  '), '名前なしのAI');
   assert.equal(aiName('<b>Chat\nGPT</b>'), 'bChatGPT/b');
   assert.equal(aiName('あ'.repeat(50)).length, 30);
+});
+
+test('読み直せる長さは発行のときに選ぶ。1回だけも選べ、無期限はない', async () => {
+  const s = store(), H = 60 * 60 * 1000;
+  assert.deepEqual(GRANT_TTLS, [0, H, 24 * H, 7 * 24 * H]);
+  assert.equal((await aiHandle(s, 'issue', { scope: 'safe', text: 'x', ttl: 30 * 24 * H }, 0)).error, 'bad');
+  assert.equal((await aiHandle(s, 'issue', { scope: 'safe', text: 'x', ttl: Infinity }, 0)).error, 'bad');
+  assert.equal((await aiHandle(s, 'issue', { scope: 'safe', text: 'x', ttl: '3600000' }, 0)).error, 'bad');
+  const once = await aiHandle(s, 'read', { code: (await aiHandle(s, 'issue', { scope: 'safe', text: 'x', ttl: 0 }, 0)).code, ai: 'A' }, 1);
+  assert.equal(once.text, 'x');
+  assert.equal(once.pass, undefined);
+  assert.equal((await aiHandle(s, 'status', {}, 2)).grants.length, 0);
+  const iss = await aiHandle(s, 'issue', { scope: 'safe', text: 'y', ttl: H }, 10);
+  assert.equal(iss.ttl, H);
+  assert.equal((await aiHandle(s, 'status', {}, 11)).active.ttl, H);
+  const hour = await aiHandle(s, 'read', { code: iss.code, ai: 'B' }, 20);
+  assert.equal(hour.passExp, 20 + H);
+  assert.equal((await aiHandle(s, 'status', {}, 21)).grants[0].ttl, H);
+  assert.equal((await aiHandle(s, 'read', { pass: hour.pass }, 19 + H)).text, 'y');
+  assert.equal((await aiHandle(s, 'read', { pass: hour.pass }, 20 + H)).error, 'pass');
+  const week = await aiHandle(s, 'read', { code: (await aiHandle(s, 'issue', { scope: 'all', text: 'z', ttl: 7 * 24 * H }, 30)).code }, 31);
+  assert.equal(week.passExp, 31 + 7 * 24 * H);
 });

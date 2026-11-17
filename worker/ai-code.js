@@ -1,9 +1,9 @@
 // AIに「私について」を読ませる4けたの確認番号（2026-11-13 ひびき）
 //
-// 発行: POST /ai/issue   本人の Google ログイン（Firebase の ID トークン）が必要。{ scope, text } → { code, exp }
+// 発行: POST /ai/issue   本人の Google ログイン（Firebase の ID トークン）が必要。{ scope, text, ttl? } → { code, exp, ttl }
 // 読む: POST /ai/read    ヘッダー X-Hibiki-Code: 1234（と X-Hibiki-AI: 名前）→ { scope, text, pass, passExp }
 //       GET  /ai/read?code=1234&ai=名前  URL を開くだけの AI 用。同じ中身を文字で返す
-//       許可証 pass で読み直す: ヘッダー X-Hibiki-Pass か ?pass=（GRANT_TTL のあいだ・取り消すまで）
+//       許可証 pass で読み直す: ヘッダー X-Hibiki-Pass か ?pass=（発行時に選んだ長さのあいだ・取り消すまで）
 // 状態: POST /ai/status  本人だけ。いま有効な番号、許可したAIの一覧、記録（最新20件）
 // 取消: POST /ai/revoke  本人だけ。いまの番号をすぐ消す
 //       POST /ai/unlink { id }  本人だけ。許可したAIを1件取り消す（許可証がすぐ使えなくなる）
@@ -11,7 +11,7 @@
 //
 // 許可したAI（2026-11-17）
 //   - 番号で正しく読めたAIに、読むだけの許可証を1つ渡す。名前（AIの自己申告）と時刻を一覧に残す
-//   - 許可証はサーバーにはハッシュだけ置く。GRANT_TTL で自然に切れる。一覧から1件ずつ取り消せる
+//   - 許可証はサーバーにはハッシュだけ置く。発行時に選んだ長さ（1回だけ・1時間・24時間・7日）で自然に切れる。一覧から1件ずつ取り消せる
 //   - 文は許可が生きているあいだだけサーバーに置き、取り消し・期限切れで一緒に消す
 //
 // 守り（4けたは弱いので、ここで補う）
@@ -25,6 +25,8 @@ export const AI_MAX_FAILS = 3;
 const MAX_TEXT = 200 * 1024;
 const LOG_MAX = 20;
 export const GRANT_TTL = 24 * 60 * 60 * 1000;
+// 読み直せる長さは発行のときに本人が選ぶ（2026-11-17）。0 は1回だけ。無期限は作らない（最長7日）
+export const GRANT_TTLS = [0, 60 * 60 * 1000, GRANT_TTL, 7 * 24 * 60 * 60 * 1000];
 const GRANT_MAX = 10;
 const NAME_MAX = 30;
 const SCOPES = ["safe", "all"];
@@ -121,13 +123,13 @@ export async function aiHandle(storage, action, input = {}, now = Date.now(), ra
   for (const g of grants.slice()) if (g.exp <= now) await drop(g, "pass-expired");
 
   if (action === "issue") {
-    const text = input.text, scope = input.scope;
-    if (!SCOPES.includes(scope) || typeof text !== "string" || !text.trim() || text.length > MAX_TEXT) return { error: "bad" };
+    const text = input.text, scope = input.scope, ttl = input.ttl === undefined ? GRANT_TTL : input.ttl;
+    if (!SCOPES.includes(scope) || typeof text !== "string" || !text.trim() || text.length > MAX_TEXT || !GRANT_TTLS.includes(ttl)) return { error: "bad" };
     if (cur) await note({ at: cur.at, scope: cur.scope, end: "replaced" });
     const code = newCode(rand);
-    cur = { code, scope, text, at: now, exp: now + AI_TTL, fails: 0 };
+    cur = { code, scope, text, ttl, at: now, exp: now + AI_TTL, fails: 0 };
     await storage.put("ai", cur);
-    return { code, scope, exp: cur.exp };
+    return { code, scope, exp: cur.exp, ttl };
   }
   if (action === "read") {
     if (input.pass) {
@@ -155,9 +157,10 @@ export async function aiHandle(storage, action, input = {}, now = Date.now(), ra
     const name = aiName(input.ai);
     await note({ at: cur.at, scope: cur.scope, end: "read", readAt: now, fails: cur.fails, ai: name });
     const out = { scope: cur.scope, text: cur.text };
-    if (GRANT_TTL > 0) {
+    const ttl = cur.ttl === undefined ? GRANT_TTL : cur.ttl;
+    if (ttl > 0) {
       while (grants.length >= GRANT_MAX) await drop(grants[grants.length - 1], "pushed-out");
-      const secret = rid(rand, 16), g = { id: rid(rand, 6), hash: await hash(secret), name, scope: cur.scope, at: now, exp: now + GRANT_TTL, last: now, reads: 1 };
+      const secret = rid(rand, 16), g = { id: rid(rand, 6), hash: await hash(secret), name, scope: cur.scope, at: now, exp: now + ttl, ttl, last: now, reads: 1 };
       grants.unshift(g);
       await storage.put("ai-text:" + g.id, cur.text);
       await storage.put("ai-grants", grants);
@@ -185,8 +188,8 @@ export async function aiHandle(storage, action, input = {}, now = Date.now(), ra
   }
   if (action === "status") {
     return {
-      active: cur ? { code: cur.code, scope: cur.scope, exp: cur.exp, fails: cur.fails } : null,
-      grants: grants.map((g) => ({ id: g.id, name: g.name, scope: g.scope, at: g.at, exp: g.exp, last: g.last, reads: g.reads })),
+      active: cur ? { code: cur.code, scope: cur.scope, exp: cur.exp, fails: cur.fails, ttl: cur.ttl === undefined ? GRANT_TTL : cur.ttl } : null,
+      grants: grants.map((g) => ({ id: g.id, name: g.name, scope: g.scope, at: g.at, exp: g.exp, ttl: g.ttl, last: g.last, reads: g.reads })),
       log,
     };
   }
