@@ -14,19 +14,20 @@ const server = http.createServer((req, res) => {
 server.listen(0, '127.0.0.1', async () => {
   let browser;
   try {
-    browser = await chromium.launch({ channel: 'chrome', headless: true });
+    browser = await chromium.launch(process.env.NO_CHROME ? {} : { channel: 'chrome', headless: true });
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     await page.route('**/triathlon/login/auth.js*', route => route.fulfill({ contentType: 'text/javascript', body: '' }));
     await page.route('**/firebase-auth.js', route => route.fulfill({ contentType: 'text/javascript', headers: { 'Access-Control-Allow-Origin': '*' }, body: `const auth={currentUser:null};export function getAuth(){return auth};export function onAuthStateChanged(a,cb){window.changeAuth=u=>{auth.currentUser=u;cb(u)};window.changeAuth(null)}` }));
     await page.route('**/firebase-firestore.js', route => route.fulfill({ contentType: 'text/javascript', headers: { 'Access-Control-Allow-Origin': '*' }, body: `export function getFirestore(){return {}};export function doc(){return {}};export async function getDocFromServer(){return {exists:()=>true,data:()=>(${JSON.stringify(saved)})}}` }));
-    let active = null; const calls = [];
+    let active = null, grants = []; const calls = [];
     await page.route('**/hibiki-sync.jaykim-can.workers.dev/ai/*', route => {
       const req = route.request(), action = req.url().split('/ai/')[1];
       calls.push({ action, auth: req.headers()['authorization'] || '', body: req.postData() || '' });
       if (action === 'issue') active = { code: '0427', scope: JSON.parse(req.postData()).scope, exp: Date.now() + 300000, fails: 0 };
-      if (action === 'revoke') active = null;
-      const log = active ? [] : [{ at: Date.now(), scope: 'safe', end: 'revoked' }];
-      route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(action === 'issue' ? active : { active, log }) });
+      if (action === 'revoke') { active = null; grants = [{ id: 'g1', name: '<i>GPT</i>', scope: 'safe', at: Date.now(), exp: Date.now() + 86400000, reads: 2 }]; }
+      if (action === 'unlink') grants = grants.filter(g => g.id !== JSON.parse(req.postData()).id);
+      const log = active ? [] : [{ id: 'l1', at: Date.now(), scope: 'safe', end: 'revoked' }];
+      route.fulfill({ contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(action === 'issue' ? active : { active, grants, log }) });
     });
     await page.goto(`http://127.0.0.1:${server.address().port}/about/index.html`, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => typeof window.changeAuth === 'function');
@@ -47,7 +48,12 @@ server.listen(0, '127.0.0.1', async () => {
     if (process.env.SHOT) await page.screenshot({ path: process.env.SHOT, fullPage: true });
     await page.locator('#ai-stop').click();
     await page.locator('#ai-new').waitFor();
-    if (!(await page.locator('#ai .log').innerText()).includes('取り消し')) throw Error('revoke log missing');
+    if (!(await page.locator('#ai').innerText()).includes('取り消し')) throw Error('revoke log missing');
+    if (!(await page.locator('#ai').innerText()).includes('<i>GPT</i>') || await page.locator('#ai i:not(#ai-bar)').count()) throw Error('AI name not shown safely');
+    if (process.env.SHOT2) await page.screenshot({ path: process.env.SHOT2, fullPage: true });
+    await page.locator('.ai-un').click();
+    await page.waitForFunction(() => !document.querySelector('.ai-un'));
+    if (JSON.parse(calls.find(c => c.action === 'unlink').body).id !== 'g1') throw Error('unlink request wrong');
     if (await page.locator('#box img').count()) throw Error('unsafe HTML');
     await page.evaluate(() => window.changeAuth(null));
     if (await page.locator('#all').count() || (await page.locator('#secs').innerText())) throw Error('private data retained after logout');

@@ -13,7 +13,8 @@
 // 守り: 同じ IP から、中身のない id を1時間に10回読んだら（合言葉の当てずっぽう）、1時間すべて止める。
 //       IP は SHA-256 にしてから持つ（2026-10-09 ひびき：ボットの連続試しをブロック）
 // 光さがし: /hikari/sync /hikari/wipe（トライアスロンのログインの人ごと。くわしくは hikari.js、2026-11-16）
-// AI用の確認番号: /ai/issue /ai/read /ai/status /ai/revoke（くわしくは ai-code.js、2026-11-13）
+// AI用の確認番号: /ai/issue /ai/read /ai/status /ai/revoke /ai/unlink /ai/forget（くわしくは ai-code.js、2026-11-13）
+//   GET /ai/read?code=1234&ai=名前 は URL を開くだけの AI 用（2026-11-17）
 
 import { DurableObject } from "cloudflare:workers";
 import { aiHandle, isOwnerToken, tokenClaims } from "./ai-code.js";
@@ -50,6 +51,7 @@ export default {
       }
     }
     if (url.pathname.startsWith("/hikari/") && request.method === "POST") return hikari(url.pathname.slice(8), request, env, origin);
+    if (url.pathname === "/ai/read" && request.method === "GET") return aiReadGet(url, request, env);
     if (url.pathname.startsWith("/ai/") && request.method === "POST") return ai(url.pathname.slice(4), request, env, origin);
     if (url.pathname === "/price" && request.method === "GET") return json(await prices(url.searchParams.get("s") || ""), 200, origin);
     if (url.pathname === "/search" && request.method === "GET") return json(await search(url.searchParams.get("q") || ""), 200, origin);
@@ -81,11 +83,12 @@ async function ai(action, request, env, origin) {
   if (await guard.blocked(who)) return json({ error: "blocked" }, 429, origin);
   const box = env.BOX.get(env.BOX.idFromName("ai"));
   if (action === "read") {
-    const out = await box.ai("read", { code: request.headers.get("X-Hibiki-Code") || "" });
+    const h = request.headers;
+    const out = await box.ai("read", { code: h.get("X-Hibiki-Code") || "", pass: h.get("X-Hibiki-Pass") || "", ai: h.get("X-Hibiki-AI") || "" });
     if (out.error && out.error !== "none") await guard.miss(who);
     return json(out, out.error ? (out.error === "none" ? 404 : 403) : 200, origin);
   }
-  if (!["issue", "status", "revoke"].includes(action)) return json({ error: "bad" }, 400, origin);
+  if (!["issue", "status", "revoke", "unlink", "forget"].includes(action)) return json({ error: "bad" }, 400, origin);
   if (!ALLOWED.includes(origin)) return json({ error: "origin" }, 403, origin);
   const token = (request.headers.get("Authorization") || "").replace(/^Bearer /, "");
   if (!(await isOwnerToken(token))) { await guard.miss(who); return json({ error: "login" }, 401, origin); }
@@ -94,6 +97,38 @@ async function ai(action, request, env, origin) {
   let b = {}; try { b = text ? JSON.parse(text) : {}; } catch (e) { return json({ error: "bad_json" }, 400, origin); }
   const out = await box.ai(action, b || {});
   return json(out, out.error ? 400 : 200, origin);
+}
+
+// URL を開くだけの AI 用。番号（か許可証）は1回で役目を終えるので、URL に入れてよい。
+// 答えは文字（Markdown）。どこにも保存されないよう no-store、検索にものせない
+async function aiReadGet(url, request, env) {
+  const guard = env.BOX.get(env.BOX.idFromName("guard"));
+  const who = await sha(request.headers.get("CF-Connecting-IP") || "none");
+  if (await guard.blocked(who)) return text("試しすぎのため、1時間止めています。", 429);
+  const q = url.searchParams;
+  const input = { code: q.get("code") || "", pass: q.get("pass") || "", ai: q.get("ai") || "" };
+  if (!input.code && !input.pass) return text(AI_HOWTO, 200);
+  const out = await env.BOX.get(env.BOX.idFromName("ai")).ai("read", input);
+  if (out.error && out.error !== "none") await guard.miss(who);
+  if (out.error) return text(AI_ERR[out.error] || "読めませんでした。", out.error === "none" ? 404 : 403);
+  let foot = "";
+  if (out.pass) {
+    const again = url.origin + "/ai/read?pass=" + out.pass;
+    foot = "\n\n---\n読み直すとき（" + new Date(out.passExp).toISOString() + " まで、本人が取り消すまで）: " + again +
+      "\nこの許可証は、この会話の中だけで使ってください。";
+  }
+  return text(out.text + foot, 200);
+}
+const AI_HOWTO = "ひびきの説明書（私について）を読むには、本人から4けたの番号をもらい、\n" +
+  "https://hibiki-sync.jaykim-can.workers.dev/ai/read?code=番号&ai=あなたの名前 を開いてください。番号は5分・1回だけ有効です。";
+const AI_ERR = {
+  none: "いま有効な番号がありません（時間切れか、もう使われました）。本人に新しい番号をもらってください。",
+  wrong: "番号がちがいます。本人に確かめてください（3回まちがえると番号が消えます）。",
+  locked: "3回まちがえたので番号は消えました。本人に新しい番号をもらってください。",
+  pass: "この許可証は使えません（期限切れか、本人が取り消しました）。",
+};
+function text(body, status) {
+  return new Response(body, { status, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow", "Referrer-Policy": "no-referrer" } });
 }
 
 // 光さがし。ログインした人の uid ごとの箱にだけ読み書きする（ほかの人の箱は開けない）
@@ -205,7 +240,7 @@ function cors(origin) {
   return {
     "Access-Control-Allow-Origin": ALLOWED.includes(origin) ? origin : ALLOWED[0],
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Hibiki-Code",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Hibiki-Code, X-Hibiki-Pass, X-Hibiki-AI",
     "Vary": "Origin",
   };
 }

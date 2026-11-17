@@ -1,9 +1,18 @@
 // AIに「私について」を読ませる4けたの確認番号（2026-11-13 ひびき）
 //
 // 発行: POST /ai/issue   本人の Google ログイン（Firebase の ID トークン）が必要。{ scope, text } → { code, exp }
-// 読む: POST /ai/read    ヘッダー X-Hibiki-Code: 1234 → { scope, text }（1回で消える）
-// 状態: POST /ai/status  本人だけ。いま有効な番号と、発行の記録（最新20件）
+// 読む: POST /ai/read    ヘッダー X-Hibiki-Code: 1234（と X-Hibiki-AI: 名前）→ { scope, text, pass, passExp }
+//       GET  /ai/read?code=1234&ai=名前  URL を開くだけの AI 用。同じ中身を文字で返す
+//       許可証 pass で読み直す: ヘッダー X-Hibiki-Pass か ?pass=（GRANT_TTL のあいだ・取り消すまで）
+// 状態: POST /ai/status  本人だけ。いま有効な番号、許可したAIの一覧、記録（最新20件）
 // 取消: POST /ai/revoke  本人だけ。いまの番号をすぐ消す
+//       POST /ai/unlink { id }  本人だけ。許可したAIを1件取り消す（許可証がすぐ使えなくなる）
+//       POST /ai/forget { id }  本人だけ。記録を1件消す
+//
+// 許可したAI（2026-11-17）
+//   - 番号で正しく読めたAIに、読むだけの許可証を1つ渡す。名前（AIの自己申告）と時刻を一覧に残す
+//   - 許可証はサーバーにはハッシュだけ置く。GRANT_TTL で自然に切れる。一覧から1件ずつ取り消せる
+//   - 文は許可が生きているあいだだけサーバーに置き、取り消し・期限切れで一緒に消す
 //
 // 守り（4けたは弱いので、ここで補う）
 //   - 番号はサーバーが作る。有効5分。正しく読めたらすぐ消える（1回限り）
@@ -15,6 +24,9 @@ export const AI_TTL = 5 * 60 * 1000;
 export const AI_MAX_FAILS = 3;
 const MAX_TEXT = 200 * 1024;
 const LOG_MAX = 20;
+export const GRANT_TTL = 24 * 60 * 60 * 1000;
+const GRANT_MAX = 10;
+const NAME_MAX = 30;
 const SCOPES = ["safe", "all"];
 const CODE = /^[0-9]{4}$/;
 const JWKS_URL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com";
@@ -76,15 +88,38 @@ export async function isOwnerToken(token, { fetchFn = fetch, now = Date.now(), o
 }
 
 // storage: { get(k), put(k,v), delete(k) }（Durable Object の storage と同じ形）
+function rid(rand, n) {
+  const a = new Uint8Array(n); rand.getRandomValues(a);
+  return [...a].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+async function hash(s) {
+  const h = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hibiki-pass:" + s));
+  return [...new Uint8Array(h)].map((x) => x.toString(16).padStart(2, "0")).join("");
+}
+// AIの名前は自己申告。制御文字を消して短くする
+export function aiName(s) {
+  const t = String(s || "").replace(/[\u0000-\u001f\u007f<>]/g, "").trim().slice(0, NAME_MAX);
+  return t || "名前なしのAI";
+}
+
 export async function aiHandle(storage, action, input = {}, now = Date.now(), rand = crypto) {
   let cur = await storage.get("ai");
   const log = (await storage.get("ai-log")) || [];
-  const note = async (entry) => { log.unshift(entry); await storage.put("ai-log", log.slice(0, LOG_MAX)); };
+  let grants = (await storage.get("ai-grants")) || [];
+  const note = async (entry) => { log.unshift({ id: rid(rand, 4), ...entry }); await storage.put("ai-log", log.slice(0, LOG_MAX)); };
+  const drop = async (g, end) => {
+    grants = grants.filter((x) => x.id !== g.id);
+    await storage.put("ai-grants", grants);
+    await storage.delete("ai-text:" + g.id);
+    await note({ at: g.at, scope: g.scope, ai: g.name, end });
+  };
   if (cur && cur.exp <= now) {
     await storage.delete("ai");
     await note({ at: cur.at, scope: cur.scope, end: "expired" });
     cur = null;
   }
+  for (const g of grants.slice()) if (g.exp <= now) await drop(g, "pass-expired");
+
   if (action === "issue") {
     const text = input.text, scope = input.scope;
     if (!SCOPES.includes(scope) || typeof text !== "string" || !text.trim() || text.length > MAX_TEXT) return { error: "bad" };
@@ -95,6 +130,15 @@ export async function aiHandle(storage, action, input = {}, now = Date.now(), ra
     return { code, scope, exp: cur.exp };
   }
   if (action === "read") {
+    if (input.pass) {
+      const [id, secret] = String(input.pass).split(".");
+      const g = grants.find((x) => x.id === id);
+      if (!g || !secret || (await hash(secret)) !== g.hash) return { error: "pass" };
+      const text = await storage.get("ai-text:" + g.id);
+      g.last = now; g.reads = (g.reads || 1) + 1;
+      await storage.put("ai-grants", grants);
+      return { scope: g.scope, text, passExp: g.exp };
+    }
     if (!cur) return { error: "none" };
     const code = String(input.code || "");
     if (!CODE.test(code) || code !== cur.code) {
@@ -108,15 +152,43 @@ export async function aiHandle(storage, action, input = {}, now = Date.now(), ra
       return { error: "wrong", left: AI_MAX_FAILS - cur.fails };
     }
     await storage.delete("ai");
-    await note({ at: cur.at, scope: cur.scope, end: "read", readAt: now, fails: cur.fails });
-    return { scope: cur.scope, text: cur.text };
+    const name = aiName(input.ai);
+    await note({ at: cur.at, scope: cur.scope, end: "read", readAt: now, fails: cur.fails, ai: name });
+    const out = { scope: cur.scope, text: cur.text };
+    if (GRANT_TTL > 0) {
+      while (grants.length >= GRANT_MAX) await drop(grants[grants.length - 1], "pushed-out");
+      const secret = rid(rand, 16), g = { id: rid(rand, 6), hash: await hash(secret), name, scope: cur.scope, at: now, exp: now + GRANT_TTL, last: now, reads: 1 };
+      grants.unshift(g);
+      await storage.put("ai-text:" + g.id, cur.text);
+      await storage.put("ai-grants", grants);
+      out.pass = g.id + "." + secret;
+      out.passExp = g.exp;
+    }
+    return out;
   }
   if (action === "revoke") {
     if (cur) { await storage.delete("ai"); await note({ at: cur.at, scope: cur.scope, end: "revoked" }); }
     return { ok: true };
   }
+  if (action === "unlink") {
+    const g = grants.find((x) => x.id === input.id);
+    if (!g) return { error: "none" };
+    await drop(g, "unlinked");
+    return { ok: true };
+  }
+  if (action === "forget") {
+    const i = log.findIndex((x) => x.id === input.id);
+    if (i < 0) return { error: "none" };
+    log.splice(i, 1);
+    await storage.put("ai-log", log);
+    return { ok: true };
+  }
   if (action === "status") {
-    return { active: cur ? { code: cur.code, scope: cur.scope, exp: cur.exp, fails: cur.fails } : null, log };
+    return {
+      active: cur ? { code: cur.code, scope: cur.scope, exp: cur.exp, fails: cur.fails } : null,
+      grants: grants.map((g) => ({ id: g.id, name: g.name, scope: g.scope, at: g.at, exp: g.exp, last: g.last, reads: g.reads })),
+      log,
+    };
   }
   return { error: "bad" };
 }
