@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YouTube・Instagram Reader — とわなにか</title>
+<title>YouTube・Instagram・X Reader — とわなにか</title>
 <link rel="apple-touch-icon" href="../icon-180.png">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <script src="../sync.js"></script>
@@ -40,7 +40,7 @@
 <main>
 <a class="back" href="../">← とわなにか</a>
 <h1>YouTube Reader</h1>
-<p class="sub" style="margin:0 0 12px"><a href="#instagram" style="color:inherit">Instagram Reader はこのページの下 ↓</a></p>
+<p class="sub" style="margin:0 0 12px"><a href="#instagram" style="color:inherit">Instagram</a> · <a href="#x-reader" style="color:inherit">Xの投稿を読む ↓</a></p>
 <a class="bm" href="http://127.0.0.1:9032/" target="_blank" rel="noopener">リンクから字幕を取得 ↗</a>
 <p class="note">このPC専用。取得ツールの起動が必要です。字幕がない場合やYouTubeの制限時には取得できません。下のブックマーク方式も引き続き使えます。</p>
 <p class="note"><a href="notes.html">YouTubeノート（仮）を見る →</a><br>動画から残した考えと、暮らし・仕事へのつながりを整理します。</p>
@@ -59,7 +59,14 @@
 <a class="bm" href="http://127.0.0.1:9031/" target="_blank" rel="noopener">専用画面を開く ↗</a>
 <details><summary>接続できない場合</summary><p class="note">このPCのCodexチャットで「Instagramのリンクを読んで」と伝えてください。ローカルツールを起動して取得します。他の端末からはこのPCへ接続できません。</p></details>
 </section>
+<section class="ig" id="x-reader" aria-labelledby="x-title">
+<h2 id="x-title">X Reader</h2><p class="sub">公開投稿のリンクから本文を読み、AIへの相談に使えます。</p>
+<form id="x-form"><label for="x-url">Xの投稿URL</label><div class="open"><input id="x-url" type="url" required placeholder="https://x.com/ユーザー名/status/…"><button type="submit">読み取る</button></div></form>
+<p class="note">公開投稿のURLを外部サービス FxTwitter に送信して取得します。非公開・削除済み・取得制限のある投稿は読めません。動画の中身、画像の文字、スレッド全体は読み取りません。</p>
+<p id="x-status" role="status" aria-live="polite"></p><div id="x-result" hidden><label for="x-text">取得結果</label><textarea id="x-text" readonly rows="10" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;resize:vertical"></textarea><button class="bm" type="button" id="x-copy" style="border:0;cursor:pointer;font:inherit">結果をコピー</button><p class="note">画像や動画がある場合は、リンク先で内容を確認してください。</p></div>
+</section>
 </main>
+<script src="x-reader.js"></script>
 <script type="text/plain" id="code">(async()=>{const d=document;if(location.pathname.startsWith('/shorts/')){location.href='/watch?v='+location.pathname.split('/')[2];alert('ふつうの動画として開きました。もう一度ボタンを押してください。');return}
 function show(t){let o=d.getElementById('hbk-yt');if(o)o.remove();o=d.createElement('div');o.id='hbk-yt';o.style.cssText='position:fixed;top:8%;left:8%;right:8%;bottom:8%;z-index:2147483647;background:#fbf9f4;color:#2b2924;padding:16px;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:10px;font:14px sans-serif';const ta=d.createElement('textarea');ta.value=t;ta.style.cssText='flex:1;width:100%;font:13px/1.6 sans-serif;color:#2b2924;background:#fff;border:1px solid #e2dac8;border-radius:8px;padding:8px';const b=d.createElement('button');b.textContent='コピーして閉じる';b.style.cssText='padding:10px;border:0;border-radius:8px;background:#b5583f;color:#fff;font:700 15px sans-serif;cursor:pointer';b.onclick=()=>{ta.select();(navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).catch(()=>d.execCommand('copy')).finally(()=>o.remove())};o.append(ta,b);d.body.append(o);ta.focus();ta.select()}
 const q=s=>[...d.querySelectorAll(s)];const title=(d.querySelector('h1.ytd-watch-metadata')||{}).innerText||d.title;const exp=d.querySelector('#description-inline-expander #expand');if(exp)exp.click();
