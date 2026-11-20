@@ -4,10 +4,11 @@ const words = [
   {id:"bread", text:"bread", picture:"🍞", alt:"パン"}
 ];
 const phrases = [
-  {id:"flow", text:"Water flows.", picture:"🏞️", alt:"流れる川"},
-  {id:"freeze", text:"Water freezes into ice.", picture:"💧 → 🧊", alt:"水が氷に変わる"}
+  {id:"flow", text:"Water flows.", picture:"🏞️", alt:"流れる川", meaning:"水が流れる。"},
+  {id:"freeze", text:"Water freezes into ice.", picture:"💧 → 🧊", alt:"水が氷に変わる", meaning:"水が凍って氷になる。"}
 ];
-const lessons = [...words, ...words.map(word => ({...word, quiz:true})), ...phrases];
+const basics = [...words, ...words.map(word => ({...word, quiz:true}))];
+let lessons = basics;
 const el = id => document.getElementById(id);
 let position = 0;
 const player = new Audio();
@@ -21,6 +22,7 @@ function render(playSound) {
   const lesson = lessons[position];
   const finished = !lesson;
   player.pause();
+  el("phrases").hidden = !finished || lessons !== basics;
   el("choices").replaceChildren();
   el("feedback").textContent = "";
   el("listen").hidden = finished;
@@ -32,9 +34,10 @@ function render(playSound) {
   el("heading").lang = finished || lesson.quiz ? "ja" : "en";
   el("heading").textContent = finished ? "今日の英語" : lesson.quiz ? "音に合う絵を選ぶ" : lesson.text;
   if (finished) {
-    el("feedback").textContent = "water · ice · bread";
+    el("feedback").textContent = lessons === basics ? "water · ice · bread" : "水の変化を表す2つの文を聞きました。";
     return;
   }
+  el("feedback").textContent = lesson.meaning || "";
   player.src = "sounds/"+lesson.id+".mp3";
   el("scene").textContent = lesson.picture;
   el("scene").setAttribute("aria-label",lesson.alt+"の絵で発音を聞く");
@@ -63,6 +66,7 @@ function render(playSound) {
   }
   if (playSound) listen();
 }
+el("phrases").onclick = () => { lessons = phrases; position = 0; render(true); };
 el("listen").onclick = listen;
 el("scene").onclick = listen;
 el("next").onclick = () => {
