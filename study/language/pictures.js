@@ -1,76 +1,110 @@
-const words = [
-  {id:"water", text:"water", picture:"💧", alt:"水滴"},
-  {id:"ice", text:"ice", picture:"🧊", alt:"氷"},
-  {id:"bread", text:"bread", picture:"🍞", alt:"パン"}
+const byId = id => document.getElementById(id);
+const storageKey = "hibiki-picture-quests-v1";
+const allIds = new Set(chapters.flatMap(chapter => chapter.words.map(word => word.id)));
+let saved = {};
+try { saved = JSON.parse(localStorage.getItem(storageKey)) || {}; } catch {}
+const earned = new Set((Array.isArray(saved.earned) ? saved.earned : []).filter(id => allIds.has(id)));
+let chapterIndex = Number.isInteger(saved.chapter) && chapters[saved.chapter] ? saved.chapter : 0;
+let position = Number.isInteger(saved.position) && saved.position >= 0 && saved.position <= 20 ? saved.position : 0;
+let steps;
+let exampleIndex = null;
+const examples = [
+  {text:"Water flows.", picture:"💧🏞️", alt:"水が流れる。"},
+  {text:"Water freezes into ice.", picture:"💧 → 🧊", alt:"水が凍って氷になる。"}
 ];
-const phrases = [
-  {id:"flow", text:"Water flows.", picture:"🏞️", alt:"流れる川", meaning:"水が流れる。"},
-  {id:"freeze", text:"Water freezes into ice.", picture:"💧 → 🧊", alt:"水が氷に変わる", meaning:"水が凍って氷になる。"}
-];
-const basics = [...words, ...words.map(word => ({...word, quiz:true}))];
-let lessons = basics;
-const el = id => document.getElementById(id);
-let position = 0;
-const player = new Audio();
-function listen() {
-  player.currentTime = 0;
-  player.play().catch(error => {
-    if (error.name !== "AbortError") el("feedback").textContent = "音声を再生できません。もう一度「発音を聞く」を押してください。";
-  });
+function save() {
+  try { localStorage.setItem(storageKey, JSON.stringify({chapter:chapterIndex,position,earned:[...earned]})); } catch {}
 }
-function render(playSound) {
-  const lesson = lessons[position];
-  const finished = !lesson;
-  player.pause();
-  el("phrases").hidden = !finished || lessons !== basics;
-  el("choices").replaceChildren();
-  el("feedback").textContent = "";
-  el("listen").hidden = finished;
-  el("scene").hidden = finished || Boolean(lesson?.quiz);
-  el("scene").style.display = el("scene").hidden ? "none" : "block";
-  el("next").hidden = Boolean(lesson?.quiz);
-  el("next").textContent = finished ? "もう一度" : position === lessons.length-1 ? "完了" : "次へ";
-  el("step").textContent = finished ? "レッスン完了" : (position+1)+" / "+lessons.length;
-  el("heading").lang = finished || lesson.quiz ? "ja" : "en";
-  el("heading").textContent = finished ? "今日の英語" : lesson.quiz ? "音に合う絵を選ぶ" : lesson.text;
-  if (finished) {
-    el("feedback").textContent = lessons === basics ? "water · ice · bread" : "水の変化を表す2つの文を聞きました。";
-    return;
-  }
-  el("feedback").textContent = lesson.meaning || "";
-  player.src = "sounds/"+lesson.id+".mp3";
-  el("scene").textContent = lesson.picture;
-  el("scene").setAttribute("aria-label",lesson.alt+"の絵で発音を聞く");
-  if (lesson.quiz) {
-    const offset = Math.floor(Math.random()*words.length);
-    for (let i=0;i<words.length;i++) {
-      const word = words[(i+offset)%words.length];
-      const button = document.createElement("button");
-      button.textContent = word.picture;
-      button.setAttribute("aria-label",word.alt);
-      button.onclick = () => {
-        if (word.id !== lesson.id) {
-          el("feedback").textContent = "もう一度聞いてみよう";
-          listen();
-          return;
-        }
-        el("heading").lang = "en";
-        el("heading").textContent = lesson.text;
-        el("feedback").textContent = "正解";
-        for (const choice of el("choices").children) choice.disabled = true;
-        el("next").hidden = false;
-        listen();
-      };
-      el("choices").append(button);
-    }
-  }
-  if (playSound) listen();
+function updateStars() {
+  byId("stars").textContent = "★ "+earned.size+" / 100";
 }
-el("phrases").onclick = () => { lessons = phrases; position = 0; render(true); };
-el("listen").onclick = listen;
-el("scene").onclick = listen;
-el("next").onclick = () => {
-  position = position === lessons.length ? 0 : position+1;
-  render(true);
+function shuffled(items) {
+  const copy = [...items];
+  for (let i=copy.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
+function openChapter(index, start=0) {
+  chapterIndex=index;
+  position=start;
+  exampleIndex=null;
+  const words=chapters[index].words;
+  steps=[];
+  // Introduce two words, then retrieve each of them before moving on.
+  for (let i=0;i<words.length;i+=2) {
+    const pair=words.slice(i,i+2);
+    for (const word of pair) steps.push({word,quiz:false});
+    for (const word of pair) steps.push({word,quiz:true});
+  }
+  byId("chapter").value=String(index);
+  byId("wordList").replaceChildren();
+  for (const word of words) {
+    const btn=document.createElement("button");
+    btn.textContent=word.text;
+    btn.lang="en";
+    btn.onclick=()=>{position=steps.findIndex(s=>s.word===word);exampleIndex=null;save();render();};
+    byId("wordList").append(btn);
+  }
+  save();
+  render();
+}
+function renderChoices(word) {
+  const prior=chapters.slice(0,chapterIndex).flatMap(c=>c.words);
+  const seen=[...new Set([...prior,...steps.slice(0,position).map(s=>s.word)])];
+  const options=shuffled([word,...shuffled(seen.filter(w=>w!==word)).slice(0,2)]);
+  for (const item of options) {
+    const btn=document.createElement("button");
+    btn.textContent=item.picture;
+    const hint=document.createElement("small");
+    hint.textContent=item.alt;
+    btn.append(hint);
+    btn.onclick=()=>{
+      if(item!==word) {
+        btn.disabled=true;
+        byId("feedback").textContent="もう一度、絵を選んでみよう";
+        return;
+      }
+      const isNew=!earned.has(word.id);
+      earned.add(word.id);
+      save();
+      updateStars();
+      byId("feedback").textContent=isNew ? "正解！ ★ を1つ獲得" : "正解！ 復習できました";
+      for(const choice of byId("choices").children) choice.disabled=true;
+      byId("next").hidden=false;
+    };
+    byId("choices").append(btn);
+  }
+}
+function render() {
+  const step=steps[position];
+  const example=examples[exampleIndex];
+  const word=example || step?.word;
+  const quiz=!example && Boolean(step?.quiz);
+  const finished=!word;
+  byId("choices").replaceChildren();
+  byId("step").textContent=example ? "水の例文" : finished ? "章クリア" : quiz ? "英語に合う絵を選ぶ" : "基本 "+(chapterIndex*10+chapters[chapterIndex].words.indexOf(word)+1)+" / 100";
+  byId("heading").lang=finished ? "ja" : "en";
+  byId("heading").textContent=word?.text || chapters[chapterIndex].title+" · 完了";
+  byId("scene").hidden=quiz || finished;
+  byId("scene").textContent=word?.picture || "";
+  byId("scene").setAttribute("aria-label",word?.alt || "絵");
+  const count=chapters[chapterIndex].words.filter(w=>earned.has(w.id)).length;
+  byId("feedback").textContent=finished ? "この章の星 ★ "+count+" / 10" : quiz ? "" : word.alt;
+  byId("next").hidden=quiz;
+  byId("next").textContent=finished ? (chapterIndex===9 ? "この章を復習" : "次の章へ") : "次へ";
+  byId("phrases").hidden=!finished || ![0,9].includes(chapterIndex);
+  updateStars();
+  if(quiz) renderChoices(word);
+}
+byId("next").onclick=()=>{
+  if(exampleIndex!==null) exampleIndex=exampleIndex===0 ? 1 : null;
+  else if(position===steps.length) {openChapter(Math.min(chapterIndex+1,9));return;}
+  else position++;
+  save();render();
 };
-render(false);
+byId("phrases").onclick=()=>{exampleIndex=0;render();};
+chapters.forEach((chapter,i)=>byId("chapter").add(new Option((i+1)+" · "+chapter.title,i)));
+byId("chapter").onchange=()=>openChapter(Number(byId("chapter").value));
+openChapter(chapterIndex,position);
