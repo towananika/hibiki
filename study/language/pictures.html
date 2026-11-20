@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>英語を絵と音で学ぶ｜とわなにか</title>
+<style>
+:root{color-scheme:light dark;--paper:#f6f2e9;--ink:#302f28;--line:#d8d2c3;--card:#fffdf7;--green:#345f51}
+@media(prefers-color-scheme:dark){:root{--paper:#201f1b;--ink:#eeeae0;--line:#524e40;--card:#292923;--green:#a9d4be}}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,sans-serif}
+main{max-width:480px;margin:auto;padding:24px 18px}a{color:var(--green)}h1{font-size:1.5rem;margin:22px 0 8px}
+section{background:var(--card);padding:20px;border:1px solid var(--line);border-radius:18px;text-align:center}
+button{font:inherit;color:inherit;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-height:44px}
+.scene{font-size:clamp(46px,12vw,76px);display:block;margin:12px auto;border:0}
+.word{font-size:1.6rem;margin:8px}#choices{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}#choices button{font-size:36px}
+#next{background:var(--green);color:var(--card)}footer{margin-top:22px}#feedback{min-height:1.6em}button:focus-visible{outline:3px solid var(--green)}
+</style>
+<main><a href="../../">← とわなにか</a><h1>英語を絵と音で学ぶ</h1>
+<p id="step"></p><section><h2 id="heading" class="word"></h2><button id="scene" class="scene"></button>
+<button id="listen">▶ 発音を聞く</button><div id="choices"></div>
+<p id="feedback" aria-live="polite"></p><button id="next">次へ</button></section>
+<footer><a href="./">日本語と外国語でフレーズを練習する →</a></footer></main>
+<script src="pictures.js"></script></html>
