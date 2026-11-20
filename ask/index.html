@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>質問ノート — とわなにか</title>
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a { color:var(--blue); }
+  a.back { color:var(--wood); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0 0 8px; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 16px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .sum { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+  .sum div { border-radius:12px; padding:10px 12px; }
+  .sum small { display:block; color:var(--muted); font-size:12px; }
+  .big { font-size:24px; font-weight:700; }
+  .s1 { background:var(--wood-soft); } .s2 { background:var(--blue-soft); } .s3 { background:var(--sage-soft); }
+  .meter { height:10px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:12px 0 4px; }
+  .meter i { display:block; height:100%; background:var(--sage); }
+  .note { color:var(--muted); font-size:12px; }
+  button { white-space:nowrap; font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:6px 14px; font-size:14px; }
+  button.main { background:var(--wood); color:#fff; border-color:var(--wood); }
+  button.del { color:var(--red); }
+  textarea, input, select { font:inherit; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 12px; width:100%; }
+  textarea { resize:vertical; min-height:84px; }
+  label.f { display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; }
+  .themes { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .themes button { flex:none; padding:4px 12px; font-size:13px; }
+  .themes button[aria-pressed="true"] { background:var(--wood); color:#fff; border-color:var(--wood); }
+  .hints { display:grid; gap:6px; }
+  .hint { text-align:left; white-space:normal; border-radius:12px; padding:8px 12px; background:var(--wood-soft); border-color:transparent; font-size:14px; }
+  .acts { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px; }
+  .chk { display:flex; gap:6px; align-items:center; font-size:13px; color:var(--muted); margin-top:8px; }
+  .chk input { width:auto; }
+  #status { min-height:20px; font-size:13px; color:var(--sage); margin:6px 0 0; }
+  .tools { display:flex; gap:8px; margin-bottom:10px; }
+  .tools input { flex:1; min-width:0; }
+  .tools select { width:auto; }
+  .q { border-top:1px solid var(--border); padding:12px 0; }
+  .q:first-child { border-top:0; padding-top:0; }
+  .q .top { display:flex; gap:8px; align-items:baseline; justify-content:space-between; }
+  .q .qt { font-weight:600; word-break:break-word; white-space:pre-wrap; }
+  .tag { display:inline-block; white-space:nowrap; font-size:11px; border-radius:999px; padding:0 8px; background:var(--blue-soft); color:var(--blue); }
+  .tag.done { background:var(--sage-soft); color:var(--sage); } .tag.wait { background:var(--wood-soft); color:var(--wood); }
+  .meta { font-size:12px; color:var(--muted); margin-top:2px; }
+  .box { margin-top:8px; border-radius:12px; padding:8px 12px; font-size:14px; white-space:pre-wrap; word-break:break-word; }
+  .box b { display:block; font-size:11px; color:var(--muted); font-weight:600; }
+  .box.a { background:var(--blue-soft); } .box.k { background:var(--sage-soft); } .box.n { background:var(--wood-soft); }
+  .q .acts { margin-top:8px; } .q .acts button { padding:3px 12px; font-size:13px; }
+  form.edit { margin-top:8px; padding:12px; border-radius:12px; background:var(--wood-soft); }
+  form.edit textarea, form.edit select { background:var(--surface); }
+  .empty { color:var(--muted); font-size:14px; padding:4px 0; }
+  .look { background:var(--sage-soft); border-color:transparent; }
+  .look .qt { font-weight:600; }
+  details.how summary { cursor:pointer; color:var(--wood); font-size:14px; }
+  details.how ol { padding-left:20px; margin:8px 0 0; font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← とわなにか</a>
+  <h1>質問ノート</h1>
+  <p class="lead">自分を高めるためにGPTに聞いたことと、その答え・気づき・次の一歩をためていく場所です。</p>
+
+  <div class="card">
+    <div class="sum">
+      <div class="s1"><small>聞いた質問</small><span class="big" id="n1">0</span></div>
+      <div class="s2"><small>答えを残した</small><span class="big" id="n2">0</span></div>
+      <div class="s3"><small>次の一歩</small><span class="big" id="n3">0</span></div>
+    </div>
+    <div class="meter"><i id="mbar" style="width:0%"></i></div>
+    <div class="note" id="mnote"></div>
+  </div>
+
+  <div class="card look" id="look" hidden>
+    <h2>前の自分をふり返る</h2>
+    <div id="lookbody"></div>
+  </div>
+
+  <div class="card">
+    <h2>質問を書く</h2>
+    <div class="themes" id="themes" role="group" aria-label="テーマ"></div>
+    <div class="hints" id="hints"></div>
+    <label class="f" for="q">GPTに聞くこと</label>
+    <textarea id="q" maxlength="2000" placeholder="上のヒントを押すか、そのまま書きます"></textarea>
+    <label class="chk"><input type="checkbox" id="wrap" checked>前置きをつけてコピー（具体的な一歩と、私への問いを1つ返してもらう）</label>
+    <div class="acts">
+      <button class="main" id="copy" type="button">コピーしてノートに残す</button>
+      <a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPTを開く</a>
+    </div>
+    <p id="status" role="status"></p>
+    <details class="how">
+      <summary>使いかた</summary>
+      <ol>
+        <li>ヒントを押すか、聞きたいことを書く</li>
+        <li>「コピーしてノートに残す」→ ChatGPTに貼って送る</li>
+        <li>答えが来たら、下の一覧の「答えを書く」で要点・気づき・次の一歩を残す</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>これまでの質問</h2>
+    <div class="tools">
+      <input id="find" type="search" placeholder="ことばで探す">
+      <select id="show" aria-label="しぼりこみ">
+        <option value="all">すべて</option>
+        <option value="wait">答えまだ</option>
+        <option value="done">答えあり</option>
+      </select>
+    </div>
+    <div id="list"></div>
+    <div class="acts"><button id="export" type="button">書き出す（テキスト）</button></div>
+  </div>
+  <p class="note">保存先：この端末と、ログインした端末（端末どうしでそろいます）。</p>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-ask-v1";
+  var THEMES = [
+    { n: "自分を知る", q: [
+      "私が本当に大切にしている価値観を見つけるために、私に5つ質問してください。",
+      "私の強みを見つけたいです。最近うまくいったことを聞いて、そこから強みを言葉にしてください。",
+      "私が無意識に避けていることは何か、気づくための問いをください。" ]},
+    { n: "習慣", q: [
+      "毎日10分で続けられて、1年後に大きな差になる習慣を3つ、理由つきで教えてください。",
+      "続かない習慣を続けるために、仕組みでできる工夫を教えてください。",
+      "朝と夜のルーティンを、疲れていてもできる形で一緒に作ってください。" ]},
+    { n: "心", q: [
+      "不安で頭がいっぱいなとき、5分で落ち着くためにできることを教えてください。",
+      "自分を責めてしまうとき、どう言いかえればいいですか。例をください。",
+      "落ちこんだ日でも「これだけはできた」と思える小さなことを一緒に考えてください。" ]},
+    { n: "人との関係", q: [
+      "大切な人との関係を深めるために、今週できる小さな行動を教えてください。",
+      "言いにくいことを、相手を傷つけずに伝える言い方を練習させてください。",
+      "感謝を伝えるのが苦手です。自然に伝える方法を教えてください。" ]},
+    { n: "学びと仕事", q: [
+      "今の私が1年で身につけると人生が楽になる力は何ですか。私の状況を聞いてから答えてください。",
+      "新しいことを早く覚えるための勉強のしかたを、具体的に教えてください。",
+      "やりたいことが多すぎて決められません。優先順位の決め方を一緒にやってください。" ]},
+    { n: "お金と自由", q: [
+      "お金の不安を小さくするために、今月からできることを3つ教えてください。",
+      "自由な時間を増やすために、やめてもいいことを見つける質問をください。" ]},
+    { n: "未来", q: [
+      "5年後の理想の1日を一緒に描いて、そこから逆算して今年やることを決めてください。",
+      "もし失敗しないと分かっていたら、何をしたいか。私に問いかけて引き出してください。" ]}
+  ];
+  var PRE = "私は自分を高めたいと思っています。次の質問に、やさしく具体的に答えてください。最後に「今日できる小さな一歩」を1つと、私が考えを深めるための問いを1つください。\n\n";
+
+  function $(id) { return document.getElementById(id); }
+  function uid() { return "q" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.items)) return s; } catch (e) {} return { items: [] }; }
+  var S = load(), theme = 0, editing = null;
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); return true; } catch (e) { $("status").textContent = "保存できませんでした。"; return false; } }
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+  function jp(d) { var a = d.split("-"); return +a[0] + "年" + +a[1] + "月" + +a[2] + "日"; }
+  function answered(it) { return !!(it.ans || it.learn); }
+
+  // テーマとヒント
+  function drawThemes() {
+    var root = $("themes"); root.textContent = "";
+    THEMES.forEach(function (t, i) {
+      var b = el("button", null, t.n); b.type = "button"; b.setAttribute("aria-pressed", i === theme ? "true" : "false");
+      b.onclick = function () { theme = i; drawThemes(); }; root.appendChild(b);
+    });
+    var h = $("hints"); h.textContent = "";
+    THEMES[theme].q.forEach(function (q) {
+      var b = el("button", "hint", q); b.type = "button";
+      b.onclick = function () { $("q").value = q; $("q").focus(); }; h.appendChild(b);
+    });
+  }
+
+  function summary() {
+    var n = S.items.length, a = S.items.filter(answered).length, s = S.items.filter(function (x) { return x.next; }).length;
+    $("n1").textContent = n; $("n2").textContent = a; $("n3").textContent = s;
+    $("mbar").style.width = (n ? a / n * 100 : 0) + "%";
+    $("mnote").textContent = !n ? "最初の質問を書いてみましょう。" : a < n ? "答えを残していない質問が " + (n - a) + " 個あります。" : "すべての質問に答えを残しました。";
+  }
+
+  // 7日以上前の質問を1つ見せる（日ごとに変わる）
+  function lookback() {
+    var old = S.items.filter(function (x) { return answered(x) && (Date.now() - new Date(x.at).getTime()) > 7 * 864e5; });
+    if (!old.length) { $("look").hidden = true; return; }
+    var it = old[new Date().getDate() % old.length], b = $("lookbody"); b.textContent = "";
+    b.appendChild(el("div", "meta", jp(it.at) + "（" + it.theme + "）"));
+    b.appendChild(el("div", "qt", it.q));
+    if (it.learn) b.appendChild(box("k", "そのときの気づき", it.learn));
+    if (it.next) b.appendChild(box("n", "次の一歩", it.next));
+    b.appendChild(el("div", "note", "いまの自分なら、どう答えますか。"));
+    $("look").hidden = false;
+  }
+
+  function box(cls, label, text) { var d = el("div", "box " + cls); d.appendChild(el("b", null, label)); d.appendChild(document.createTextNode(text)); return d; }
+
+  function editForm(it) {
+    var f = el("form", "edit");
+    function field(label, val, rows) { f.appendChild(el("label", "f", label)); var t = el("textarea"); t.value = val || ""; t.rows = rows; t.maxLength = 5000; f.appendChild(t); return t; }
+    var tq = field("質問", it.q, 2);
+    var ta = field("GPTの答え（要点だけでOK）", it.ans, 4);
+    var tl = field("気づいたこと", it.learn, 2);
+    var tn = field("次の一歩（やること1つ）", it.next, 1);
+    var row = el("div", "acts");
+    var ok = el("button", "main", "残す"); ok.type = "submit";
+    var cancel = el("button", null, "やめる"); cancel.type = "button"; cancel.onclick = function () { editing = null; render(); };
+    row.appendChild(ok); row.appendChild(cancel); f.appendChild(row);
+    f.onsubmit = function (e) {
+      e.preventDefault();
+      if (tq.value.trim()) it.q = tq.value.trim();
+      it.ans = ta.value.trim(); it.learn = tl.value.trim(); it.next = tn.value.trim();
+      editing = null; save(); render();
+    };
+    setTimeout(function () { (it.ans ? tl : ta).focus(); }, 0);
+    return f;
+  }
+
+  function row(it) {
+    var r = el("div", "q");
+    var top = el("div", "top");
+    top.appendChild(el("div", "qt", it.q));
+    top.appendChild(el("span", "tag " + (answered(it) ? "done" : "wait"), answered(it) ? "答えあり" : "答えまだ"));
+    r.appendChild(top);
+    r.appendChild(el("div", "meta", jp(it.at) + "・" + it.theme));
+    if (editing === it.id) { r.appendChild(editForm(it)); return r; }
+    if (it.ans) r.appendChild(box("a", "GPTの答え", it.ans));
+    if (it.learn) r.appendChild(box("k", "気づいたこと", it.learn));
+    if (it.next) r.appendChild(box("n", "次の一歩", it.next));
+    var a = el("div", "acts");
+    var e = el("button", answered(it) ? null : "main", answered(it) ? "直す" : "答えを書く"); e.type = "button";
+    e.onclick = function () { editing = it.id; render(); };
+    var c = el("button", null, "もう一度コピー"); c.type = "button";
+    c.onclick = function () { copy(it.q); };
+    var d = el("button", "del", "消す"); d.type = "button";
+    d.onclick = function () { if (!confirm("この質問を消しますか？")) return; S.items = S.items.filter(function (x) { return x.id !== it.id; }); save(); render(); };
+    a.appendChild(e); a.appendChild(c); a.appendChild(d); r.appendChild(a);
+    return r;
+  }
+
+  function render() {
+    summary(); lookback();
+    var root = $("list"); root.textContent = "";
+    var w = $("find").value.trim().toLowerCase(), show = $("show").value;
+    var items = S.items.slice().reverse().filter(function (x) {
+      if (show === "wait" && answered(x)) return false;
+      if (show === "done" && !answered(x)) return false;
+      if (!w) return true;
+      return [x.q, x.ans, x.learn, x.next, x.theme].join("\n").toLowerCase().indexOf(w) >= 0;
+    });
+    if (!S.items.length) { root.appendChild(el("div", "empty", "まだありません。上で質問を書いて「コピーしてノートに残す」を押します。")); return; }
+    if (!items.length) { root.appendChild(el("div", "empty", "見つかりませんでした。")); return; }
+    items.forEach(function (x) { root.appendChild(row(x)); });
+  }
+
+  function copy(q, after) {
+    var text = ($("wrap").checked ? PRE : "") + q;
+    function done(ok) {
+      $("status").textContent = ok ? "コピーしました。ChatGPTに貼って送ります。" : "コピーできませんでした。下の欄の文を選んでコピーしてください。";
+      if (!ok) { $("q").value = text; $("q").focus(); $("q").select(); }
+      if (after) after(ok);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+    else done(false);
+  }
+
+  $("copy").onclick = function () {
+    var q = $("q").value.trim();
+    if (!q) { $("status").textContent = "質問を書くか、ヒントを押してください。"; return; }
+    S.items.push({ id: uid(), q: q, theme: THEMES[theme].n, at: today(), ans: "", learn: "", next: "" });
+    if (!save()) return;
+    render();
+    copy(q, function (ok) { if (ok) $("q").value = ""; });
+  };
+  $("find").oninput = render; $("show").onchange = render;
+  $("export").onclick = function () {
+    if (!S.items.length) { $("status").textContent = "書き出す質問がありません。"; return; }
+    var txt = S.items.map(function (x) {
+      return "■ " + x.at + "（" + x.theme + "）\n質問：" + x.q + (x.ans ? "\n答え：" + x.ans : "") + (x.learn ? "\n気づき：" + x.learn : "") + (x.next ? "\n次の一歩：" + x.next : "");
+    }).join("\n\n");
+    var url = URL.createObjectURL(new Blob([txt], { type: "text/plain;charset=utf-8" }));
+    var a = document.createElement("a"); a.href = url; a.download = "question-note.txt"; a.click(); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  };
+  // ほかの端末から同期で届いたら描き直す
+  window.addEventListener("storage", function (e) { if (e.key === KEY) { S = load(); render(); } });
+  drawThemes(); render();
+})();
+</script>
+</body>
+</html>
