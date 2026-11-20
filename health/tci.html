@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; connect-src 'none'">
+<title>TCIの記録 — 響</title>
+<style>
+:root{color-scheme:light dark;--bg:#f5f1e9;--card:#fbf9f4;--ink:#282923;--sub:#656e61;--line:#d9ded0;--accent:#63816d}
+@media(prefers-color-scheme:dark){:root{--bg:#1c211c;--card:#242b25;--ink:#f0eee5;--sub:#acb9a9;--line:#465047;--accent:#a8cfaf}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.7 system-ui,-apple-system,"Noto Sans JP",sans-serif}
+main{max-width:680px;margin:auto;padding:28px 18px 70px}
+a{color:var(--accent)}h1{font-size:1.8rem;margin:14px 0 4px}h2{font-size:1.14rem}
+small,.note{color:var(--sub)}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin:18px 0}
+input[type=file]{display:block;max-width:100%;margin:14px 0;padding:10px;border:1px dashed var(--accent);border-radius:10px}
+button{border:1px solid var(--accent);background:var(--card);color:var(--ink);border-radius:10px;padding:10px 16px;font:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px}.bar{background:var(--line);height:10px;border-radius:20px;overflow:hidden}.fill{display:block;background:var(--accent);height:100%}.metric{margin:18px 0}.metric .row strong{font-size:.94rem}.num{font-variant-numeric:tabular-nums;font-weight:700}#results[hidden]{display:none}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.86rem;color:var(--sub)}
+footer{font-size:.78rem;color:var(--sub);margin-top:28px}
+</style>
+</head>
+<body><main>
+<a href="../health/">← 健康へ</a>
+<h1>気質と性格の記録</h1>
+<p class="note">自分の輪郭を、決めつけずに眺める。</p>
+<section class="card" aria-labelledby="load-title">
+<h2 id="load-title">自分のTCIテキストを開く</h2>
+<p>以前保存した <code>TCI_20261024_results.txt</code> を端末から選んでください。このページはテキストを外部に送信せず、サーバー・ブラウザ保存領域にも保存しません。</p>
+<label for="file">テキストファイルを選択（.txt）</label>
+<input id="file" type="file" accept=".txt,text/plain">
+<button id="clear" type="button">表示を消す</button>
+<p id="status" role="status" aria-live="polite">ファイルを選ぶまで結果は表示されません。</p>
+</section>
+<section id="results" hidden aria-labelledby="result-title">
+<div class="card"><h2 id="result-title">主要尺度</h2><p class="note">百分位は基準集団内での相対的位置です。よい・悪いの得点ではありません。</p><div id="metrics"></div></div>
+<details class="card"><summary>下位尺度と検査メモ（原文）</summary><pre id="details"></pre></details>
+<p class="note">この結果は自己理解の参考情報で、診断ではありません。必要なら検査を実施した専門家と一緒に解釈してください。</p>
+</section>
+<footer>端末内でのみ表示します。共有端末ではファイルの置き場所にも注意してください。GitHubの公開コードに個人の検査結果は含まれません。</footer>
+</main>
+<script>
+(function(){
+"use strict";
+const labels={NS:"刺激追求",HA:"損害回避",RD:"報酬依存",PS:"持続性",SD:"自己志向",CO:"協調性",ST:"自己超越",SC:"自己志向＋協調性"};
+const file=document.getElementById("file"),status=document.getElementById("status"),results=document.getElementById("results"),metrics=document.getElementById("metrics"),details=document.getElementById("details");
+function clear(){file.value="";metrics.replaceChildren();details.textContent="";results.hidden=true;status.textContent="表示を消しました。"}
+document.getElementById("clear").addEventListener("click",clear);
+file.addEventListener("change",async function(){
+  metrics.replaceChildren();details.textContent="";results.hidden=true;
+  const chosen=file.files && file.files[0];if(!chosen)return;
+  if(chosen.size>100000){status.textContent="100KB以下のテキストファイルを選んでください。";return;}
+  try{
+    const content=await chosen.text();
+    const lines=content.split(/\r?\n/);
+    const entries=[];
+    for(const line of lines){
+      const match=line.match(/\b(NS|HA|RD|PS|SD|CO|ST|SC)\s*（[^）]*）\s*\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*(\d+)/);
+      if(match){const p=Number(match[4]);if(p<=100)entries.push({key:match[1],raw:match[2],t:match[3],pct:p});}
+    }
+    if(entries.length!==8 || new Set(entries.map(x=>x.key)).size!==8){status.textContent="TCIの主要8尺度を読み取れませんでした。保存済みのTCI結果テキストを選んでください。";return;}
+    for(const e of entries){
+      const wrap=document.createElement("div");wrap.className="metric";
+      const row=document.createElement("div");row.className="row";
+      const title=document.createElement("strong");title.textContent=labels[e.key]+" ("+e.key+")";
+      const value=document.createElement("span");value.className="num";value.textContent=e.pct+" 百分位";
+      row.append(title,value);wrap.append(row);
+      const bar=document.createElement("div");bar.className="bar";bar.setAttribute("role","img");bar.setAttribute("aria-label",labels[e.key]+" 百分位 "+e.pct+"、T点 "+e.t+"、原点数 "+e.raw);
+      const fill=document.createElement("span");fill.className="fill";fill.style.width=e.pct+"%";bar.append(fill);wrap.append(bar);
+      const extra=document.createElement("small");extra.textContent="T点 "+e.t+" · 原点数 "+e.raw;wrap.append(extra);metrics.append(wrap);
+    }
+    const subStart=content.indexOf("【下位尺度】"),subEnd=content.indexOf("【原本の注記");
+    details.textContent=subStart>=0?content.slice(subStart,subEnd>=0?subEnd:undefined).trim():"下位尺度の記録はありません。";
+    results.hidden=false;status.textContent="読み込みました。この結果はこの画面にのみ表示されています。";
+  }catch(e){status.textContent="読み込みに失敗しました。テキストファイルを確認してください。";}
+});
+})();
+</script>
+</body></html>
