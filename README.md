@@ -74,3 +74,4 @@ YouTube Reader：入口 `youtube/`。ブックマークレットで、開いて�
 
 - 世界の宗教9講：`study/view.html?n=religion9`（ジャイナ教・シク教・バハイ信仰。比較図と説明直後の4択、8講への移動付き）。
 - 開かれた社会と21世紀11講：`study/view.html?n=open11`（組織化の意味、四つの機能、三つの主体、四段階、三つの方法を図と4択で確認。12〜15講は今回は未作成）。
+- 学習「英語を絵と音で学ぶ」：study/language/pictures.html
