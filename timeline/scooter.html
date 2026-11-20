@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; base-uri 'none'; form-action 'none'">
+<title>移動の記録 — 響</title>
+<style>
+:root{color-scheme:light dark;--bg:#f5f1e9;--card:#fbf9f4;--text:#2b2924;--muted:#746f64;--line:#ddd5c8;--sage:#69816e}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--card:#242119;--text:#ede8dd;--muted:#afa89a;--line:#3f392e;--sage:#a4c1a2}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.8 system-ui,-apple-system,"Noto Sans JP",sans-serif}main{max-width:650px;padding:26px 18px 60px;margin:auto}
+a{color:var(--sage)}h1{font-size:1.8rem;margin-bottom:4px}.sub{color:var(--muted)}.card{margin-top:16px;background:var(--card);border:1px solid var(--line);padding:19px;border-radius:18px}
+input{max-width:100%;font:inherit;margin:12px 0}button{background:transparent;color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--sage);outline-offset:3px}
+section[hidden]{display:none}pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere;margin:0}
+small{color:var(--muted)}footer{margin-top:24px;color:var(--muted);font-size:.8rem}
+</style></head><body><main><a href="./">← これまでの道</a>
+<h1>移動の記録</h1><p class="sub">経験を残し、次の行動につなげる。</p>
+<div class="card"><label for="record"><strong>個人記録のテキストを開く</strong></label><p>端末内の .txt ファイルを選びます。このページはファイルを送信・保存しません。</p>
+<input id="record" type="file" accept=".txt,text/plain"><p id="status" role="status" aria-live="polite">まだ記録は開かれていません。</p><button type="button" id="clear">表示を消す</button></div>
+<section class="card" id="viewer" hidden aria-label="読み込んだ記録"><pre id="body"></pre></section>
+<footer>記録の本文や移動履歴は公開リポジトリに含めず、選択した端末の画面内だけに表示します。共有端末ではファイルの扱いに注意してください。</footer>
+<script>
+(()=>{const f=document.getElementById("record"),s=document.getElementById("status"),v=document.getElementById("viewer"),b=document.getElementById("body");
+function clear(){f.value="";b.textContent="";v.hidden=true;s.textContent="表示を消しました。";}
+document.getElementById("clear").addEventListener("click",clear);
+f.addEventListener("change",async()=>{b.textContent="";v.hidden=true;const file=f.files?.[0];if(!file)return;
+if(file.size>100000){s.textContent="100KB以下のテキストを選んでください。";return;}
+try{const t=await file.text();if(!t.trim())throw Error("empty");b.textContent=t;v.hidden=false;s.textContent="この端末で記録を表示しています。";}catch{s.textContent="読み込めませんでした。テキストファイルを確認してください。";}});
+})();
+</script></main></body></html>
