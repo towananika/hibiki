@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>自分を知る — とわなにか</title>
+<meta name="description" content="好き・苦手・得意・大切なことと、6つの型の適性を集めて、自分の地図にする。">
+<script src="../sync.js"></script>
+<style>
+  :root { --bg:#f5f1e9; --surface:#fbf9f4; --border:#e2dac8; --text:#2b2924; --muted:#8a8271; --wood:#93704b; --wood-soft:#ece1d0; --sage:#74886d; --sage-soft:#e2e8dd; --red:#a8553f; --red-soft:#f0dcd5; --blue:#5b7c99; --blue-soft:#dde6ee; --shadow:0 1px 2px rgba(43,41,36,.05),0 16px 40px rgba(43,41,36,.08); }
+  @media (prefers-color-scheme: dark) { :root { --bg:#1c1a16; --surface:#242119; --border:#38332a; --text:#ede8dd; --muted:#a89e8a; --wood:#c99f74; --wood-soft:#382d20; --sage:#9db394; --sage-soft:#26301f; --red:#d98a72; --red-soft:#3a2620; --blue:#8fb0cc; --blue-soft:#222d37; --shadow:none; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; line-height:1.6; font-size:16px; }
+  main { max-width:480px; margin:0 auto; padding:24px 16px 64px; }
+  a { color:var(--blue); }
+  a.back { color:var(--wood); font-size:14px; text-decoration:none; }
+  h1 { font-size:24px; margin:6px 0 4px; } h2 { font-size:17px; margin:0 0 8px; }
+  .lead { color:var(--muted); font-size:14px; margin:0 0 12px; }
+  .jump { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 16px; }
+  .jump a { font-size:13px; text-decoration:none; color:var(--wood); background:var(--wood-soft); border-radius:999px; padding:2px 10px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:var(--shadow); }
+  .note { color:var(--muted); font-size:12px; margin:6px 0 0; }
+  .meter { height:8px; border-radius:6px; background:var(--wood-soft); overflow:hidden; margin:4px 0; }
+  .meter i { display:block; height:100%; background:var(--sage); transition:width .3s; }
+  .row { display:flex; justify-content:space-between; align-items:baseline; font-size:13px; color:var(--muted); }
+  .row b { color:var(--text); font-size:15px; }
+  svg.radar { display:block; width:100%; max-width:300px; margin:4px auto 0; }
+  .legend { display:flex; gap:14px; justify-content:center; font-size:12px; color:var(--muted); }
+  .legend i { display:inline-block; width:14px; height:3px; vertical-align:middle; margin-right:4px; }
+  .top2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .top2 div { border-radius:12px; padding:8px 10px; background:var(--sage-soft); font-size:12px; }
+  .top2 b { display:block; font-size:15px; }
+  button { font:inherit; cursor:pointer; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--text); padding:6px 14px; font-size:14px; }
+  button.main { background:var(--wood); color:#fff; border-color:var(--wood); }
+  .q { border-top:1px solid var(--border); padding:10px 0; }
+  .q:first-of-type { border-top:0; }
+  .q p { margin:0 0 6px; font-size:15px; }
+  .q small { color:var(--muted); font-size:11px; }
+  .seg { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+  .seg.two { grid-template-columns:1fr 1fr; }
+  .seg button { padding:6px 4px; font-size:13px; border-radius:10px; }
+  .seg button.on { background:var(--sage-soft); border-color:var(--sage); font-weight:600; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { font-size:13px; padding:4px 12px; border-radius:999px; }
+  .chip.on { background:var(--wood); color:#fff; border-color:var(--wood); }
+  .tabs { display:flex; gap:6px; margin-bottom:10px; }
+  .tabs button[aria-pressed="true"] { background:var(--wood); color:#fff; border-color:var(--wood); }
+  .add { display:flex; gap:8px; margin:8px 0; }
+  input, textarea { font:inherit; color:var(--text); background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:8px 12px; width:100%; min-width:0; }
+  textarea { resize:vertical; min-height:72px; }
+  .add button { flex:none; }
+  ul.items { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:6px; }
+  ul.items li { background:var(--blue-soft); border-radius:999px; padding:3px 4px 3px 12px; font-size:14px; display:flex; align-items:center; gap:2px; }
+  ul.items li button { border:0; background:none; padding:0 8px; color:var(--muted); }
+  .clue { display:flex; gap:8px; align-items:center; border-top:1px solid var(--border); padding:8px 0; font-size:14px; }
+  .clue:first-child { border-top:0; }
+  .clue span { flex:1; }
+  .clue em { font-style:normal; font-size:11px; color:var(--wood); background:var(--wood-soft); border-radius:999px; padding:0 8px; margin-right:6px; white-space:nowrap; }
+  .clue button { padding:2px 10px; font-size:13px; }
+  .clue button.yes.on { background:var(--sage-soft); border-color:var(--sage); }
+  .clue button.no.on { background:var(--red-soft); border-color:var(--red); }
+  .clue.no span { color:var(--muted); text-decoration:line-through; }
+  .grp { font-size:12px; color:var(--muted); font-weight:600; margin:10px 0 0; }
+  .energy { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .energy div { border-radius:12px; padding:8px 10px; font-size:13px; }
+  .energy .p { background:var(--sage-soft); } .energy .m { background:var(--red-soft); }
+  .energy b { display:block; font-size:12px; color:var(--muted); }
+  .energy ol { margin:4px 0 0; padding-left:18px; }
+  .ask { font-size:16px; font-weight:600; background:var(--wood-soft); border-radius:12px; padding:10px 12px; margin:0 0 8px; }
+  .acts { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:8px; }
+  .msg { min-height:18px; font-size:13px; color:var(--sage); margin:6px 0 0; }
+  details summary { cursor:pointer; font-size:13px; color:var(--muted); margin-top:8px; }
+  .past { font-size:13px; border-top:1px solid var(--border); padding:6px 0; white-space:pre-wrap; word-break:break-word; }
+  .past b { display:block; font-size:12px; color:var(--muted); font-weight:400; }
+  blockquote { margin:8px 0 0; padding:6px 10px; border-left:3px solid var(--border); color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← とわなにか</a>
+  <h1>自分を知る</h1>
+  <p class="lead">好き・苦手・得意・大切なことを集めて、自分の地図にする。</p>
+  <nav class="jump"><a href="#map">地図</a><a href="#clues">手がかり</a><a href="#apt">適性</a><a href="#pick">どっち派</a><a href="#vals">大切</a><a href="#list">リスト</a><a href="#energy">元気</a><a href="#today">今日の問い</a></nav>
+
+  <section class="card" id="map">
+    <h2>わたしの地図</h2>
+    <div class="row"><span>うまり具合</span><b id="fill"></b></div>
+    <div class="meter"><i id="fillbar"></i></div>
+    <svg class="radar" id="radar" viewBox="0 0 300 260" role="img" aria-label="6つの型の適性グラフ"></svg>
+    <div class="legend"><span><i style="background:var(--sage)"></i>自分のチェック</span><span><i style="background:var(--wood)"></i>AIの見立て（推測）</span></div>
+    <div class="top2" id="top2"></div>
+  </section>
+
+  <section class="card" id="clues">
+    <h2>集めた手がかり</h2>
+    <p class="note" style="margin:0 0 6px">これまでの会話と説明書からAIが拾ったもの。合っていれば ✓（リストに入る）、ちがえば ✗。</p>
+    <div id="cluelist"></div>
+  </section>
+
+  <section class="card" id="apt">
+    <h2>適性チェック（18問）</h2>
+    <div class="row"><span>答えた数</span><b id="aptn"></b></div>
+    <div class="meter"><i id="aptbar"></i></div>
+    <details id="aptd"><summary>質問を見る・答えを変える</summary><div id="aptq"></div></details>
+    <blockquote>補足：6つの型は、ホランドの「職業の興味」の考え方をもとにした簡易版。検査ではなく、自分で確かめる手がかり。</blockquote>
+  </section>
+
+  <section class="card" id="pick">
+    <h2>どっち派？</h2>
+    <div id="pairs"></div>
+  </section>
+
+  <section class="card" id="vals">
+    <h2>大切なこと（5つまで）</h2>
+    <div class="chips" id="valchips"></div>
+    <p class="note" id="valnote"></p>
+  </section>
+
+  <section class="card" id="list">
+    <h2>わたしのリスト</h2>
+    <div class="tabs" id="tabs"></div>
+    <form class="add" id="addform"><input id="addin" maxlength="60" placeholder="例：雨の日の散歩"><button class="main">足す</button></form>
+    <ul class="items" id="items"></ul>
+  </section>
+
+  <section class="card" id="energy">
+    <h2>元気メーター</h2>
+    <p class="note" style="margin:0 0 6px">やったあと元気が出たことは ＋、すり減ったことは −。たまると向き不向きが見える。</p>
+    <form class="add" id="enform"><input id="enin" maxlength="60" placeholder="例：ゲームの仕組みを考えた"></form>
+    <div class="seg two"><button type="button" id="enp">＋ 元気が出た</button><button type="button" id="enm">− すり減った</button></div>
+    <div class="energy"><div class="p"><b>元気が出ること</b><ol id="enplus"></ol></div><div class="m"><b>すり減ること</b><ol id="enminus"></ol></div></div>
+  </section>
+
+  <section class="card" id="today">
+    <h2>今日の問い</h2>
+    <p class="ask" id="ask"></p>
+    <textarea id="ans" maxlength="600" placeholder="ひとことでOK"></textarea>
+    <div class="acts"><button class="main" id="ansave">残す</button><button id="nextq">ほかの問い</button></div>
+    <p class="msg" id="ansmsg" role="status"></p>
+    <details><summary>これまでの答え（<span id="pastn">0</span>）</summary><div id="past"></div></details>
+  </section>
+
+  <section class="card">
+    <h2>AIと深める</h2>
+    <p class="note" style="margin:0 0 8px">ここまでのまとめを質問つきでコピー。AIに貼ると、向いていそうなことを一緒に考えられる。</p>
+    <div class="acts"><button class="main" id="copy">まとめをコピー</button><a href="../ask/">質問ノートへ</a><a href="../grow/#growth">性格・心理の記録へ</a></div>
+    <p class="msg" id="copymsg" role="status"></p>
+  </section>
+  <p class="note">保存先：この端末と、ログインした端末（端末どうしでそろいます）。公開のページには書き込みません。</p>
+</main>
+<script>
+(function () {
+  var KEY = "hibiki-me-v1";
+  // 6つの型（ホランドの六角形の順）
+  var TYPES = [
+    { k: "R", n: "つくる・動かす", ai: .2, ex: "料理・修理・ものづくり・植物・体を使う仕事",
+      q: ["手を動かして何かを作るのが好き", "機械や道具をいじるのが楽しい", "体を動かして働くと気持ちいい"] },
+    { k: "I", n: "しらべる・考える", ai: .8, ex: "研究・データ分析・プログラミング・調べて書く",
+      q: ["「なぜ？」を調べ始めると止まらない", "数字やデータから答えを見つけるのが好き", "ひとりでじっくり考える時間が好き"] },
+    { k: "A", n: "あらわす・創る", ai: .75, ex: "ゲーム・デザイン・文章・写真や動画・音楽",
+      q: ["絵・音・文章などで表現したい", "決まりがないほうが力が出る", "おもしろいもの、きれいなものを作りたい"] },
+    { k: "S", n: "ささえる・教える", ai: .5, ex: "教える・相談にのる・ケア・人と人をつなぐ",
+      q: ["人の話を聞いて力になりたい", "教えたり説明したりするのが好き", "誰かが喜ぶと自分もうれしい"] },
+    { k: "E", n: "まきこむ・導く", ai: .75, ex: "企画・発信・販売・事業をつくる・チームをまとめる",
+      q: ["人を誘って何かを始めるのが好き", "目標を決めて人を動かすのが得意", "売る・交渉する・発表するのが苦にならない"] },
+    { k: "C", n: "ととのえる・続ける", ai: .5, ex: "家計・経理・計画づくり・記録・品質を守る",
+      q: ["整理や記録をつけるのが好き", "決まった手順をきちんとこなせる", "お金や予定の管理が得意"] }
+  ];
+  var ANS = ["ちがう", "ややそう", "そう"];
+  // 説明書（公開版）から拾った手がかり。（推測）をふくむ
+  var CLUES = [
+    ["like", "c1", "交通・ミリタリー・ファンタジー・現実の恋愛"],
+    ["like", "c2", "絵・BGM・操作感のいいゲーム"],
+    ["like", "c3", "図・メーター・カードで1画面で分かるもの"],
+    ["like", "c4", "ゲームのように知らないうちに学ぶ"],
+    ["like", "c5", "長く使えて愛着が持てるもの（MUJI）"],
+    ["like", "c6", "散歩"],
+    ["dislike", "c7", "専門用語が多い・長い文字だけの説明"],
+    ["dislike", "c8", "夜の音、狭くて物の多い部屋"],
+    ["dislike", "c9", "決めつけられること"],
+    ["good", "c10", "総費用で考える"],
+    ["good", "c11", "アイデアが次々に出る"],
+    ["good", "c12", "相手の気持ちを受け止める（推測）"],
+    ["good", "c13", "余白をお金で買う判断ができる"],
+    ["good", "c14", "おかしいと思ったら、はっきり確かめる"]
+  ];
+  var LISTS = [["like", "好き"], ["dislike", "苦手"], ["good", "得意"]];
+  var PAIRS = [["朝型", "夜型"], ["ひとり", "みんなと"], ["計画して", "その場で"], ["話す", "書く"], ["体を動かす", "じっくり考える"], ["新しいこと", "なれたこと"], ["広く浅く", "狭く深く"], ["静かな場所", "にぎやかな場所"], ["作る側", "使う・楽しむ側"], ["先に全体", "まず手を動かす"]];
+  var VALUES = ["健康", "自由", "愛", "安心", "成長", "楽しさ", "誠実", "創造", "家族", "冒険", "貢献", "美しさ", "学び", "お金のゆとり", "信仰", "静けさ", "時間", "挑戦"];
+  var QS = ["時間を忘れて夢中になるのは、どんなとき？", "子どものころ、何をしているときがいちばん楽しかった？", "人からよく頼まれること・ほめられることは？", "お金をもらわなくてもやりたいことは？", "最近「もうやりたくない」と思ったことは？なぜ？", "1日だけ自由なら、朝から夜まで何をする？", "尊敬する人の、どこが好き？", "ついお金を使ってしまうものは？", "疲れていても、これならできることは？", "やっていて「自分らしい」と感じた瞬間は？", "苦手なのに続けていることはある？", "10年後の自分に、何をしていてほしい？", "人に教えられるくらい知っていることは？", "最近うれしかったこと、その理由は？", "どんな人といると、自分が好きになれる？"];
+
+  function $(id) { return document.getElementById(id); }
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+  function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === "object") return s; } catch (e) {} return {}; }
+  var S = load();
+  S.apt = S.apt || {}; S.clue = S.clue || {}; S.pick = S.pick || {}; S.vals = S.vals || []; S.lists = S.lists || {}; S.energy = S.energy || []; S.qa = S.qa || [];
+  LISTS.forEach(function (l) { S.lists[l[0]] = S.lists[l[0]] || []; });
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
+
+  // 地図：レーダーと上位2つ
+  function score(i) { var s = 0, n = 0; for (var j = 0; j < 3; j++) { var v = S.apt[TYPES[i].k + j]; if (v != null) { s += v; n++; } } return n ? s / 6 : null; }
+  function drawMap() {
+    var cx = 150, cy = 132, R = 92, svg = "";
+    function pt(i, r) { var a = -Math.PI / 2 + i * Math.PI / 3; return [cx + Math.cos(a) * R * r, cy + Math.sin(a) * R * r]; }
+    function poly(f) { return TYPES.map(function (t, i) { return pt(i, f(i)).map(function (v) { return v.toFixed(1); }).join(","); }).join(" "); }
+    [1, .66, .33].forEach(function (r) { svg += '<polygon points="' + poly(function () { return r; }) + '" fill="none" stroke="var(--border)"/>'; });
+    TYPES.forEach(function (t, i) {
+      var p = pt(i, 1), l = pt(i, 1.2);
+      svg += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p[0] + '" y2="' + p[1] + '" stroke="var(--border)"/>';
+      svg += '<text x="' + l[0] + '" y="' + (l[1] + 4) + '" font-size="12" text-anchor="middle" fill="var(--text)">' + t.n.split("・")[0] + '</text>';
+    });
+    svg += '<polygon points="' + poly(function (i) { return Math.max(.04, TYPES[i].ai); }) + '" fill="none" stroke="var(--wood)" stroke-width="2" stroke-dasharray="5 4"/>';
+    var mine = TYPES.map(function (t, i) { return score(i); });
+    if (mine.some(function (v) { return v != null; })) svg += '<polygon points="' + poly(function (i) { return Math.max(.04, mine[i] || 0); }) + '" fill="var(--sage)" fill-opacity=".25" stroke="var(--sage)" stroke-width="2"/>';
+    $("radar").innerHTML = svg;
+    var answered = mine.filter(function (v) { return v != null; }).length;
+    var rank = TYPES.map(function (t, i) { return { t: t, v: answered ? (mine[i] || 0) : t.ai }; }).sort(function (a, b) { return b.v - a.v; }).slice(0, 2);
+    $("top2").innerHTML = "";
+    rank.forEach(function (r) { var d = el("div"); d.appendChild(el("b", null, r.t.n)); d.appendChild(document.createTextNode(r.t.ex)); $("top2").appendChild(d); });
+    $("top2").insertAdjacentHTML("afterend", "");
+    // うまり具合：5つの場所
+    var parts = [Object.keys(S.apt).length / 18, Object.keys(S.clue).length / CLUES.length, Object.keys(S.pick).length / PAIRS.length, Math.min(1, S.vals.length / 3), Math.min(1, S.qa.length / 5)];
+    var f = Math.round(parts.reduce(function (a, b) { return a + Math.min(1, b); }, 0) / parts.length * 100);
+    $("fill").textContent = f + "%"; $("fillbar").style.width = f + "%";
+  }
+
+  // 手がかり
+  function drawClues() {
+    var box = $("cluelist"); box.textContent = "";
+    LISTS.forEach(function (l) {
+      box.appendChild(el("p", "grp", l[1]));
+      CLUES.filter(function (c) { return c[0] === l[0]; }).forEach(function (c) {
+        var v = S.clue[c[1]], row = el("div", "clue" + (v === -1 ? " no" : ""));
+        row.appendChild(el("span", null, c[2]));
+        var y = el("button", "yes" + (v === 1 ? " on" : ""), "✓"), n = el("button", "no" + (v === -1 ? " on" : ""), "✗");
+        y.type = n.type = "button"; y.setAttribute("aria-label", "合っている"); n.setAttribute("aria-label", "ちがう");
+        y.onclick = function () { setClue(c, v === 1 ? 0 : 1); }; n.onclick = function () { setClue(c, v === -1 ? 0 : -1); };
+        row.appendChild(y); row.appendChild(n); box.appendChild(row);
+      });
+    });
+  }
+  function setClue(c, v) {
+    var arr = S.lists[c[0]], i = arr.indexOf(c[2]);
+    if (v === 1 && i < 0) arr.push(c[2]);
+    if (v !== 1 && i >= 0) arr.splice(i, 1);
+    if (v) S.clue[c[1]] = v; else delete S.clue[c[1]];
+    save(); drawClues(); drawList(); drawMap();
+  }
+
+  // 適性チェック
+  function drawApt() {
+    var box = $("aptq"); box.textContent = "";
+    var order = [];
+    for (var j = 0; j < 3; j++) TYPES.forEach(function (t) { order.push([t, j]); });
+    order.forEach(function (o) {
+      var id = o[0].k + o[1], d = el("div", "q");
+      d.appendChild(el("p", null, o[0].q[o[1]]));
+      var seg = el("div", "seg");
+      ANS.forEach(function (a, v) {
+        var b = el("button", S.apt[id] === v ? "on" : "", a); b.type = "button";
+        b.onclick = function () { if (S.apt[id] === v) delete S.apt[id]; else S.apt[id] = v; save(); drawApt(); drawMap(); };
+        seg.appendChild(b);
+      });
+      d.appendChild(seg); box.appendChild(d);
+    });
+    var n = Object.keys(S.apt).length;
+    $("aptn").textContent = n + " / 18"; if (!drawApt.once) { $("aptd").open = n < 18; drawApt.once = 1; } $("aptbar").style.width = (n / 18 * 100) + "%";
+  }
+
+  // どっち派
+  function drawPairs() {
+    var box = $("pairs"); box.textContent = "";
+    PAIRS.forEach(function (p, i) {
+      var seg = el("div", "seg two"); seg.style.marginBottom = "6px";
+      p.forEach(function (x, v) {
+        var b = el("button", S.pick[i] === v ? "on" : "", x); b.type = "button";
+        b.onclick = function () { if (S.pick[i] === v) delete S.pick[i]; else S.pick[i] = v; save(); drawPairs(); drawMap(); };
+        seg.appendChild(b);
+      });
+      box.appendChild(seg);
+    });
+  }
+
+  // 大切なこと
+  function drawVals() {
+    var box = $("valchips"); box.textContent = "";
+    VALUES.forEach(function (v) {
+      var on = S.vals.indexOf(v) >= 0, b = el("button", "chip" + (on ? " on" : ""), v); b.type = "button";
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.onclick = function () {
+        var i = S.vals.indexOf(v);
+        if (i >= 0) S.vals.splice(i, 1); else if (S.vals.length < 5) S.vals.push(v); else { $("valnote").textContent = "5つまで。どれかを外してから選んでください。"; return; }
+        save(); drawVals(); drawMap();
+      };
+      box.appendChild(b);
+    });
+    $("valnote").textContent = S.vals.length ? "選んだ順：" + S.vals.join(" → ") : "ピンとくるものを押す。";
+  }
+
+  // リスト
+  var tab = "like";
+  function drawList() {
+    var t = $("tabs"); t.textContent = "";
+    LISTS.forEach(function (l) {
+      var b = el("button", null, l[1] + "（" + S.lists[l[0]].length + "）"); b.type = "button";
+      b.setAttribute("aria-pressed", tab === l[0] ? "true" : "false");
+      b.onclick = function () { tab = l[0]; drawList(); }; t.appendChild(b);
+    });
+    var ul = $("items"); ul.textContent = "";
+    S.lists[tab].forEach(function (x, i) {
+      var li = el("li", null, x), b = el("button", null, "×"); b.type = "button"; b.setAttribute("aria-label", x + " を消す");
+      b.onclick = function () { S.lists[tab].splice(i, 1); CLUES.forEach(function (c) { if (c[2] === x) delete S.clue[c[1]]; }); save(); drawList(); drawClues(); drawMap(); };
+      li.appendChild(b); ul.appendChild(li);
+    });
+    if (!S.lists[tab].length) ul.appendChild(el("li", null, "まだありません")).style.background = "none";
+  }
+  $("addform").onsubmit = function (e) {
+    e.preventDefault(); var v = $("addin").value.trim(); if (!v) return;
+    if (S.lists[tab].indexOf(v) < 0) S.lists[tab].push(v);
+    $("addin").value = ""; save(); drawList();
+  };
+
+  // 元気メーター：同じ言葉は数をまとめる
+  function drawEnergy() {
+    [["enplus", 1], ["enminus", -1]].forEach(function (x) {
+      var c = {}; S.energy.forEach(function (e) { if (e.s === x[1]) c[e.t] = (c[e.t] || 0) + 1; });
+      var ol = $(x[0]); ol.textContent = "";
+      Object.keys(c).sort(function (a, b) { return c[b] - c[a]; }).slice(0, 5).forEach(function (k) { ol.appendChild(el("li", null, k + (c[k] > 1 ? "（" + c[k] + "）" : ""))); });
+      if (!ol.children.length) ol.appendChild(el("li", null, "—"));
+    });
+  }
+  function addEnergy(s) { var v = $("enin").value.trim(); if (!v) { $("enin").focus(); return; } S.energy.push({ t: v, s: s, d: today() }); if (S.energy.length > 300) S.energy.shift(); $("enin").value = ""; save(); drawEnergy(); }
+  $("enp").onclick = function () { addEnergy(1); }; $("enm").onclick = function () { addEnergy(-1); };
+  $("enform").onsubmit = function (e) { e.preventDefault(); addEnergy(1); };
+
+  // 今日の問い：日ごとに変わる
+  var qi = Math.floor(Date.now() / 864e5) % QS.length;
+  function drawQ() {
+    $("ask").textContent = QS[qi];
+    var mine = S.qa.filter(function (x) { return x.q === QS[qi]; }).pop();
+    $("ans").value = mine && mine.d === today() ? mine.a : "";
+    var p = $("past"); p.textContent = "";
+    S.qa.slice().reverse().forEach(function (x) { var d = el("div", "past"); d.appendChild(el("b", null, x.d + "　" + x.q)); d.appendChild(document.createTextNode(x.a)); p.appendChild(d); });
+    $("pastn").textContent = S.qa.length;
+  }
+  $("ansave").onclick = function () {
+    var a = $("ans").value.trim(); if (!a) return;
+    S.qa = S.qa.filter(function (x) { return !(x.q === QS[qi] && x.d === today()); });
+    S.qa.push({ d: today(), q: QS[qi], a: a }); save(); drawQ(); drawMap();
+    $("ansmsg").textContent = "残しました。";
+  };
+  $("nextq").onclick = function () { qi = (qi + 1) % QS.length; $("ansmsg").textContent = ""; drawQ(); };
+
+  // AIに渡すまとめ
+  $("copy").onclick = function () {
+    var L = ["私（ひびき）の好みと適性の記録です。これをもとに、私に向いていそうなこと（仕事・副業・学び・休日の過ごし方）を、理由つきで3つずつ考えてください。決めつけず、確かめるための問いも2つください。", ""];
+    var mine = TYPES.map(function (t, i) { return [t.n, score(i)]; }).filter(function (x) { return x[1] != null; });
+    if (mine.length) L.push("■ 6つの型（自己チェック, 0〜100）", mine.map(function (x) { return x[0] + " " + Math.round(x[1] * 100); }).join("／"), "");
+    LISTS.forEach(function (l) { if (S.lists[l[0]].length) L.push("■ " + l[1], S.lists[l[0]].join("、"), ""); });
+    var pk = PAIRS.map(function (p, i) { return S.pick[i] != null ? p[S.pick[i]] : null; }).filter(Boolean);
+    if (pk.length) L.push("■ どっち派", pk.join("、"), "");
+    if (S.vals.length) L.push("■ 大切なこと", S.vals.join("、"), "");
+    var ep = S.energy.filter(function (e) { return e.s === 1; }).slice(-10).map(function (e) { return e.t; }), em = S.energy.filter(function (e) { return e.s === -1; }).slice(-10).map(function (e) { return e.t; });
+    if (ep.length) L.push("■ 元気が出ること", ep.join("、"), "");
+    if (em.length) L.push("■ すり減ること", em.join("、"), "");
+    if (S.qa.length) L.push("■ 問いと答え", S.qa.slice(-8).map(function (x) { return "Q " + x.q + "\nA " + x.a; }).join("\n"), "");
+    var t = L.join("\n").trim(), m = $("copymsg");
+    function done() { m.textContent = "コピーしました（" + t.length + "文字）。"; }
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () { m.textContent = "コピーできませんでした。"; }); else m.textContent = "コピーできませんでした。";
+  };
+
+  function all() { drawMap(); drawClues(); drawApt(); drawPairs(); drawVals(); drawList(); drawEnergy(); drawQ(); }
+  all();
+  // ほかの端末で変わったら描き直す
+  window.addEventListener("storage", function (e) { if (e.key === KEY) { S = load(); S.apt = S.apt || {}; S.clue = S.clue || {}; S.pick = S.pick || {}; S.vals = S.vals || []; S.lists = S.lists || {}; LISTS.forEach(function (l) { S.lists[l[0]] = S.lists[l[0]] || []; }); S.energy = S.energy || []; S.qa = S.qa || []; all(); } });
+})();
+</script>
+</body>
+</html>
