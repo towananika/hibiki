@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YouTube・Instagram・X Reader — とわなにか</title>
+<title>Reader — とわなにか</title>
 <link rel="apple-touch-icon" href="../icon-180.png">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <script>window.HB_PUBLIC = true;</script>
@@ -42,42 +42,75 @@
   .g .modes input { position:absolute; opacity:0; }
   .g .modes label:has(input:checked) { background:var(--sage-soft); border-color:var(--sage); font-weight:700; }
   .g textarea { width:100%; min-height:260px; padding:12px; border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); font-family:inherit; font-size:13px; line-height:1.7; resize:vertical; }
-  .g .btns { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .g .btns { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
   .g .btns button, .g .small { border:1px solid var(--border); border-radius:10px; background:var(--bg); color:var(--text); padding:10px; font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
-  .g .btns button.main { background:var(--red); border-color:var(--red); color:#fff; }
+  .g .btns button { flex:1; font-size:13px; padding:8px; }
+  .g .btns button.main { flex-basis:100%; font-size:15px; padding:12px; background:var(--red); border-color:var(--red); color:#fff; }
   .g #g-status { white-space:pre-wrap; font-size:14px; color:var(--muted); margin:8px 0 0; }
   .g details { margin-top:14px; font-size:14px; } .g summary { cursor:pointer; font-weight:600; }
   .g #g-hist { list-style:none; padding:0; margin:8px 0 0; display:grid; gap:6px; }
   .g #g-hist button { width:100%; text-align:left; background:none; border:0; border-bottom:1px solid var(--border); color:var(--text); font:inherit; font-size:14px; padding:6px 0; cursor:pointer; }
   .g ol.steps { display:block; padding-left:20px; list-style:decimal; } .g ol.steps li { background:none; border:0; padding:2px 0; } .g ol.steps li:before { content:none; }
+  .g .lb { display:block; font-size:13px; color:var(--muted); margin:10px 0 4px; }
+  .g .in { width:100%; border:1px solid var(--border); background:var(--bg); color:var(--text); border-radius:8px; padding:10px; font:inherit; font-size:14px; }
+  .g .pick { display:block; border:1.5px dashed var(--border); border-radius:10px; padding:12px; text-align:center; font-weight:700; cursor:pointer; }
+  .g .pick input { position:absolute; opacity:0; width:1px; }
+  .g .pick small { display:block; font-weight:400; font-size:12px; color:var(--muted); }
+  .g.over .pick { border-color:var(--sage); background:var(--sage-soft); }
+  .g #g-files { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; margin:8px 0 0; }
+  .g li:before { content:none; } .g #g-hist li { padding:0; background:none; border:0; }
+  .g #g-files li { padding:0; position:relative; width:64px; height:64px; border-radius:8px; overflow:hidden; border:1px solid var(--border); background:var(--bg); }
+  .g #g-files img { width:100%; height:100%; object-fit:cover; } .g #g-files .vid { display:grid; place-items:center; height:100%; color:var(--muted); }
+  .g #g-files button { position:absolute; top:2px; right:2px; width:22px; height:22px; border:0; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; font-size:13px; line-height:1; cursor:pointer; }
+  .g .memo textarea { min-height:0; margin-top:6px; }
+  .g .go { width:100%; margin-top:12px; border:0; border-radius:10px; background:var(--sage); color:var(--bg); padding:12px; font:inherit; font-weight:700; font-size:16px; cursor:pointer; }
+  .g .go:disabled { opacity:.6; }
+  details.pc { margin-top:8px; font-size:14px; } details.pc > summary { cursor:pointer; color:var(--muted); margin-bottom:12px; }
+  .g .rhead { display:flex; align-items:center; gap:8px; margin:16px 0 8px; }
+  .g #g-title { flex:1; margin:0; font-weight:700; line-height:1.5; }
+  .g .tabs { display:flex; border:1px solid var(--border); border-radius:999px; padding:2px; flex:none; }
+  .g .tabs button { border:0; background:none; color:var(--muted); font:inherit; font-size:12px; padding:4px 10px; border-radius:999px; cursor:pointer; }
+  .g .tabs button[aria-selected=true] { background:var(--sage-soft); color:var(--text); font-weight:700; }
+  .g .md { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:4px 14px; font-size:15px; max-height:60vh; overflow:auto; }
+  .g .md h2, .g .md h3 { font-size:15px; margin:14px 0 4px; color:var(--sage); } .g .md h2:first-child { display:none; }
+  .g .md p { margin:8px 0; } .g .md ul { margin:4px 0; padding-left:20px; } .g .md li { padding:0; background:none; border:0; }
+  .g .md blockquote { margin:8px 0; padding:4px 10px; border-left:3px solid var(--sage); color:var(--muted); font-size:14px; }
+  .g .md a { color:var(--sage); }
+  .g .md .src { font-size:12px; color:var(--muted); word-break:break-all; }
 </style>
 </head>
 <body>
 <main>
 <a class="back" href="../">← とわなにか</a>
-<h1>YouTube Reader</h1>
-<p class="sub" style="margin:0 0 12px"><a href="#instagram" style="color:inherit">Instagram</a> · <a href="#x-reader" style="color:inherit">Xの投稿を読む ↓</a></p>
-<section class="g" id="anywhere" aria-labelledby="g-h">
-<h2 id="g-h">リンクから読む</h2>
-<p class="sub" style="margin:0">スマホでもPCでも。Google の Gemini が動画を見て、日本語にします。</p>
+<h1>Reader</h1>
+<p class="sub">YouTube・X・Instagram の動画や画像を読んで、日本語でまとめます。スマホでもPCでも。</p>
+<span id="x-reader"></span>
+<section class="g" id="anywhere" aria-label="読む">
 <form id="g-form">
-<div class="open"><input id="g-url" type="url" required placeholder="https://youtu.be/…" aria-label="YouTubeのリンク"><button type="submit" id="g-go">読む</button></div>
+<label class="lb" for="g-url">リンク（YouTube・X・Instagram）</label>
+<input id="g-url" class="in" type="url" placeholder="https://youtu.be/… / https://x.com/…/status/…">
+<label class="lb">画像・動画（いくつでも）</label>
+<label class="pick"><input id="g-file" type="file" accept="image/*,video/*" multiple>＋ ファイルを選ぶ<small>貼り付け・ドラッグでも入ります</small></label>
+<ul id="g-files" hidden></ul>
+<details class="memo"><summary>本文・メモを足す</summary><textarea id="g-memo" rows="3" placeholder="投稿の本文や、知りたいことなど"></textarea></details>
 <div class="modes" role="radiogroup" aria-label="作るもの">
 <label><input type="radio" name="g-mode" value="sum" checked>要約</label>
-<label><input type="radio" name="g-mode" value="full">文字起こし</label>
+<label><input type="radio" name="g-mode" value="full">全文</label>
 </div>
+<button type="submit" id="g-go" class="go">読む</button>
 </form>
 <p id="g-status" role="status" aria-live="polite"></p>
 <div id="g-result" hidden>
-<p style="margin:12px 0 6px;font-weight:700" id="g-title"></p>
-<textarea id="g-text" readonly aria-label="結果（Markdown）"></textarea>
+<div class="rhead"><p id="g-title"></p><div class="tabs" role="tablist"><button type="button" role="tab" id="g-v-read" aria-selected="true">読む</button><button type="button" role="tab" id="g-v-md" aria-selected="false">Markdown</button></div></div>
+<article id="g-read" class="md"></article>
+<textarea id="g-text" readonly hidden aria-label="結果（Markdown）"></textarea>
 <div class="btns">
 <button type="button" class="main" id="g-copy-ai">AIに渡す形でコピー</button>
-<button type="button" id="g-copy">そのままコピー</button>
+<button type="button" id="g-copy">コピー</button>
 <button type="button" id="g-save">.md で保存</button>
 <button type="button" id="g-share" hidden>共有…</button>
 </div>
-<p class="note" style="margin-top:8px">ChatGPT・Gemini・Claude など、どのAIにも貼れます。Notion やメモアプリにもそのまま貼れる Markdown です。</p>
+<p class="note" style="margin-top:8px">ChatGPT・Gemini・Claude など、どのAIにも、メモアプリにもそのまま貼れます。</p>
 </div>
 <details id="g-hist-box" hidden><summary>さいきん読んだ動画</summary><ul id="g-hist"></ul></details>
 <details id="g-setup"><summary>準備（最初の1回・端末ごと）</summary>
@@ -88,10 +121,10 @@
 </ol>
 <div class="open"><input id="g-key" type="password" autocomplete="off" placeholder="APIキーを貼る" aria-label="Gemini APIキー"><button type="button" id="g-key-save">保存</button></div>
 <button type="button" class="small" id="g-key-del" style="margin-top:8px">この端末のキーを消す</button>
-<p class="note">キーはこの端末の中だけに置きます。サイトにも同期にも送りません。読むときは Google にだけ送ります。無料枠は1日に動画8時間分まで。公開動画だけ読めます。</p>
+<p class="note">キーはこの端末の中だけに置きます。サイトにも同期にも送りません。読むときは Google にだけ送ります。無料枠は1日に動画8時間分まで。YouTubeは公開動画だけ。Instagramはリンクから読めないので、画像・動画を保存して入れてください。</p>
 </details>
 </section>
-<h2 style="font-size:18px;font-weight:600;margin:0 0 8px">PCで字幕をそのまま取る</h2>
+<details class="pc"><summary>PCだけの方法（字幕そのまま・Instagram専用画面）</summary>
 <a class="bm" href="http://127.0.0.1:9032/" target="_blank" rel="noopener">リンクから字幕を取得 ↗</a>
 <p class="note">このPC専用。取得ツールの起動が必要です。字幕がない場合やYouTubeの制限時には取得できません。下のブックマーク方式も引き続き使えます。</p>
 <p class="note"><a href="notes.html">YouTubeノート（仮）を見る →</a><br>動画から残した考えと、暮らし・仕事へのつながりを整理します。</p>
@@ -110,15 +143,9 @@
 <a class="bm" href="http://127.0.0.1:9031/" target="_blank" rel="noopener">専用画面を開く ↗</a>
 <details><summary>接続できない場合</summary><p class="note">このPCのCodexチャットで「Instagramのリンクを読んで」と伝えてください。ローカルツールを起動して取得します。他の端末からはこのPCへ接続できません。</p></details>
 </section>
-<section class="ig" id="x-reader" aria-labelledby="x-title">
-<h2 id="x-title">X Reader</h2><p class="sub">公開投稿のリンクから本文を読み、AIへの相談に使えます。</p>
-<form id="x-form"><label for="x-url">Xの投稿URL</label><div class="open"><input id="x-url" type="url" required placeholder="https://x.com/ユーザー名/status/…"><button type="submit">読み取る</button></div></form>
-<p class="note">公開投稿のURLを外部サービス FxTwitter に送信して取得します。非公開・削除済み・取得制限のある投稿は読めません。動画の中身、画像の文字、スレッド全体は読み取りません。</p>
-<p id="x-status" role="status" aria-live="polite"></p><div id="x-result" hidden><label for="x-text">取得結果</label><textarea id="x-text" readonly rows="10" style="width:100%;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);color:var(--text);font:inherit;resize:vertical"></textarea><button class="bm" type="button" id="x-copy" style="border:0;cursor:pointer;font:inherit">結果をコピー</button><p class="note">画像や動画がある場合は、リンク先で内容を確認してください。</p></div>
-</section>
+</details>
 </main>
-<script src="x-reader.js"></script>
-<script src="gemini.js"></script>
+<script src="reader.js"></script>
 <script type="text/plain" id="code">(async()=>{const d=document;if(location.pathname.startsWith('/shorts/')){location.href='/watch?v='+location.pathname.split('/')[2];alert('ふつうの動画として開きました。もう一度ボタンを押してください。');return}
 function show(t){let o=d.getElementById('hbk-yt');if(o)o.remove();o=d.createElement('div');o.id='hbk-yt';o.style.cssText='position:fixed;top:8%;left:8%;right:8%;bottom:8%;z-index:2147483647;background:#fbf9f4;color:#2b2924;padding:16px;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.45);display:flex;flex-direction:column;gap:10px;font:14px sans-serif';const ta=d.createElement('textarea');ta.value=t;ta.style.cssText='flex:1;width:100%;font:13px/1.6 sans-serif;color:#2b2924;background:#fff;border:1px solid #e2dac8;border-radius:8px;padding:8px';const b=d.createElement('button');b.textContent='コピーして閉じる';b.style.cssText='padding:10px;border:0;border-radius:8px;background:#b5583f;color:#fff;font:700 15px sans-serif;cursor:pointer';b.onclick=()=>{ta.select();(navigator.clipboard?navigator.clipboard.writeText(ta.value):Promise.reject()).catch(()=>d.execCommand('copy')).finally(()=>o.remove())};o.append(ta,b);d.body.append(o);ta.focus();ta.select()}
 const q=s=>[...d.querySelectorAll(s)];const title=(d.querySelector('h1.ytd-watch-metadata')||{}).innerText||d.title;const exp=d.querySelector('#description-inline-expander #expand');if(exp)exp.click();

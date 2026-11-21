@@ -169,9 +169,9 @@
   },
   {
     "url": "youtube/",
-    "title": "YouTube・Instagram Reader",
-    "description": "動画のリンクから要約・文字起こし（スマホでも）。投稿の本文もAIへ",
-    "keywords": "YouTube ユーチューブ 動画 要約 字幕 文字起こし Gemini Instagram インスタ 投稿 読む ブックマークレット"
+    "title": "Reader",
+    "description": "YouTube・X・Instagram の動画や画像を読んで日本語でまとめる（スマホでも）",
+    "keywords": "画像 写真 X ツイッター YouTube ユーチューブ 動画 要約 字幕 文字起こし Gemini Instagram インスタ 投稿 読む ブックマークレット"
   },
   {
     "url": "stopwatch/",
