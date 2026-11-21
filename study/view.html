@@ -87,19 +87,6 @@
   .kcard { border:2px solid var(--sage); border-radius:14px; padding:8px 14px 8px; margin:12px 0; background:var(--card,transparent); }
   .kcard b { display:block; color:var(--sage); font-size:calc(14px*var(--k,1)); margin-bottom:2px; }
   .kcard ul { margin:0; padding-left:1.2em; } .kcard li { margin:3px 0; font-size:calc(17px*var(--k,1)); line-height:1.7; }
-  .test { border:2px solid var(--wood); border-radius:14px; padding:10px 14px 14px; margin:14px 0; }
-  .test > b { display:block; color:var(--wood); font-size:calc(14px*var(--k,1)); }
-  .test .how { color:var(--muted); font-size:calc(13px*var(--k,1)); margin:4px 0 0; }
-  .test ol { margin:8px 0; padding-left:1.4em; } .test li { margin:14px 0 18px; font-size:calc(17px*var(--k,1)); line-height:1.9; }
-  .test .slot { display:inline-block; min-width:4.5em; padding:0 6px; border-bottom:2px solid var(--wood); color:var(--wood); font-weight:700; text-align:center; }
-  .test .opts { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
-  .test .opt { all:unset; cursor:pointer; box-sizing:border-box; padding:5px 12px; border:1px solid var(--border); border-radius:999px; background:var(--surface); font-size:calc(15px*var(--k,1)); line-height:1.5; }
-  .test .opt.sel { border-color:var(--wood); background:rgba(147,112,75,.16); font-weight:700; }
-  .test .opt.right { border-color:var(--sage); background:rgba(116,136,109,.2); } .test .opt.wrong { border-color:var(--red); background:rgba(181,88,63,.14); }
-  .test .opt:disabled { cursor:default; }
-  .test .mark { font-weight:700; margin-left:4px; font-size:calc(14px*var(--k,1)); } .test .mark.ok { color:var(--sage); } .test .mark.ng { color:var(--red); }
-  .test .go { all:unset; cursor:pointer; display:inline-block; padding:8px 18px; border-radius:10px; background:var(--wood); color:var(--surface); font-weight:700; }
-  .test .score { font-weight:700; margin-left:10px; }
   .cloze { border:1px dashed var(--blue); border-radius:14px; padding:8px 14px; margin:12px 0; }
   .cloze b { display:block; color:var(--blue); font-size:calc(14px*var(--k,1)); }
   .cloze p { margin:8px 0; font-size:calc(17px*var(--k,1)); line-height:2; }
@@ -155,6 +142,7 @@
 </main>
 <script src="practice-state.js"></script>
 <script src="practice.js"></script>
+<script src="test.js"></script>
 <script>
 (function () {
   var KS = [0.9, 1, 1.15, 1.3, 1.5], KEY = "hibiki-view-k", i = 1;
@@ -167,7 +155,6 @@
 // 勉強ノート（md）を絵つきで表示する。?n=ch7 なら notes/ch7.md を読む。
 // md の中の ```bars ```timeline ```eq ```flow ```quiz を図にする（書き方は notes/README.md）
 var COL = { b: "var(--blue)", s: "var(--sage)", w: "var(--wood)", r: "var(--red)", m: "var(--muted)" };
-function shuffle(box) { for (var i = box.children.length; i > 1; i--) box.appendChild(box.children[Math.floor(Math.random() * i)]); }
 function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 function rows(t) { return t.trim().split("\n").filter(Boolean).map(function (l) { return l.split("|").map(function (x) { return x.trim(); }); }); }
 var BLOCK = {
@@ -205,13 +192,8 @@ var BLOCK = {
     var r = t.trim().split("\n"), title = r.shift();
     return '<div class="kcard"><b>' + esc(title) + '</b><ul>' + r.map(function (x) { return "<li>" + inl(x.replace(/^[-*]\s*/, "")) + "</li>"; }).join("") + '</ul></div>';
   },
-  // テスト。{{正解|まちがい|まちがい|まちがい}} を4択にし、答えを隠したまままとめて採点する（1行1問、空らんは1つ）
-  test: function (t) {
-    return '<div class="test"><b>テスト：見ないで選んでから「採点する」</b><p class="how">（　）に入る言葉を選びます。全部選んだら採点。</p><ol>' + t.trim().split("\n").filter(Boolean).map(function (l) {
-      var o = []; var q = esc(l).replace(/\{\{(.+?)\}\}/, function (_, a) { o = a.split("|"); return '<span class="slot">？</span>'; });
-      return '<li data-a="' + o[0] + '">' + q + '<span class="mark"></span><div class="opts">' + o.map(function (x) { return '<button type="button" class="opt">' + x + '</button>'; }).join("") + '</div></li>';
-    }).join("") + '</ol><button type="button" class="go">採点する</button><span class="score"></span></div>';
-  },
+  // 確認テスト（学校の小テストの形）。中身は test.js
+  test: function (t) { return window.HBTest ? HBTest.render(t) : "<pre>" + esc(t) + "</pre>"; },
   // 穴うめ。{{答え}} をさわると答えが出る
   cloze: function (t) {
     return '<div class="cloze"><b>穴うめ：思い出してから、さわる</b>' + t.trim().split("\n").filter(Boolean).map(function (l) {
@@ -279,7 +261,7 @@ function md(src) {
 var n = (new URLSearchParams(location.search).get("n") || "").replace(/[^a-z0-9-]/g, "");
 if (/^ch\d/.test(n)) { var bk = document.getElementById("bk"); bk.href = "digital.html"; bk.textContent = "‹ もどる"; }
 fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (text) {
-  var html = md(text), box = document.createElement("div"); box.innerHTML = html; box.querySelectorAll(".test .opts").forEach(shuffle);
+  var html = md(text), box = document.createElement("div"); box.innerHTML = html; if (window.HBTest) HBTest.init(box);
   // h2 ごとにカードにする。目次は開いたときだけ出す
   var doc = document.getElementById("doc"); doc.innerHTML = "";
   var sec = null, toc = [], i = 0, tools = null;
@@ -360,18 +342,6 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   function draw() { on = false; var h = document.documentElement, max = h.scrollHeight - h.clientHeight; bar.style.transform = "scaleX(" + (max > 0 ? Math.min(1, h.scrollTop / max) : 0) + ")"; }
   addEventListener("scroll", function () { if (!on) { on = true; requestAnimationFrame(draw); } }, { passive: true }); addEventListener("resize", draw); })();
 document.addEventListener("click", function (e) {
-  var tb = e.target.closest(".test button");
-  if (tb) { var box = tb.closest(".test"), lis = box.querySelectorAll("li");
-    if (tb.classList.contains("opt")) { var li = tb.closest("li"); li.querySelectorAll(".opt").forEach(function (x) { x.classList.toggle("sel", x === tb); }); li.querySelector(".slot").textContent = tb.textContent; return; }
-    if (box.dataset.done) { lis.forEach(function (li) { li.querySelector(".slot").textContent = "？"; li.querySelector(".mark").textContent = ""; li.querySelector(".mark").className = "mark"; li.querySelectorAll(".opt").forEach(function (x) { x.disabled = false; x.className = "opt"; }); shuffle(li.querySelector(".opts")); }); delete box.dataset.done; tb.textContent = "採点する"; box.querySelector(".score").textContent = ""; box.scrollIntoView({ block:"start" }); return; }
-    var ok = 0;
-    lis.forEach(function (li) { var sel = li.querySelector(".opt.sel"), good = !!sel && sel.textContent === li.dataset.a, m = li.querySelector(".mark");
-      if (good) ok++;
-      li.querySelectorAll(".opt").forEach(function (x) { x.disabled = true; if (x.textContent === li.dataset.a) x.classList.add("right"); else if (x === sel) x.classList.add("wrong"); });
-      m.className = "mark " + (good ? "ok" : "ng"); m.textContent = good ? "○" : sel ? "✕" : "✕（選んでいない）"; });
-    box.dataset.done = 1; tb.textContent = "もう一度";
-    box.querySelector(".score").textContent = lis.length + "問中 " + ok + "問 正解" + (ok === lis.length ? "。よくできました" : ok * 2 >= lis.length ? "。✕のところを本文で見直そう" : "。✕の節をもう一度読んでから、もう一度");
-    return; }
   var bl = e.target.closest(".cloze .blank");
   if (bl) { if (bl.classList.toggle("on")) { bl.dataset.h = bl.textContent; bl.textContent = bl.dataset.a; } else bl.textContent = bl.dataset.h; return; }
   var b = e.target.closest(".q button"); if (!b) return;
