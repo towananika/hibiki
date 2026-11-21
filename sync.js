@@ -49,23 +49,36 @@
   // ── ログインしていない人には中身を見せない（2026-10-09 ひびき：まずは全部非表示、出していいものは後で少しずつ）
   // ページで window.HB_PUBLIC = true にすると、そのページは誰でも見られる
   var googleAccess = null;
+  // 読み込みが1秒より長いときだけ、言葉なしの小さな丸を出す（2026-11-21 ひびき）
+  var HB_LOAD_CSS = "#hb-load{position:fixed;inset:0;display:none;place-items:center;pointer-events:none}html.hb-auth-slow:not(.hb-auth-done):not(.hb-google-owner):not(.hb-owner) #hb-load{display:grid!important}" +
+    "#hb-load i{width:28px;height:28px;border-radius:50%;border:3px solid rgba(116,136,109,.25);border-top-color:#74886d;animation:hbspin .9s linear infinite}@keyframes hbspin{to{transform:rotate(360deg)}}";
+  window.hbLoading = function () {
+    if (document.getElementById("hb-load")) return;
+    var css = document.createElement("style"); css.textContent = HB_LOAD_CSS; document.head.appendChild(css);
+    var add = function () { var d = document.createElement("div"); d.id = "hb-load"; d.setAttribute("aria-hidden", "true"); d.innerHTML = "<i></i>"; document.body.appendChild(d); };
+    if (document.body) add(); else document.addEventListener("DOMContentLoaded", add);
+    setTimeout(function () { document.documentElement.classList.add("hb-auth-slow"); }, 1000);
+    // 確認中は「ログインを確認しています」などの言葉を出さない。5秒たっても答えがなければログインの入口を出す
+    setTimeout(function () { document.documentElement.classList.add("hb-auth-done"); }, 5000);
+  };
   if (!window.HB_PUBLIC) {
+    window.hbLoading();
     var st = document.createElement("style");
     st.textContent = "html:not(.hb-google-owner) body>*{display:none!important}html:not(.hb-google-owner) body>#hb-gate{display:grid!important}html.hb-google-owner body>#hb-gate{display:none!important}" +
-      "#hb-gate{min-height:100vh;place-items:center;padding:24px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;color:#8a8271}" +
+      "html:not(.hb-auth-done) #hb-gate>div{visibility:hidden}#hb-gate{min-height:100vh;place-items:center;padding:24px 16px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;color:#8a8271}" +
       "#hb-gate b{display:block;font-size:22px;color:#2b2924;margin-bottom:6px}#hb-gate a{display:inline-block;margin-top:18px;padding:12px 28px;border-radius:14px;background:#74886d;color:#fff;text-decoration:none;font-weight:600}" +
       "@media (prefers-color-scheme: dark){#hb-gate b{color:#ede8dd}}";
     document.head.appendChild(st);
     document.addEventListener("DOMContentLoaded", function () {
       var g = document.createElement("div"); g.id = "hb-gate";
-      g.innerHTML = '<div><b>とわなにか</b><span id="hb-gate-status">ログインを確認しています…</span><br><a href="' + BASE + 'sync/google.html">Googleでログイン</a></div>';
+      g.innerHTML = '<div><b>とわなにか</b><span id="hb-gate-status">本人のGoogleアカウントでログインしてください。</span><br><a href="' + BASE + 'sync/google.html">Googleでログイン</a></div>';
       document.body.appendChild(g);
     });
     googleAccess = new Promise(function (resolve) {
       window.hbRegisterGoogleAccess = resolve;
       var script = document.createElement("script");
       script.type = "module"; script.src = BASE + "security/unified-access.mjs";
-      script.onerror = function () { resolve(null); var status = document.getElementById("hb-gate-status"); if (status) status.textContent = "ログインを確認できませんでした。再読み込みしてください。"; };
+      script.onerror = function () { resolve(null); document.documentElement.classList.add("hb-auth-done"); var status = document.getElementById("hb-gate-status"); if (status) status.textContent = "ログインを確認できませんでした。再読み込みしてください。"; };
       document.head.appendChild(script);
     });
   }

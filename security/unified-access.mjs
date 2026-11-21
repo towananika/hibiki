@@ -6,7 +6,7 @@ import { makeCloudLegacyReader } from './legacy-cloud-reader.mjs';
 const uid = '3wzoIaBNjLf9x0BW3HRUcqOHCAG2';
 const auth = getAuth(), db = getFirestore();
 const isOwner = user => !!(user && user.uid === uid && user.emailVerified);
-let version = 0, resolveReady, statusText = 'ログインを確認しています…';
+let version = 0, resolveReady, statusText = '本人のGoogleアカウントでログインしてください。';
 function showStatus(text) {
   statusText = text;
   const status = document.getElementById('hb-gate-status');
@@ -28,12 +28,14 @@ onAuthStateChanged(auth, user => {
   reader.clear();
   document.documentElement.classList.toggle('hb-google-owner', isOwner(user));
   showStatus(user ? 'このアカウントでは響を開けません。' : '本人のGoogleアカウントでログインしてください。');
+  document.documentElement.classList.add('hb-auth-done');
   resolveReady();
 }, () => {
   version++;
   reader.clear();
   document.documentElement.classList.remove('hb-google-owner');
   showStatus('ログインを確認できませんでした。再読み込みしてください。');
+  document.documentElement.classList.add('hb-auth-done');
   resolveReady();
 });
 
