@@ -1,0 +1,33 @@
+# PCなしで YouTube 動画1本の公開字幕を読む（tools/youtube-reader をクラウドで動かす）
+# 使い方: GitHub の Actions → "YouTube Reader" → Run workflow に動画URLを入れる。
+# 結果は「Artifacts」の captions.json（1日で自動削除）と、ログの本文。リポジトリにはコミットしない。
+name: YouTube Reader
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "YouTube動画1本のURL"
+        required: true
+permissions:
+  contents: read
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -q -r tools/youtube-reader/requirements.txt
+      - name: 字幕を読む
+        env:
+          VIDEO_URL: ${{ inputs.url }}
+        run: |
+          python tools/youtube-reader/reader.py "$VIDEO_URL" > captions.json
+          python -c "import json;d=json.load(open('captions.json'));print(d['title'],'/',d['status'],'/',d.get('language'));print('\n'.join(s['text'] for s in d['segments']))"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: captions
+          path: captions.json
+          retention-days: 1
