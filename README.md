@@ -30,7 +30,7 @@ YouTube Reader：`youtube/` の既存ブックマーク方式に加え、PC内�
 ## メモ帳
 
 Instagram Reader：入口は `youtube/#instagram`（YouTube Readerと同じページに統合、旧 `instagram/` は転送）、公開ソース `tools/instagram-reader/`（MIT）。取得処理はPC内のNode.js＋Playwrightで動作し、GitHub Pagesでは実行しない。`read-post.cjs <投稿URL>` は必要時にlocalhostサーバーを起動し、本文と取得状況をJSONで返す。`--images` は画像を公開リポジトリ外に保存。ログイン用プロファイルもPC内のみ。チャットAIが取得結果を引用資料として分析する。取得制限を回避せず、全スライド・動画は未対応。ローカルCodex用スキル `instagram-reader` を用意。単体テスト `node --test tools/instagram-reader/test.cjs`、ブラウザ検証 `node tools/instagram-reader/browser-test.cjs`（サーバー起動後）。
-YouTube Reader：入口 `youtube/`（公開ページ）。いちばん上の「リンクから読む」は、どの端末でも動画URLから要約・文字起こしを作る（`youtube/gemini.js`、Google 公式 Gemini API に動画URLを渡す。APIキーは端末の localStorage `hb-gemini-key` だけに置き同期しない。履歴は `hibiki-yt-v1`）。結果は Markdown で、AI用コピー・.md保存・共有ができる。下は従来の方法：ブックマークレットで、開いている動画の題名・説明・字幕（YouTubeの「文字起こし」）を画面に出してコピーする。外へは何も送らない。コピーした文をチャットに貼るとClaudeが読める（クラウドからはYouTubeの字幕取得が止められているため）。
+Reader：入口 `youtube/`（公開ページ、URLはそのまま）。YouTube・X のリンク、画像・動画ファイル（Instagram は保存した画像・動画やスクショ）、本文メモをまとめて Google 公式 Gemini API に渡し、日本語の要約か全文を作る（`youtube/reader.js`）。X は FxTwitter で本文と添付を取る。動画ファイルは Gemini の File API に上げる。APIキーは端末の localStorage `hb-gemini-key` だけに置き同期しない。履歴は `hibiki-yt-v1`。結果は読みやすい表示と Markdown を切りかえられ、AI用コピー・.md保存・共有ができる。「PCだけの方法」に従来の方法：ブックマークレットで、開いている動画の題名・説明・字幕（YouTubeの「文字起こし」）を画面に出してコピーする。外へは何も送らない。コピーした文をチャットに貼るとClaudeが読める（クラウドからはYouTubeの字幕取得が止められているため）。
 
 `notes/` は入力原文を保持し、350ms後に端末内の語句ルールで簡易分類する。AI要約は未接続。選択した保存メモと入力中のメモから相談文を確認・コピーし、ChatGPTへ手動で渡せる。外部AIへの自動送信や有料API呼び出しは行わない。
 
