@@ -56,6 +56,7 @@
   .clue { display:flex; gap:8px; align-items:center; border-top:1px solid var(--border); padding:8px 0; font-size:14px; }
   .clue:first-child { border-top:0; }
   .clue span { flex:1; }
+  .clue small.ev { color:var(--muted); font-size:11px; }
   .clue em { font-style:normal; font-size:11px; color:var(--wood); background:var(--wood-soft); border-radius:999px; padding:0 8px; margin-right:6px; white-space:nowrap; }
   .clue button { padding:2px 10px; font-size:13px; }
   .clue button.yes.on { background:var(--sage-soft); border-color:var(--sage); }
@@ -118,6 +119,17 @@
     <div class="legend"><span><i style="background:var(--sage)"></i>自分のチェック</span><span><i style="background:var(--wood)"></i>AIの見立て</span><span><i style="background:var(--blue)"></i>やってみた自分</span></div>
     <div class="top2" id="top2"></div>
     <div class="gap" id="gap"></div>
+    <details><summary>AIの見立ての根拠（2026-11-21・推測）</summary>
+      <p class="note" style="margin:6px 0 0">まとめると「方向を決めて、仕組みを作らせ、使いながら直す人」。</p>
+      <ul class="note" style="padding-left:18px;margin:4px 0 0">
+        <li>まきこむ（強）：理由と方向を伝えて任せる、企画、発信、仕組みで回る場が理想</li>
+        <li>しらべる（強）：経済学、概念をつきつめる質問、数字で確かめる</li>
+        <li>あらわす（中強）：ゲームの設計、見た目へのこだわり</li>
+        <li>ととのえる（中）：記録・家計・計画・同期など、整える仕組みを多く作る</li>
+        <li>ささえる（中）：分かりやすい教材づくり。人を直接ケアする話は少ない</li>
+        <li>つくる（弱め）：手作業やPCでの手順は避けたい</li>
+      </ul>
+    </details>
   </section>
 
   <section class="card" id="clues">
@@ -184,17 +196,17 @@
   var KEY = "hibiki-me-v1";
   // 6つの型（ホランドの六角形の順）
   var TYPES = [
-    { k: "R", n: "つくる・動かす", ai: .2, ex: "料理・修理・ものづくり・植物・体を使う仕事",
+    { k: "R", n: "つくる・動かす", ai: .15, ex: "料理・修理・ものづくり・植物・体を使う仕事",
       q: ["手を動かして何かを作るのが好き", "機械や道具をいじるのが楽しい", "体を動かして働くと気持ちいい"] },
     { k: "I", n: "しらべる・考える", ai: .8, ex: "研究・データ分析・プログラミング・調べて書く",
       q: ["「なぜ？」を調べ始めると止まらない", "数字やデータから答えを見つけるのが好き", "ひとりでじっくり考える時間が好き"] },
-    { k: "A", n: "あらわす・創る", ai: .75, ex: "ゲーム・デザイン・文章・写真や動画・音楽",
+    { k: "A", n: "あらわす・創る", ai: .7, ex: "ゲーム・デザイン・文章・写真や動画・音楽",
       q: ["絵・音・文章などで表現したい", "決まりがないほうが力が出る", "おもしろいもの、きれいなものを作りたい"] },
-    { k: "S", n: "ささえる・教える", ai: .5, ex: "教える・相談にのる・ケア・人と人をつなぐ",
+    { k: "S", n: "ささえる・教える", ai: .55, ex: "教材づくり・教える・相談にのる・ケア・人と人をつなぐ",
       q: ["人の話を聞いて力になりたい", "教えたり説明したりするのが好き", "誰かが喜ぶと自分もうれしい"] },
-    { k: "E", n: "まきこむ・導く", ai: .75, ex: "企画・発信・販売・事業をつくる・チームをまとめる",
+    { k: "E", n: "まきこむ・導く", ai: .85, ex: "プロダクトの企画・発信・仕組みで回る事業・任せて動かす",
       q: ["人を誘って何かを始めるのが好き", "目標を決めて人を動かすのが得意", "売る・交渉する・発表するのが苦にならない"] },
-    { k: "C", n: "ととのえる・続ける", ai: .5, ex: "家計・経理・計画づくり・記録・品質を守る",
+    { k: "C", n: "ととのえる・続ける", ai: .6, ex: "家計・経理・計画づくり・記録・品質を守る",
       q: ["整理や記録をつけるのが好き", "決まった手順をきちんとこなせる", "お金や予定の管理が得意"] }
   ];
   var ANS = ["ちがう", "ややそう", "そう"];
@@ -213,7 +225,16 @@
     ["good", "c11", "アイデアが次々に出る"],
     ["good", "c12", "相手の気持ちを受け止める（推測）"],
     ["good", "c13", "余白をお金で買う判断ができる"],
-    ["good", "c14", "おかしいと思ったら、はっきり確かめる"]
+    ["good", "c14", "おかしいと思ったら、はっきり確かめる"],
+    ["good", "c15", "理由と方向を伝えて、AIや人に任せる", "「理由と方向を教えてから、AIをうまく扱えるはず」"],
+    ["good", "c16", "使いながら直して良くしていく", "「やりながら修正したい」など1日に3回"],
+    ["good", "c17", "自分の例えで理解する", "「100作れるのに90、もったいない状態」→ノートに採用"],
+    ["good", "c18", "少ない手間のやり方を選ぶ", "「工数が低い方法が良い」"],
+    ["like", "c19", "経済や社会の大きな流れ", "経済学科6科目、シュカワールド、AGI観測所"],
+    ["like", "c20", "道具や仕組みを作ること", "ページ約30、動画リーダー、同期と暗号"],
+    ["like", "c21", "学び方そのものを工夫する", "学習画面・評価方法・ゲーミフィケーション"],
+    ["dislike", "c22", "複雑なままの説明", "「理解しづらい」「まだ複雑である」"],
+    ["dislike", "c23", "場所や手作業に縛られること", "「PC使わなくてもできるようにして」"]
   ];
   var LISTS = [["like", "好き"], ["dislike", "苦手"], ["good", "得意"]];
   var PAIRS = [["朝型", "夜型"], ["ひとり", "みんなと"], ["計画して", "その場で"], ["話す", "書く"], ["体を動かす", "じっくり考える"], ["新しいこと", "なれたこと"], ["広く浅く", "狭く深く"], ["静かな場所", "にぎやかな場所"], ["作る側", "使う・楽しむ側"], ["先に全体", "まず手を動かす"]];
@@ -338,7 +359,9 @@
       box.appendChild(el("p", "grp", l[1]));
       CLUES.filter(function (c) { return c[0] === l[0]; }).forEach(function (c) {
         var v = S.clue[c[1]], row = el("div", "clue" + (v === -1 ? " no" : ""));
-        row.appendChild(el("span", null, c[2]));
+        var sp = el("span", null, c[2]);
+        if (c[3]) { sp.appendChild(document.createElement("br")); sp.appendChild(el("small", "ev", c[3])); }
+        row.appendChild(sp);
         var y = el("button", "yes" + (v === 1 ? " on" : ""), "✓"), n = el("button", "no" + (v === -1 ? " on" : ""), "✗");
         y.type = n.type = "button"; y.setAttribute("aria-label", "合っている"); n.setAttribute("aria-label", "ちがう");
         y.onclick = function () { setClue(c, v === 1 ? 0 : 1); }; n.onclick = function () { setClue(c, v === -1 ? 0 : -1); };
