@@ -87,6 +87,16 @@
   .kcard { border:2px solid var(--sage); border-radius:14px; padding:8px 14px 8px; margin:12px 0; background:var(--card,transparent); }
   .kcard b { display:block; color:var(--sage); font-size:calc(14px*var(--k,1)); margin-bottom:2px; }
   .kcard ul { margin:0; padding-left:1.2em; } .kcard li { margin:3px 0; font-size:calc(17px*var(--k,1)); line-height:1.7; }
+  .test { border:2px solid var(--wood); border-radius:14px; padding:10px 14px 14px; margin:14px 0; }
+  .test > b { display:block; color:var(--wood); font-size:calc(14px*var(--k,1)); }
+  .test .how { color:var(--muted); font-size:calc(13px*var(--k,1)); margin:4px 0 0; }
+  .test ol { margin:8px 0; padding-left:1.4em; } .test li { margin:12px 0; font-size:calc(17px*var(--k,1)); line-height:2; }
+  .test input { font:inherit; color:var(--text); background:var(--bg); border:0; border-bottom:2px solid var(--wood); border-radius:6px 6px 0 0; width:7em; padding:0 6px; }
+  .test input.ok { border-color:var(--sage); background:rgba(116,136,109,.16); } .test input.ng { border-color:var(--red); background:rgba(181,88,63,.12); }
+  .test .hint { all:unset; cursor:pointer; color:var(--muted); font-size:calc(12px*var(--k,1)); margin-left:4px; text-decoration:underline; }
+  .test .mark { font-weight:700; margin-left:4px; font-size:calc(14px*var(--k,1)); } .test .mark.ok { color:var(--sage); } .test .mark.ng { color:var(--red); }
+  .test .go { all:unset; cursor:pointer; display:inline-block; padding:8px 18px; border-radius:10px; background:var(--wood); color:var(--surface); font-weight:700; }
+  .test .score { font-weight:700; margin-left:10px; } .test [hidden] { display:none; }
   .cloze { border:1px dashed var(--blue); border-radius:14px; padding:8px 14px; margin:12px 0; }
   .cloze b { display:block; color:var(--blue); font-size:calc(14px*var(--k,1)); }
   .cloze p { margin:8px 0; font-size:calc(17px*var(--k,1)); line-height:2; }
@@ -190,6 +200,12 @@ var BLOCK = {
   card: function (t) {
     var r = t.trim().split("\n"), title = r.shift();
     return '<div class="kcard"><b>' + esc(title) + '</b><ul>' + r.map(function (x) { return "<li>" + inl(x.replace(/^[-*]\s*/, "")) + "</li>"; }).join("") + '</ul></div>';
+  },
+  // テスト。{{答え}} や {{答え|別の答え}} を入力欄にし、まとめて採点する
+  test: function (t) {
+    return '<div class="test"><b>テスト：見ないで書いてから「採点する」</b><p class="how">分からなければ「ヒント」で最初の1字が出ます。</p><ol>' + t.trim().split("\n").filter(Boolean).map(function (l) {
+      return "<li>" + esc(l).replace(/\{\{(.+?)\}\}/g, function (_, a) { return '<input type="text" autocomplete="off" aria-label="答え" data-a="' + a + '"><button type="button" class="hint">ヒント</button><span class="mark"></span>'; }) + "</li>";
+    }).join("") + '</ol><button type="button" class="go">採点する</button><span class="score"></span></div>';
   },
   // 穴うめ。{{答え}} をさわると答えが出る
   cloze: function (t) {
@@ -339,6 +355,18 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   function draw() { on = false; var h = document.documentElement, max = h.scrollHeight - h.clientHeight; bar.style.transform = "scaleX(" + (max > 0 ? Math.min(1, h.scrollTop / max) : 0) + ")"; }
   addEventListener("scroll", function () { if (!on) { on = true; requestAnimationFrame(draw); } }, { passive: true }); addEventListener("resize", draw); })();
 document.addEventListener("click", function (e) {
+  var tb = e.target.closest(".test button");
+  if (tb) { var box = tb.closest(".test");
+    if (tb.classList.contains("hint")) { var hi = tb.previousElementSibling, w = hi.dataset.a.split("|")[0]; hi.placeholder = w.charAt(0) + "…"; hi.dataset.hint = 1; hi.focus(); return; }
+    var nz = function (x) { return x.normalize("NFKC").replace(/[\s　・、。]/g, "").toLowerCase(); };
+    if (box.dataset.done) { box.querySelectorAll("input").forEach(function (i) { i.value = ""; i.placeholder = ""; i.disabled = false; i.className = ""; delete i.dataset.hint; i.nextElementSibling.hidden = false; i.nextElementSibling.nextElementSibling.textContent = ""; i.nextElementSibling.nextElementSibling.className = "mark"; }); delete box.dataset.done; tb.textContent = "採点する"; box.querySelector(".score").textContent = ""; box.querySelector("input").focus(); return; }
+    var ins = box.querySelectorAll("input"), ok = 0;
+    ins.forEach(function (i) { var good = i.dataset.a.split("|").some(function (a) { return nz(a) === nz(i.value) && nz(a) !== ""; }), m = i.nextElementSibling.nextElementSibling;
+      if (good) ok++; i.className = good ? "ok" : "ng"; i.disabled = true; i.nextElementSibling.hidden = true;
+      m.className = "mark " + (good ? "ok" : "ng"); m.textContent = good ? "○" + (i.dataset.hint ? "（ヒントあり）" : "") : "✕（答え：" + i.dataset.a.split("|")[0] + "）"; });
+    box.dataset.done = 1; tb.textContent = "もう一度";
+    box.querySelector(".score").textContent = ins.length + "問中 " + ok + "問 正解" + (ok === ins.length ? "。よくできました" : ok * 2 >= ins.length ? "。✕のところを本文で見直そう" : "。✕の節をもう一度読んでから、もう一度");
+    return; }
   var bl = e.target.closest(".cloze .blank");
   if (bl) { if (bl.classList.toggle("on")) { bl.dataset.h = bl.textContent; bl.textContent = bl.dataset.a; } else bl.textContent = bl.dataset.h; return; }
   var b = e.target.closest(".q button"); if (!b) return;
