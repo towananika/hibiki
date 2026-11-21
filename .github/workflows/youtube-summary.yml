@@ -1,0 +1,34 @@
+# PCなしで YouTube 動画1本を日本語で要約する（Google 公式 Gemini API が動画を読む）
+# 使い方: GitHub の Actions → "YouTube Summary" → Run workflow に動画URLを入れる（スマホの GitHub アプリでも可）。
+# 準備: Settings → Secrets and variables → Actions に GEMINI_API_KEY（Google AI Studio の無料キー）を1つ入れる。
+# 結果は「Artifacts」の summary.md（1日で自動削除）と、ログの本文。リポジトリにはコミットしない。
+name: YouTube Summary
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "YouTube動画1本のURL（公開動画）"
+        required: true
+permissions:
+  contents: read
+jobs:
+  summarize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 要約する
+        env:
+          VIDEO_URL: ${{ inputs.url }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python tools/youtube-reader/gemini_summary.py "$VIDEO_URL" > summary.md
+          cat summary.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: summary
+          path: summary.md
+          retention-days: 1
