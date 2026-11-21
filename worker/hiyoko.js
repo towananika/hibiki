@@ -50,3 +50,43 @@ export async function hiyokoHandle(storage, action, input = {}, who = {}, now = 
   }
   return { error: "bad" };
 }
+
+// ── 閲覧数（2026-11-20）。ページのパスと日付ごとの回数だけを数える。IP・端末・だれかは持たない。
+//   POST /hiyoko/hit   { path }   → { ok }        だれでも（towananika.github.io から）
+//   POST /hiyoko/stats { days }   → { days: { "YYYY-MM-DD": { path: 回数 } } }   オーナー
+const PATH = /^\/hiyoko\/(?:[a-z0-9-]{1,40}\/){0,3}$/;
+export const HIYOKO_KEEP_DAYS = 400;
+const MAX_PATHS_PER_DAY = 200;
+export function hiyokoPath(p) {
+  let s = String(p || "").split(/[?#]/)[0].toLowerCase();
+  if (s.endsWith("/index.html")) s = s.slice(0, -10);
+  if (!s.endsWith("/")) s += "/";
+  return PATH.test(s) ? s : "";
+}
+export function hiyokoDay(now) { return new Date(now + 9 * 3600 * 1000).toISOString().slice(0, 10); } // 韓国・日本時間の日付
+
+export async function hiyokoHit(storage, input = {}, now = Date.now()) {
+  const path = hiyokoPath(input.path);
+  if (!path) return { error: "bad" };
+  const day = hiyokoDay(now), key = "hit:" + day;
+  const counts = (await storage.get(key)) || {};
+  if (!counts[path] && Object.keys(counts).length >= MAX_PATHS_PER_DAY) return { error: "full" };
+  counts[path] = (counts[path] || 0) + 1;
+  await storage.put(key, counts);
+  if (Math.random() < 0.01) {
+    const old = hiyokoDay(now - HIYOKO_KEEP_DAYS * 86400000);
+    const all = await storage.list({ prefix: "hit:", end: "hit:" + old });
+    if (all.size) await storage.delete([...all.keys()].slice(0, 128));
+  }
+  return { ok: true };
+}
+
+export async function hiyokoStats(storage, input = {}, who = {}, now = Date.now()) {
+  if (!who.owner) return { error: "forbidden" };
+  const n = Math.min(Math.max(parseInt(input.days, 10) || 30, 1), 365);
+  const from = hiyokoDay(now - (n - 1) * 86400000);
+  const all = await storage.list({ prefix: "hit:", start: "hit:" + from });
+  const days = {};
+  for (const [k, v] of all) days[k.slice(4)] = v;
+  return { days, from, to: hiyokoDay(now) };
+}

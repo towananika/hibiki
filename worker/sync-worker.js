@@ -16,11 +16,12 @@
 // AI用の確認番号: /ai/issue /ai/read /ai/status /ai/revoke /ai/unlink /ai/forget（くわしくは ai-code.js、2026-11-13）
 //   GET /ai/read?code=1234&ai=名前 は URL を開くだけの AI 用（2026-11-17）
 // HIYOKO 社内資料: /hiyoko/doc /hiyoko/list /hiyoko/member /hiyoko/put（ログイン＋許可リスト。くわしくは hiyoko.js、2026-11-20）
+// HIYOKO 閲覧数: /hiyoko/hit（だれでも。パスと日付の回数だけ）/hiyoko/stats（オーナー）
 
 import { DurableObject } from "cloudflare:workers";
 import { aiHandle, isOwnerToken, tokenClaims, OWNER } from "./ai-code.js";
 import { hikariHandle } from "./hikari.js";
-import { hiyokoHandle } from "./hiyoko.js";
+import { hiyokoHandle, hiyokoHit, hiyokoStats } from "./hiyoko.js";
 
 const ALLOWED = ["https://towananika.github.io", "http://localhost:8899", "http://127.0.0.1:8899"];
 const MAX_BODY = 512 * 1024;
@@ -153,8 +154,16 @@ async function hikari(action, request, env, origin) {
 
 // HIYOKO 社内資料。札で本人を確かめ、関係者（メール）かオーナーにだけ渡す。判定は hiyoko.js
 async function hiyoko(action, request, env, origin) {
-  if (!["doc", "list", "member", "put"].includes(action)) return json({ error: "bad" }, 400, origin);
+  if (!["doc", "list", "member", "put", "hit", "stats"].includes(action)) return json({ error: "bad" }, 400, origin);
   if (!ALLOWED.includes(origin)) return json({ error: "origin" }, 403, origin);
+  if (action === "hit") {
+    // 閲覧数：ログイン不要。IP など送り主のことは何も持たない（パスだけ読む）
+    const t = await request.text();
+    if (t.length > 512) return json({ error: "too_big" }, 413, origin);
+    let hb = {}; try { hb = JSON.parse(t || "{}"); } catch (e) { return json({ error: "bad_json" }, 400, origin); }
+    const out = await env.BOX.get(env.BOX.idFromName("hiyoko-stats")).hiyokoHit({ path: hb && hb.path });
+    return json(out, out.error ? 400 : 200, origin);
+  }
   const guard = env.BOX.get(env.BOX.idFromName("guard"));
   const who = await sha(request.headers.get("CF-Connecting-IP") || "none");
   if (await guard.blocked(who)) return json({ error: "blocked" }, 429, origin);
@@ -165,7 +174,9 @@ async function hiyoko(action, request, env, origin) {
   let b = {}; try { b = text ? JSON.parse(text) : {}; } catch (e) { return json({ error: "bad_json" }, 400, origin); }
   const verified = claims.email_verified === true;
   const user = { owner: verified && claims.sub === OWNER.uid, email: verified ? String(claims.email || "").toLowerCase() : "" };
-  const out = await env.BOX.get(env.BOX.idFromName("hiyoko")).hiyoko(action, b || {}, user);
+  const out = action === "stats"
+    ? await env.BOX.get(env.BOX.idFromName("hiyoko-stats")).hiyokoStats(b || {}, user)
+    : await env.BOX.get(env.BOX.idFromName("hiyoko")).hiyoko(action, b || {}, user);
   const status = out.error === "forbidden" ? 403 : out.error === "none" ? 404 : out.error ? 400 : 200;
   const res = json(out, status, origin);
   res.headers.set("Cache-Control", "no-store");
@@ -175,6 +186,9 @@ async function hiyoko(action, request, env, origin) {
 export class SyncBox extends DurableObject {
   // "hiyoko" の箱だけが使う
   async hiyoko(action, input, who) { return hiyokoHandle(this.ctx.storage, action, input, who); }
+  // "hiyoko-stats" の箱だけが使う
+  async hiyokoHit(input) { return hiyokoHit(this.ctx.storage, input); }
+  async hiyokoStats(input, who) { return hiyokoStats(this.ctx.storage, input, who); }
 
   // "hikari:<uid>" の箱だけが使う
   async hikari(action, input) { return hikariHandle(this.ctx.storage, action, input); }
