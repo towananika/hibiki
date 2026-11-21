@@ -43,6 +43,8 @@ window.StudyMaterials = {
     "15": "view.html?n=macro15"
   },
   "rel": {
+    "5": "view.html?n=religion5",
+    "6": "view.html?n=religion6",
     "8": "view.html?n=religion8",
     "9": "view.html?n=religion9",
     "10": "view.html?n=religion10",
