@@ -62,7 +62,7 @@
   .clue button.no.on { background:var(--red-soft); border-color:var(--red); }
   .clue.no span { color:var(--muted); text-decoration:line-through; }
   .grp { font-size:12px; color:var(--muted); font-weight:600; margin:10px 0 0; }
-  .energy { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+  .energy { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); word-break:break-word; gap:8px; margin-top:10px; }
   .energy div { border-radius:12px; padding:8px 10px; font-size:13px; }
   .energy .p { background:var(--sage-soft); } .energy .m { background:var(--red-soft); }
   .energy b { display:block; font-size:12px; color:var(--muted); }
@@ -73,6 +73,25 @@
   details summary { cursor:pointer; font-size:13px; color:var(--muted); margin-top:8px; }
   .past { font-size:13px; border-top:1px solid var(--border); padding:6px 0; white-space:pre-wrap; word-break:break-word; }
   .past b { display:block; font-size:12px; color:var(--muted); font-weight:400; }
+  .game { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; align-items:center; }
+  .lv { width:56px; height:56px; border-radius:50%; background:var(--wood); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1; grid-row:span 2; }
+  .lv small { font-size:10px; } .lv b { font-size:20px; }
+  .streak { font-size:13px; color:var(--muted); } .streak b { color:var(--red); font-size:16px; }
+  .quest { margin-top:10px; border-radius:12px; padding:8px 12px; background:var(--blue-soft); font-size:14px; display:flex; justify-content:space-between; gap:8px; align-items:center; }
+  .quest.done { background:var(--sage-soft); }
+  .quest small { color:var(--muted); font-size:11px; white-space:nowrap; }
+  .badges { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .badges span { font-size:11px; border-radius:999px; padding:1px 8px; border:1px dashed var(--border); color:var(--muted); }
+  .badges span.on { border:1px solid var(--wood); background:var(--wood-soft); color:var(--wood); }
+  .gap { margin-top:10px; border-radius:12px; padding:8px 12px; background:var(--blue-soft); font-size:14px; }
+  .gap b { display:block; font-size:12px; color:var(--blue); }
+  .ktype { display:flex; flex-wrap:wrap; gap:4px; margin:0 0 8px; }
+  .ktype button { font-size:12px; padding:2px 10px; }
+  .ktype button.on { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .diff { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:8px; font-size:12px; }
+  .diff div { border-radius:10px; background:var(--wood-soft); padding:4px 8px; }
+  .diff b { font-size:14px; }
+  .up { color:var(--sage); } .down { color:var(--red); }
   blockquote { margin:8px 0 0; padding:6px 10px; border-left:3px solid var(--border); color:var(--muted); font-size:12px; }
 </style>
 </head>
@@ -81,15 +100,24 @@
   <a class="back" href="../">← とわなにか</a>
   <h1>自分を知る</h1>
   <p class="lead">好き・苦手・得意・大切なことを集めて、自分の地図にする。</p>
-  <nav class="jump"><a href="#map">地図</a><a href="#clues">手がかり</a><a href="#apt">適性</a><a href="#pick">どっち派</a><a href="#vals">大切</a><a href="#list">リスト</a><a href="#energy">元気</a><a href="#today">今日の問い</a></nav>
+  <nav class="jump"><a href="#game">きょう</a><a href="#map">地図</a><a href="#clues">手がかり</a><a href="#apt">適性</a><a href="#pick">どっち派</a><a href="#vals">大切</a><a href="#list">リスト</a><a href="#energy">元気</a><a href="#today">今日の問い</a></nav>
+
+  <section class="card" id="game">
+    <div class="game"><div class="lv"><small>レベル</small><b id="lv"></b></div>
+      <div class="row"><span class="streak">連続 <b id="streak"></b> 日</span><span id="xpn"></span></div>
+      <div class="meter" style="margin:0"><i id="xpbar"></i></div></div>
+    <div class="quest" id="quest"></div>
+    <div class="badges" id="badges"></div>
+  </section>
 
   <section class="card" id="map">
     <h2>わたしの地図</h2>
     <div class="row"><span>うまり具合</span><b id="fill"></b></div>
     <div class="meter"><i id="fillbar"></i></div>
     <svg class="radar" id="radar" viewBox="0 0 300 260" role="img" aria-label="6つの型の適性グラフ"></svg>
-    <div class="legend"><span><i style="background:var(--sage)"></i>自分のチェック</span><span><i style="background:var(--wood)"></i>AIの見立て（推測）</span></div>
+    <div class="legend"><span><i style="background:var(--sage)"></i>自分のチェック</span><span><i style="background:var(--wood)"></i>AIの見立て</span><span><i style="background:var(--blue)"></i>やってみた自分</span></div>
     <div class="top2" id="top2"></div>
+    <div class="gap" id="gap"></div>
   </section>
 
   <section class="card" id="clues">
@@ -103,6 +131,7 @@
     <div class="row"><span>答えた数</span><b id="aptn"></b></div>
     <div class="meter"><i id="aptbar"></i></div>
     <details id="aptd"><summary>質問を見る・答えを変える</summary><div id="aptq"></div></details>
+    <div id="revisit"></div>
     <blockquote>補足：6つの型は、ホランドの「職業の興味」の考え方をもとにした簡易版。検査ではなく、自分で確かめる手がかり。</blockquote>
   </section>
 
@@ -126,8 +155,9 @@
 
   <section class="card" id="energy">
     <h2>元気メーター</h2>
-    <p class="note" style="margin:0 0 6px">やったあと元気が出たことは ＋、すり減ったことは −。たまると向き不向きが見える。</p>
+    <p class="note" style="margin:0 0 6px">やったあと元気が出たことは ＋、すり減ったことは −。近い型を1つ選ぶと、地図に「やってみた自分」が出る。</p>
     <form class="add" id="enform"><input id="enin" maxlength="60" placeholder="例：ゲームの仕組みを考えた"></form>
+    <div class="ktype" id="ktype"></div>
     <div class="seg two"><button type="button" id="enp">＋ 元気が出た</button><button type="button" id="enm">− すり減った</button></div>
     <div class="energy"><div class="p"><b>元気が出ること</b><ol id="enplus"></ol></div><div class="m"><b>すり減ること</b><ol id="enminus"></ol></div></div>
   </section>
@@ -194,7 +224,7 @@
   function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
   function load() { try { var s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === "object") return s; } catch (e) {} return {}; }
   var S = load();
-  S.apt = S.apt || {}; S.clue = S.clue || {}; S.pick = S.pick || {}; S.vals = S.vals || []; S.lists = S.lists || {}; S.energy = S.energy || []; S.qa = S.qa || [];
+  S.apt = S.apt || {}; S.clue = S.clue || {}; S.pick = S.pick || {}; S.vals = S.vals || []; S.lists = S.lists || {}; S.energy = S.energy || []; S.qa = S.qa || []; S.xp = S.xp || 0; S.did = S.did || {}; S.snaps = S.snaps || [];
   LISTS.forEach(function (l) { S.lists[l[0]] = S.lists[l[0]] || []; });
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
   function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
@@ -214,16 +244,91 @@
     svg += '<polygon points="' + poly(function (i) { return Math.max(.04, TYPES[i].ai); }) + '" fill="none" stroke="var(--wood)" stroke-width="2" stroke-dasharray="5 4"/>';
     var mine = TYPES.map(function (t, i) { return score(i); });
     if (mine.some(function (v) { return v != null; })) svg += '<polygon points="' + poly(function (i) { return Math.max(.04, mine[i] || 0); }) + '" fill="var(--sage)" fill-opacity=".25" stroke="var(--sage)" stroke-width="2"/>';
+    var bh = behave();
+    if (bh) svg += '<polygon points="' + poly(function (i) { return Math.max(.04, bh[i]); }) + '" fill="var(--blue)" fill-opacity=".12" stroke="var(--blue)" stroke-width="2"/>';
     $("radar").innerHTML = svg;
+    drawGap(mine, bh);
     var answered = mine.filter(function (v) { return v != null; }).length;
     var rank = TYPES.map(function (t, i) { return { t: t, v: answered ? (mine[i] || 0) : t.ai }; }).sort(function (a, b) { return b.v - a.v; }).slice(0, 2);
     $("top2").innerHTML = "";
     rank.forEach(function (r) { var d = el("div"); d.appendChild(el("b", null, r.t.n)); d.appendChild(document.createTextNode(r.t.ex)); $("top2").appendChild(d); });
-    $("top2").insertAdjacentHTML("afterend", "");
     // うまり具合：5つの場所
     var parts = [Object.keys(S.apt).length / 18, Object.keys(S.clue).length / CLUES.length, Object.keys(S.pick).length / PAIRS.length, Math.min(1, S.vals.length / 3), Math.min(1, S.qa.length / 5)];
     var f = Math.round(parts.reduce(function (a, b) { return a + Math.min(1, b); }, 0) / parts.length * 100);
     $("fill").textContent = f + "%"; $("fillbar").style.width = f + "%";
+  }
+
+  // やってみた自分：元気メーターの型（＋は1、−は−0.5）。型つきが3つ以上で出す
+  function behave() {
+    var c = TYPES.map(function () { return 0; }), n = 0;
+    S.energy.forEach(function (e) { var i = TYPES.map(function (t) { return t.k; }).indexOf(e.k); if (i < 0) return; c[i] += e.s === 1 ? 1 : -.5; n++; });
+    if (n < 3) return null;
+    var mx = Math.max.apply(null, c.concat([1]));
+    return c.map(function (v) { return Math.max(0, v) / mx; });
+  }
+  function drawGap(mine, bh) {
+    var g = $("gap"), has = mine.filter(function (v) { return v != null; }).length >= 6, txt;
+    if (!bh) txt = ["ズレを見る", "元気メーターに型をつけて3つ残すと、「思う自分」と「やってみた自分」をくらべられます。"];
+    else {
+      var self = has ? mine : TYPES.map(function (t) { return t.ai; }), who = has ? "自分のチェック" : "AIの見立て";
+      var top = function (a) { return a.map(function (v, i) { return [v, i]; }).sort(function (x, y) { return y[0] - x[0]; }); };
+      var bt = top(bh)[0][1], st = top(self).slice(0, 2).map(function (x) { return x[1]; });
+      var minus = TYPES.map(function (t) { return S.energy.filter(function (e) { return e.k === t.k && e.s === -1; }).length - S.energy.filter(function (e) { return e.k === t.k && e.s === 1; }).length; });
+      var worn = st.filter(function (i) { return minus[i] > 0; })[0];
+      if (worn != null) txt = ["ズレのサイン", who + "では「" + TYPES[worn].n + "」が上位。でも実際は、すり減ることのほうが多いみたい。"];
+      else if (st.indexOf(bt) < 0) txt = ["ズレのサイン", "思っていたより「" + TYPES[bt].n + "」で元気が出ています。チェックを見直してもいいかも。"];
+      else txt = ["ズレは小さめ", "思う自分とやってみた自分は近いです（いちばんは「" + TYPES[bt].n + "」）。"];
+    }
+    if (txt[0] === "ズレのサイン" && !S.gapSeen) { S.gapSeen = 1; save(); }
+    g.innerHTML = ""; g.appendChild(el("b", null, txt[0])); g.appendChild(document.createTextNode(txt[1]));
+  }
+
+  // ゲーム：XP・連続日数・今日のクエスト・バッジ
+  var QUESTS = [["e", "元気メーターに1つ残す"], ["q", "今日の問いに答える"], ["c", "手がかりかリストを1つ見直す"], ["p", "どっち派か大切なことを1つ見直す"], ["e", "元気メーターに型をつけて残す"]];
+  function quest() { return QUESTS[Math.floor(Date.now() / 864e5) % QUESTS.length]; }
+  function did(kind) {
+    var d = today(), t = S.did[d] = S.did[d] || {};
+    if (!t[kind]) { t[kind] = 1; S.xp += 2; }
+    var q = quest();
+    if (q[0] === kind && !t.quest) { t.quest = 1; S.xp += 5; }
+    var ks = Object.keys(S.did).sort(); while (ks.length > 120) delete S.did[ks.shift()];
+    save(); drawGame();
+  }
+  function streak() {
+    var n = 0, d = new Date();
+    if (!S.did[today()]) d.setDate(d.getDate() - 1);
+    for (;;) { var k = d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); if (!S.did[k]) break; n++; d.setDate(d.getDate() - 1); }
+    return n;
+  }
+  function drawGame() {
+    var lv = Math.floor(S.xp / 20) + 1, r = S.xp % 20, st = streak(), q = quest(), qd = (S.did[today()] || {}).quest;
+    $("lv").textContent = lv; $("xpn").textContent = "次のレベルまで " + (20 - r); $("xpbar").style.width = (r / 20 * 100) + "%";
+    $("streak").textContent = st;
+    var qe = $("quest"); qe.className = "quest" + (qd ? " done" : "");
+    qe.innerHTML = ""; qe.appendChild(el("span", null, (qd ? "✓ " : "今日のクエスト：") + q[1])); qe.appendChild(el("small", null, qd ? "クリア" : "+5"));
+    var plus = S.energy.filter(function (e) { return e.s === 1; }).length, days = Object.keys(S.did).length;
+    var B = [["はじめの一歩", days >= 1], ["3日つづいた", st >= 3], ["7日つづいた", st >= 7], ["元気を10こ", plus >= 10], ["問いに5回", S.qa.length >= 5], ["見直し1回", S.snaps.length >= 2], ["ズレに気づいた", !!S.gapSeen]];
+    $("badges").innerHTML = B.map(function (b) { return '<span class="' + (b[1] ? "on" : "") + '">' + (b[1] ? "★ " : "") + b[0] + '</span>'; }).join("");
+  }
+
+  // 4週ごとの見直し：18問そろったら記録し、前回とくらべる
+  function cur() { return TYPES.map(function (t, i) { var v = score(i); return v == null ? null : Math.round(v * 100); }); }
+  function drawRevisit() {
+    var box = $("revisit"), n = Object.keys(S.apt).length; box.textContent = "";
+    if (n < 18) return;
+    if (!S.snaps.length) { S.snaps.push({ d: today(), s: cur() }); save(); }
+    var last = S.snaps[S.snaps.length - 1], age = Math.floor((new Date(today()) - new Date(last.d)) / 864e5), prev = S.snaps.length > 1 ? S.snaps[S.snaps.length - 2] : null;
+    var p = el("p", "note", age >= 28 ? "前の記録から" + age + "日。見直しの時期です。答えを変えたら記録してください。" : "次の見直しはあと" + (28 - age) + "日（4週ごと）。気づいたらいつでも変えてOK。");
+    box.appendChild(p);
+    var b = el("button", age >= 28 ? "main" : "", "いまの答えで見直しを記録"); b.type = "button"; b.style.marginTop = "6px";
+    b.onclick = function () { var c = cur(); if (last.d === today()) S.snaps[S.snaps.length - 1] = { d: today(), s: c }; else S.snaps.push({ d: today(), s: c }); save(); did("p"); drawRevisit(); };
+    box.appendChild(b);
+    if (prev) {
+      box.appendChild(el("p", "note", prev.d + " → " + last.d + " の変化"));
+      var g = el("div", "diff");
+      TYPES.forEach(function (t, i) { var dv = (last.s[i] || 0) - (prev.s[i] || 0), d = el("div"); d.appendChild(document.createTextNode(t.n.split("・")[0] + " ")); d.appendChild(el("b", dv > 0 ? "up" : dv < 0 ? "down" : "", (dv > 0 ? "↑" : dv < 0 ? "↓" : "→") + Math.abs(dv))); g.appendChild(d); });
+      box.appendChild(g);
+    }
   }
 
   // 手がかり
@@ -246,7 +351,7 @@
     if (v === 1 && i < 0) arr.push(c[2]);
     if (v !== 1 && i >= 0) arr.splice(i, 1);
     if (v) S.clue[c[1]] = v; else delete S.clue[c[1]];
-    save(); drawClues(); drawList(); drawMap();
+    save(); drawClues(); drawList(); drawMap(); did("c");
   }
 
   // 適性チェック
@@ -260,7 +365,7 @@
       var seg = el("div", "seg");
       ANS.forEach(function (a, v) {
         var b = el("button", S.apt[id] === v ? "on" : "", a); b.type = "button";
-        b.onclick = function () { if (S.apt[id] === v) delete S.apt[id]; else S.apt[id] = v; save(); drawApt(); drawMap(); };
+        b.onclick = function () { if (S.apt[id] === v) delete S.apt[id]; else S.apt[id] = v; save(); drawApt(); drawMap(); drawRevisit(); };
         seg.appendChild(b);
       });
       d.appendChild(seg); box.appendChild(d);
@@ -276,7 +381,7 @@
       var seg = el("div", "seg two"); seg.style.marginBottom = "6px";
       p.forEach(function (x, v) {
         var b = el("button", S.pick[i] === v ? "on" : "", x); b.type = "button";
-        b.onclick = function () { if (S.pick[i] === v) delete S.pick[i]; else S.pick[i] = v; save(); drawPairs(); drawMap(); };
+        b.onclick = function () { if (S.pick[i] === v) delete S.pick[i]; else S.pick[i] = v; save(); drawPairs(); drawMap(); did("p"); };
         seg.appendChild(b);
       });
       box.appendChild(seg);
@@ -292,7 +397,7 @@
       b.onclick = function () {
         var i = S.vals.indexOf(v);
         if (i >= 0) S.vals.splice(i, 1); else if (S.vals.length < 5) S.vals.push(v); else { $("valnote").textContent = "5つまで。どれかを外してから選んでください。"; return; }
-        save(); drawVals(); drawMap();
+        save(); drawVals(); drawMap(); did("p");
       };
       box.appendChild(b);
     });
@@ -319,11 +424,17 @@
   $("addform").onsubmit = function (e) {
     e.preventDefault(); var v = $("addin").value.trim(); if (!v) return;
     if (S.lists[tab].indexOf(v) < 0) S.lists[tab].push(v);
-    $("addin").value = ""; save(); drawList();
+    $("addin").value = ""; save(); drawList(); did("c");
   };
 
-  // 元気メーター：同じ言葉は数をまとめる
+  // 元気メーター：同じ言葉は数をまとめる。型は任意
+  var enType = null;
+  function drawKtype() {
+    var box = $("ktype"); box.textContent = "";
+    TYPES.forEach(function (t) { var b = el("button", enType === t.k ? "on" : "", t.n.split("・")[0]); b.type = "button"; b.onclick = function () { enType = enType === t.k ? null : t.k; drawKtype(); }; box.appendChild(b); });
+  }
   function drawEnergy() {
+    drawKtype();
     [["enplus", 1], ["enminus", -1]].forEach(function (x) {
       var c = {}; S.energy.forEach(function (e) { if (e.s === x[1]) c[e.t] = (c[e.t] || 0) + 1; });
       var ol = $(x[0]); ol.textContent = "";
@@ -331,7 +442,7 @@
       if (!ol.children.length) ol.appendChild(el("li", null, "—"));
     });
   }
-  function addEnergy(s) { var v = $("enin").value.trim(); if (!v) { $("enin").focus(); return; } S.energy.push({ t: v, s: s, d: today() }); if (S.energy.length > 300) S.energy.shift(); $("enin").value = ""; save(); drawEnergy(); }
+  function addEnergy(s) { var v = $("enin").value.trim(); if (!v) { $("enin").focus(); return; } var e = { t: v, s: s, d: today() }; if (enType) e.k = enType; S.energy.push(e); if (S.energy.length > 300) S.energy.shift(); $("enin").value = ""; enType = null; save(); drawEnergy(); drawMap(); did("e"); }
   $("enp").onclick = function () { addEnergy(1); }; $("enm").onclick = function () { addEnergy(-1); };
   $("enform").onsubmit = function (e) { e.preventDefault(); addEnergy(1); };
 
@@ -348,7 +459,7 @@
   $("ansave").onclick = function () {
     var a = $("ans").value.trim(); if (!a) return;
     S.qa = S.qa.filter(function (x) { return !(x.q === QS[qi] && x.d === today()); });
-    S.qa.push({ d: today(), q: QS[qi], a: a }); save(); drawQ(); drawMap();
+    S.qa.push({ d: today(), q: QS[qi], a: a }); save(); drawQ(); drawMap(); did("q");
     $("ansmsg").textContent = "残しました。";
   };
   $("nextq").onclick = function () { qi = (qi + 1) % QS.length; $("ansmsg").textContent = ""; drawQ(); };
@@ -371,10 +482,10 @@
     if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () { m.textContent = "コピーできませんでした。"; }); else m.textContent = "コピーできませんでした。";
   };
 
-  function all() { drawMap(); drawClues(); drawApt(); drawPairs(); drawVals(); drawList(); drawEnergy(); drawQ(); }
+  function all() { drawRevisit(); drawMap(); drawGame(); drawClues(); drawApt(); drawPairs(); drawVals(); drawList(); drawEnergy(); drawQ(); }
   all();
   // ほかの端末で変わったら描き直す
-  window.addEventListener("storage", function (e) { if (e.key === KEY) { S = load(); S.apt = S.apt || {}; S.clue = S.clue || {}; S.pick = S.pick || {}; S.vals = S.vals || []; S.lists = S.lists || {}; LISTS.forEach(function (l) { S.lists[l[0]] = S.lists[l[0]] || []; }); S.energy = S.energy || []; S.qa = S.qa || []; all(); } });
+  window.addEventListener("storage", function (e) { if (e.key === KEY) { S = load(); S.apt = S.apt || {}; S.clue = S.clue || {}; S.pick = S.pick || {}; S.vals = S.vals || []; S.lists = S.lists || {}; LISTS.forEach(function (l) { S.lists[l[0]] = S.lists[l[0]] || []; }); S.energy = S.energy || []; S.qa = S.qa || []; S.xp = S.xp || 0; S.did = S.did || {}; S.snaps = S.snaps || []; all(); } });
 })();
 </script>
 </body>
