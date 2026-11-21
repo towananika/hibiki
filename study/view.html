@@ -19,17 +19,39 @@
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--text); line-height:1.7;
          font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif; }
-  main { max-width:520px; margin:0 auto; padding:28px 16px 40px; }
-  .top { display:flex; justify-content:space-between; align-items:center; font-size:14px; }
-  .fz { display:flex; gap:6px; } .fz button { all:unset; cursor:pointer; box-sizing:border-box; min-width:36px; height:30px; padding:0 8px; display:grid; place-items:center; border-radius:999px; border:1px solid var(--border); background:var(--surface); color:var(--sage); font-weight:700; font-size:13px; }
-  .top a { color:var(--muted); text-decoration:none; } .top a:first-child { color:var(--sage); font-weight:600; letter-spacing:.1em; }
-  h1 { font-size:calc(28px*var(--k,1)); line-height:1.4; margin:16px 0 8px; }
-  .toc { display:flex; gap:6px; flex-wrap:wrap; margin:10px 0 4px; }
-  .toc-box summary { cursor:pointer; color:var(--blue); font-size:calc(15px*var(--k,1)); margin-top:10px; }
-  .toc a { font-size:calc(14px*var(--k,1)); color:var(--blue); background:var(--blue-soft); border-radius:999px; padding:4px 10px; text-decoration:none; }
-  .lec { margin-top:14px; } .lec a { color:var(--wood); background:var(--surface); border:1px solid var(--border); } .lec a[aria-current] { background:var(--wood); color:#fbf8f2; border-color:var(--wood); font-weight:700; }
-  section { background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:4px 16px 14px; margin-top:14px; }
-  h2 { font-size:calc(22px*var(--k,1)); margin:14px 0 6px; scroll-margin-top:12px; }
+  main { max-width:520px; margin:0 auto; padding:8px 16px 48px; }
+  /* 学習に集中する形（2026-11-21）：上は細い帯だけ。講えらび・目次は開いたときだけ出す */
+  .bar { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:8px; max-width:520px; margin:0 auto; padding:8px 16px; background:var(--bg); font-size:14px; }
+  .bar > a { color:var(--muted); text-decoration:none; white-space:nowrap; }
+  .bar #prog { position:absolute; left:0; right:0; bottom:0; height:2px; background:var(--sage); transform-origin:left; transform:scaleX(0); }
+  .fz { display:flex; gap:2px; margin-left:auto; flex:none; white-space:nowrap; } .fz button { all:unset; cursor:pointer; box-sizing:border-box; min-width:34px; height:32px; padding:0 6px; display:grid; place-items:center; border-radius:8px; color:var(--muted); font-weight:700; font-size:13px; }
+  .fz button:focus-visible { outline:2px solid var(--blue); }
+  .pick { position:relative; min-width:0; flex:1; display:flex; justify-content:center; }
+  .pick summary { list-style:none; cursor:pointer; color:var(--text); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:4px 10px; border-radius:8px; max-width:100%; }
+  .pick summary::-webkit-details-marker, .toc-box summary::-webkit-details-marker { display:none; }
+  .pick summary::after, .toc-box summary::after { content:" ▾"; color:var(--muted); font-size:.85em; }
+  .pick[open] summary::after, .toc-box[open] summary::after { content:" ▴"; }
+  .pick nav { position:absolute; top:calc(100% + 6px); left:50%; transform:translateX(-50%); width:min(300px,calc(100vw - 32px)); max-height:60vh; overflow:auto; background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:6px; box-shadow:0 8px 24px rgba(0,0,0,.12); }
+  .pick nav a, .toc-box a { display:block; padding:9px 12px; border-radius:10px; color:var(--text); text-decoration:none; font-size:calc(15px*var(--k,1)); line-height:1.5; }
+  .pick nav a[aria-current] { background:var(--blue-soft); color:var(--blue); font-weight:700; }
+  .pick nav small { display:block; padding:4px 12px 2px; color:var(--muted); font-size:12px; }
+  h1 { font-size:calc(24px*var(--k,1)); line-height:1.45; margin:18px 0 10px; }
+  .tools { display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap; margin:0 0 6px; }
+  .mode { display:inline-flex; border:1px solid var(--border); border-radius:10px; overflow:hidden; font-size:calc(14px*var(--k,1)); }
+  .mode a, .mode span { padding:6px 12px; text-decoration:none; color:var(--muted); }
+  .mode span { background:var(--blue-soft); color:var(--blue); font-weight:700; }
+  #doc p a, #doc li a, #doc blockquote a, #doc td a { color:var(--blue); }
+  .toc-box { flex:1 1 100%; order:2; } .tools .mode { order:1; }
+  .toc-box summary { cursor:pointer; color:var(--blue); font-size:calc(15px*var(--k,1)); display:inline-block; padding:6px 0; }
+  .toc-box nav { margin:4px 0 8px; border-left:2px solid var(--border); padding-left:4px; }
+  .toc-box a { padding:6px 10px; color:var(--blue); }
+  section { background:var(--surface); border-radius:16px; padding:4px 18px 16px; margin-top:16px; }
+  h2 { font-size:calc(21px*var(--k,1)); line-height:1.5; margin:14px 0 6px; scroll-margin-top:60px; }
+  .foot { margin-top:28px; }
+  .pn { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:16px; }
+  .pn a { display:block; padding:12px 14px; border-radius:14px; background:var(--surface); color:var(--text); text-decoration:none; font-size:calc(15px*var(--k,1)); line-height:1.5; min-width:0; overflow-wrap:anywhere; }
+  .pn a small { display:block; color:var(--muted); font-size:calc(12px*var(--k,1)); }
+  .pn a.nx2 { text-align:right; grid-column:2; }
   h3 { font-size:calc(18px*var(--k,1)); color:var(--blue); margin:16px 0 4px; }
   p, li, blockquote, th, td, .flow span, .eq span { overflow-wrap:anywhere; }
   pre { max-width:100%; overflow-x:auto; }
@@ -92,7 +114,7 @@
   .mcq .explanation { line-height:1.7; }
   .mcq .retry { min-height:44px; }
   .mcq [hidden] { display:none !important; }
-  .play { display:flex; align-items:center; gap:10px; margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:var(--wood); color:#fbf8f2; text-decoration:none; font-weight:700; font-size:calc(16px*var(--k,1)); }
+  .play { display:block; margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:var(--surface); color:var(--wood); border:1px solid var(--border); text-decoration:none; font-weight:700; font-size:calc(16px*var(--k,1)); }
   .play small { display:block; font-weight:400; opacity:.9; font-size:calc(13px*var(--k,1)); }
   .game { border-color:var(--wood); }
   .game .gh { display:flex; justify-content:space-between; align-items:center; font-size:calc(14px*var(--k,1)); color:var(--muted); margin-top:12px; }
@@ -114,8 +136,8 @@
 </style>
 </head>
 <body>
+<header class="bar"><a id="bk" href="./">‹ 勉強</a><span class="pick" id="where"></span><span class="fz"><button id="fm" aria-label="文字を小さく">A−</button><button id="fp" aria-label="文字を大きく">A＋</button></span><i id="prog"></i></header>
 <main>
-  <div class="top"><a href="../">とわなにか</a><span class="fz"><button id="fm" aria-label="文字を小さく">A−</button><button id="fp" aria-label="文字を大きく">A＋</button></span><a id="bk" href="./">‹ 勉強</a></div>
   <div id="doc"><p class="err">読みこみ中…</p></div>
 </main>
 <script src="practice-state.js"></script>
@@ -234,19 +256,23 @@ function md(src) {
 }
 
 var n = (new URLSearchParams(location.search).get("n") || "").replace(/[^a-z0-9-]/g, "");
-if (/^ch\d/.test(n)) { var bk = document.getElementById("bk"); bk.href = "digital.html"; bk.textContent = "‹ デジタル経済"; }
+if (/^ch\d/.test(n)) { var bk = document.getElementById("bk"); bk.href = "digital.html"; bk.textContent = "‹ もどる"; }
 fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw 0; return r.text(); }).then(function (text) {
   var html = md(text), box = document.createElement("div"); box.innerHTML = html;
-  // h2 ごとにカードにする
+  // h2 ごとにカードにする。目次は開いたときだけ出す
   var doc = document.getElementById("doc"); doc.innerHTML = "";
-  var sec = null, toc = [], i = 0;
+  var sec = null, toc = [], i = 0, tools = null;
   Array.prototype.slice.call(box.childNodes).forEach(function (el) {
-    if (el.tagName === "H1") { document.title = el.textContent + " — とわなにか"; doc.appendChild(el); var t = document.createElement("div"); t.className = "toc"; doc.appendChild(t); return; }
-    if (el.tagName === "H2") { sec = document.createElement("section"); el.id = "s" + (++i); toc.push('<a href="#s' + i + '">' + esc(el.textContent.replace(/^\d+\.\s*/, "").split(/[：:]/)[0]) + '</a>'); doc.appendChild(sec); }
+    if (el.tagName === "H1") { document.title = el.textContent + " — とわなにか"; doc.appendChild(el); tools = document.createElement("div"); tools.className = "tools"; doc.appendChild(tools); return; }
+    if (el.tagName === "H2") { sec = document.createElement("section"); el.id = "s" + (++i); toc.push('<a href="#s' + i + '">' + esc(el.textContent) + '</a>'); doc.appendChild(sec); }
     (sec || doc).appendChild(el);
   });
-  var t = doc.querySelector(".toc"); if (t) { t.innerHTML = toc.join(""); var dt = document.createElement("details"); dt.className = "toc-box"; dt.innerHTML = "<summary>目次</summary>"; t.before(dt); dt.appendChild(t); }
+  var t = null;
+  if (tools && toc.length) { t = document.createElement("details"); t.className = "toc-box"; t.innerHTML = "<summary>目次（" + toc.length + "）</summary><nav>" + toc.join("") + "</nav>"; tools.appendChild(t);
+    t.addEventListener("click", function (e) { if (e.target.closest("nav a")) t.open = false; }); }
   window.dispatchEvent(new Event("studylessonready"));
+  // ページのいちばん下：ふり返りのあとに、練習・となりの講
+  var foot = document.createElement("div"); foot.className = "foot"; doc.appendChild(foot);
 
   // ゲームと質問バーのある版（claude.ai のページ）。作り方は /mnt/project-files/hibiki/study/chat/
   var MACRO = "https://claude.ai/artifact/JwgD4K9REUU99uP2QTMidM";
@@ -254,36 +280,42 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
   for (var m = 8; m <= 15; m++) PLAY["macro" + m] = [MACRO, "上がる？下がる？ゲーム"];
   var TRAD = "https://claude.ai/artifact/Hu2zBktAmv2FB6vzGMVB9n";
   PLAY.tradition7 = PLAY.tradition8 = [TRAD, "4択ゲーム"];
-  if (PLAY[n] && t) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n][0]; a.target = "_blank"; a.rel = "noopener";
-    a.innerHTML = "▶ Claude に聞く<small>質問バー・Claude が作る問題（claude.ai で開く）</small>"; t.after(a); }
-  var dc = n.match(/^ch(\d+)(t?)$/);
-  if (dc) {
-    var DIGITAL_NOTES = { 7: "AI", 8: "ブロックチェーン", 9: "ゲーム", 10: "メディア", 11: "共有", 12: "移動", 13: "利益", 14: "仕事", 15: "格差" }, nav = document.createElement("div"); nav.className = "toc lec";
-    nav.innerHTML = Object.keys(DIGITAL_NOTES).map(function (k) { return '<a href="?n=ch' + k + dc[2] + '"' + (+k === +dc[1] ? ' aria-current="page"' : '') + '>' + k + '講 ' + DIGITAL_NOTES[k] + '</a>'; }).join('');
-    doc.insertBefore(nav, doc.firstChild);
-    var dsw = document.createElement("div"); dsw.className = "toc lec";
-    dsw.innerHTML = dc[2] ? '<a href="?n=ch' + dc[1] + '">ふつうのノート（4択つき）へ</a>' : '<a href="?n=ch' + dc[1] + 't">会話で読む（5〜10分）へ</a>';
-    doc.insertBefore(dsw, doc.firstChild);
-  }
-  // 上級マクロ経済論は 8〜15講をならべて、となりの講へ行けるようにする
+  if (PLAY[n]) { var a = document.createElement("a"); a.className = "play"; a.href = PLAY[n][0]; a.target = "_blank"; a.rel = "noopener";
+    a.innerHTML = "▶ Claude に聞く<small>質問バー・Claude が作る問題（claude.ai で開く）</small>"; foot.appendChild(a); }
+  // 科目ごとの講。上の帯で講をえらび、下でとなりの講へ行く
   var SERIES = { macro: { 0:"やさしい土台", 8:"消費", 9:"投資", 10:"労働", 11:"お金", 12:"一般均衡", 13:"均衡の波", 14:"不均衡の波", 15:"成長" }, tradition: { 7:"食の暮らし", 8:"訴え状", 9:"学校と試験", 10:"役人と両班", 11:"女性と結婚", 12:"奴婢", 13:"生まれる・結婚", 14:"葬式と祭り", 15:"村と家の神" } };
   SERIES.money = { 8:"お金の増える仕組み", 9:"お金の増え方", 10:"中央銀行", 11:"お金を持つ理由", 12:"ケインズとフリードマン", 13:"国の所得の決まり方", 14:"IS-LMモデル" };
   SERIES.religion = { 8:"仏教", 9:"ジャイナ教・シク教・バハイ信仰", 10:"中国の宗教", 11:"日本の宗教", 12:"韓国の宗教", 13:"先住民の宗教", 14:"新しい宗教", 15:"世界の宗教文化" };
   SERIES.open = { 8:"まちづくり", 9:"法と制度", 11:"人をつなぐ組織化", 12:"計画と実行", 13:"まちを調べる", 14:"まちの物語", 15:"まちの記録庫" };
   var mm = n.match(/^(macro|tradition|money|religion|open)(\d+)(t?)$/), TALKS = { money: [8, 9, 10, 11, 12, 13, 14], macro: [8, 9, 10, 11, 12, 13, 14, 15], tradition: [7, 8, 9, 10, 11, 12, 13, 14, 15], open: [8, 9, 11, 12, 13, 14, 15] };
-  if (mm) { var LEC = SERIES[mm[1]], row = document.createElement("div"); row.className = "toc lec";
-    row.innerHTML = Object.keys(LEC).map(function (k) { var tk = mm[3] && TALKS[mm[1]] && TALKS[mm[1]].indexOf(+k) >= 0 ? "t" : ""; return '<a href="?n=' + mm[1] + k + tk + '"' + (+k === +mm[2] ? ' aria-current="page"' : "") + '>' + k + '講 ' + LEC[k] + '</a>'; }).join("");
-    doc.insertBefore(row, doc.firstChild);
-    if (TALKS[mm[1]] && TALKS[mm[1]].indexOf(+mm[2]) >= 0) { var sw = document.createElement("div"); sw.className = "toc lec";
-      sw.innerHTML = mm[3] ? '<a href="?n=' + mm[1] + mm[2] + '">ふつうのノート（4択つき）へ</a>' : '<a href="?n=' + mm[1] + mm[2] + 't">会話で読む（5〜10分）へ</a>';
-      doc.insertBefore(sw, doc.firstChild); } }
+  SERIES.ch = { 7: "AI", 8: "ブロックチェーン", 9: "ゲーム", 10: "メディア", 11: "共有", 12: "移動", 13: "利益", 14: "仕事", 15: "格差" }; TALKS.ch = [7, 8, 9, 10, 11, 12, 13, 14, 15];
+  var NAME = { macro: "上級マクロ", tradition: "伝統社会", money: "貨幣金融論", religion: "世界の宗教", open: "開かれた社会", ch: "デジタル経済" };
+  var ser = mm || n.match(/^(ch)(\d+)(t?)$/);
+  if (ser) { var key = ser[1], LEC = SERIES[key], cur = +ser[2], tk = ser[3], ks = Object.keys(LEC).map(Number);
+    var hasTalk = function (k) { return TALKS[key] && TALKS[key].indexOf(k) >= 0; };
+    var href = function (k) { return "?n=" + key + k + (tk && hasTalk(k) ? "t" : ""); };
+    var unit = key === "ch" ? "章" : "講";
+    var where = document.getElementById("where"), pick = document.createElement("details");
+    pick.innerHTML = "<summary>" + esc(NAME[key]) + " " + cur + unit + "</summary><nav><small>" + esc(NAME[key]) + "</small>" + ks.map(function (k) {
+      return '<a href="' + href(k) + '"' + (k === cur ? ' aria-current="page"' : "") + ">" + k + unit + "　" + esc(LEC[k]) + "</a>"; }).join("") + "</nav>";
+    where.appendChild(pick);
+    document.addEventListener("click", function (e) { if (pick.open && !pick.contains(e.target)) pick.open = false; });
+    // ノート ⇄ 会話 のきりかえ
+    if (hasTalk(cur) && tools) { var md2 = document.createElement("div"); md2.className = "mode";
+      md2.innerHTML = tk ? '<a href="?n=' + key + cur + '">ノート</a><span>会話</span>' : '<span>ノート</span><a href="?n=' + key + cur + 't">会話で読む</a>';
+      tools.insertBefore(md2, tools.firstChild); }
+    // となりの講
+    var at = ks.indexOf(cur), pv = ks[at - 1], nx = ks[at + 1], pn = document.createElement("nav"); pn.className = "pn";
+    pn.innerHTML = (pv !== undefined ? '<a href="' + href(pv) + '"><small>‹ まえ</small>' + pv + unit + " " + esc(LEC[pv]) + "</a>" : "") +
+      (nx !== undefined ? '<a class="nx2" href="' + href(nx) + '"><small>つぎ ›</small>' + nx + unit + " " + esc(LEC[nx]) + "</a>" : "");
+    foot.appendChild(pn); }
   // ゲーム（サイトの中で遊べる4択。問題は games/<科目>.json）
   if (mm && /^(macro|tradition)$/.test(mm[1])) fetch("games/" + mm[1] + ".json", { cache:"no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (G) {
     var list = G && G[mm[2]]; if (!list || !list.length) return;
     var DIRS = ["ふえる・上がる ↑", "へる・下がる ↓", "変わらない →", "どちらもある ？"], XK = "hibiki-" + mm[1] + "-xp", xp = 0;
     try { xp = +localStorage.getItem(XK) || 0; } catch (e) {}
     var box = document.createElement("section"); box.className = "game"; box.innerHTML = "<h2>あそんで覚える</h2><div class='gh'><span>Lv <b class='lv'></b>（" + "XP <b class='xp'></b>）</span><span>正解 <b class='ok'>0</b> / " + list.length + "</span></div><div class='q4'></div>";
-    var anchor = doc.querySelector(".play") || doc.querySelector(".toc-box"); anchor.after(box);
+    foot.insertBefore(box, foot.querySelector(".pn"));
     var q = list.slice().sort(function () { return Math.random() - .5; }), i = 0, ok = 0, area = box.querySelector(".q4");
     function hud() { box.querySelector(".lv").textContent = Math.floor(xp / 50) + 1; box.querySelector(".xp").textContent = xp; box.querySelector(".ok").textContent = ok; }
     function next() {
@@ -302,6 +334,10 @@ fetch("notes/" + n + ".md", { cache: "no-cache" }).then(function (r) { if (!r.ok
     hud(); next();
   });
 }).catch(function () { document.getElementById("doc").innerHTML = '<p class="err">ノートが見つかりません</p>'; });
+// 読んだところまでを上の細い線で見せる
+(function () { var bar = document.getElementById("prog"), on = false;
+  function draw() { on = false; var h = document.documentElement, max = h.scrollHeight - h.clientHeight; bar.style.transform = "scaleX(" + (max > 0 ? Math.min(1, h.scrollTop / max) : 0) + ")"; }
+  addEventListener("scroll", function () { if (!on) { on = true; requestAnimationFrame(draw); } }, { passive: true }); addEventListener("resize", draw); })();
 document.addEventListener("click", function (e) {
   var bl = e.target.closest(".cloze .blank");
   if (bl) { if (bl.classList.toggle("on")) { bl.dataset.h = bl.textContent; bl.textContent = bl.dataset.a; } else bl.textContent = bl.dataset.h; return; }
