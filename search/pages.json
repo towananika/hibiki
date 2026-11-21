@@ -170,8 +170,8 @@
   {
     "url": "youtube/",
     "title": "YouTube・Instagram Reader",
-    "description": "動画の字幕や投稿の本文をコピーしてチャットで読ませる",
-    "keywords": "YouTube ユーチューブ 動画 字幕 文字起こし Instagram インスタ 投稿 読む ブックマークレット"
+    "description": "動画のリンクから要約・文字起こし（スマホでも）。投稿の本文もAIへ",
+    "keywords": "YouTube ユーチューブ 動画 要約 字幕 文字起こし Gemini Instagram インスタ 投稿 読む ブックマークレット"
   },
   {
     "url": "stopwatch/",
