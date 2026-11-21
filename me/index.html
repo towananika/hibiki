@@ -101,7 +101,7 @@
   <a class="back" href="../">← とわなにか</a>
   <h1>自分を知る</h1>
   <p class="lead">好き・苦手・得意・大切なことを集めて、自分の地図にする。</p>
-  <nav class="jump"><a href="#game">きょう</a><a href="#map">地図</a><a href="#clues">手がかり</a><a href="#apt">適性</a><a href="#pick">どっち派</a><a href="#vals">大切</a><a href="#list">リスト</a><a href="#energy">元気</a><a href="#today">今日の問い</a></nav>
+  <nav class="jump"><a href="#map">地図</a><a href="#quiz">答える</a><a href="#energy">元気</a><a href="#today">今日の問い</a></nav>
 
   <section class="card" id="game">
     <div class="game"><div class="lv"><small>レベル</small><b id="lv"></b></div>
@@ -129,40 +129,14 @@
         <li>ささえる（中）：分かりやすい教材づくり。人を直接ケアする話は少ない</li>
         <li>つくる（弱め）：手作業やPCでの手順は避けたい</li>
       </ul>
+      <blockquote>補足：6つの型は、ホランドの「職業の興味」の考え方をもとにした簡易版。検査ではなく、自分で確かめる手がかり。</blockquote>
     </details>
   </section>
 
-  <section class="card" id="clues">
-    <h2>集めた手がかり</h2>
-    <p class="note" style="margin:0 0 6px">これまでの会話と説明書からAIが拾ったもの。合っていれば ✓（リストに入る）、ちがえば ✗。</p>
-    <div id="cluelist"></div>
-  </section>
-
-  <section class="card" id="apt">
-    <h2>適性チェック（18問）</h2>
-    <div class="row"><span>答えた数</span><b id="aptn"></b></div>
-    <div class="meter"><i id="aptbar"></i></div>
-    <details id="aptd"><summary>質問を見る・答えを変える</summary><div id="aptq"></div></details>
-    <div id="revisit"></div>
-    <blockquote>補足：6つの型は、ホランドの「職業の興味」の考え方をもとにした簡易版。検査ではなく、自分で確かめる手がかり。</blockquote>
-  </section>
-
-  <section class="card" id="pick">
-    <h2>どっち派？</h2>
-    <div id="pairs"></div>
-  </section>
-
-  <section class="card" id="vals">
-    <h2>大切なこと（5つまで）</h2>
-    <div class="chips" id="valchips"></div>
-    <p class="note" id="valnote"></p>
-  </section>
-
-  <section class="card" id="list">
-    <h2>わたしのリスト</h2>
-    <div class="tabs" id="tabs"></div>
-    <form class="add" id="addform"><input id="addin" maxlength="60" placeholder="例：雨の日の散歩"><button class="main">足す</button></form>
-    <ul class="items" id="items"></ul>
+  <section class="card" id="quiz">
+    <div class="row"><h2 style="margin:0">1問ずつ答える</h2><b id="qleft"></b></div>
+    <div class="meter"><i id="qbar"></i></div>
+    <div id="qbody"></div>
   </section>
 
   <section class="card" id="energy">
@@ -181,6 +155,20 @@
     <div class="acts"><button class="main" id="ansave">残す</button><button id="nextq">ほかの問い</button></div>
     <p class="msg" id="ansmsg" role="status"></p>
     <details><summary>これまでの答え（<span id="pastn">0</span>）</summary><div id="past"></div></details>
+  </section>
+
+  <section class="card">
+    <details id="more"><summary style="font-size:15px;color:var(--text);font-weight:600;margin:0">大切なこと・リスト・見直し</summary>
+      <p class="grp">大切なこと（5つまで）</p>
+      <div class="chips" id="valchips"></div>
+      <p class="note" id="valnote"></p>
+      <p class="grp">わたしのリスト</p>
+      <div class="tabs" id="tabs"></div>
+      <form class="add" id="addform"><input id="addin" maxlength="60" placeholder="例：雨の日の散歩"><button class="main">足す</button></form>
+      <ul class="items" id="items"></ul>
+      <p class="grp">4週ごとの見直し</p>
+      <div id="revisit"></div>
+    </details>
   </section>
 
   <section class="card">
@@ -251,7 +239,7 @@
   function today() { var d = new Date(); return d.getFullYear() + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2); }
 
   // 地図：レーダーと上位2つ
-  function score(i) { var s = 0, n = 0; for (var j = 0; j < 3; j++) { var v = S.apt[TYPES[i].k + j]; if (v != null) { s += v; n++; } } return n ? s / 6 : null; }
+  function score(i) { if (!Object.keys(S.apt).length && S.snaps.length) { var l = S.snaps[S.snaps.length - 1].s[i]; return l == null ? null : l / 100; } var s = 0, n = 0; for (var j = 0; j < 3; j++) { var v = S.apt[TYPES[i].k + j]; if (v != null) { s += v; n++; } } return n ? s / 6 : null; }
   function drawMap() {
     var cx = 150, cy = 132, R = 92, svg = "";
     function pt(i, r) { var a = -Math.PI / 2 + i * Math.PI / 3; return [cx + Math.cos(a) * R * r, cy + Math.sin(a) * R * r]; }
@@ -336,13 +324,13 @@
   function cur() { return TYPES.map(function (t, i) { var v = score(i); return v == null ? null : Math.round(v * 100); }); }
   function drawRevisit() {
     var box = $("revisit"), n = Object.keys(S.apt).length; box.textContent = "";
-    if (n < 18) return;
-    if (!S.snaps.length) { S.snaps.push({ d: today(), s: cur() }); save(); }
+    if (n === 18 && !S.snaps.length) { snap(); save(); }
+    if (!S.snaps.length) { box.appendChild(el("p", "note", "18問に答えると、ここで前回とくらべられます。")); return; }
     var last = S.snaps[S.snaps.length - 1], age = Math.floor((new Date(today()) - new Date(last.d)) / 864e5), prev = S.snaps.length > 1 ? S.snaps[S.snaps.length - 2] : null;
-    var p = el("p", "note", age >= 28 ? "前の記録から" + age + "日。見直しの時期です。答えを変えたら記録してください。" : "次の見直しはあと" + (28 - age) + "日（4週ごと）。気づいたらいつでも変えてOK。");
+    var p = el("p", "note", age >= 28 ? "前の記録から" + age + "日。見直しの時期です。" : "次の見直しはあと" + (28 - age) + "日（4週ごと）。気づいたらいつでも答え直せます。");
     box.appendChild(p);
-    var b = el("button", age >= 28 ? "main" : "", "いまの答えで見直しを記録"); b.type = "button"; b.style.marginTop = "6px";
-    b.onclick = function () { var c = cur(); if (last.d === today()) S.snaps[S.snaps.length - 1] = { d: today(), s: c }; else S.snaps.push({ d: today(), s: c }); save(); did("p"); drawRevisit(); };
+    var b = el("button", age >= 28 ? "main" : "", "18問を答え直す"); b.type = "button"; b.style.marginTop = "6px";
+    b.onclick = function () { S.apt = {}; save(); did("p"); drawRevisit(); drawQuiz(); location.hash = "#quiz"; };
     box.appendChild(b);
     if (prev) {
       box.appendChild(el("p", "note", prev.d + " → " + last.d + " の変化"));
@@ -352,64 +340,43 @@
     }
   }
 
-  // 手がかり
-  function drawClues() {
-    var box = $("cluelist"); box.textContent = "";
-    LISTS.forEach(function (l) {
-      box.appendChild(el("p", "grp", l[1]));
-      CLUES.filter(function (c) { return c[0] === l[0]; }).forEach(function (c) {
-        var v = S.clue[c[1]], row = el("div", "clue" + (v === -1 ? " no" : ""));
-        var sp = el("span", null, c[2]);
-        if (c[3]) { sp.appendChild(document.createElement("br")); sp.appendChild(el("small", "ev", c[3])); }
-        row.appendChild(sp);
-        var y = el("button", "yes" + (v === 1 ? " on" : ""), "✓"), n = el("button", "no" + (v === -1 ? " on" : ""), "✗");
-        y.type = n.type = "button"; y.setAttribute("aria-label", "合っている"); n.setAttribute("aria-label", "ちがう");
-        y.onclick = function () { setClue(c, v === 1 ? 0 : 1); }; n.onclick = function () { setClue(c, v === -1 ? 0 : -1); };
-        row.appendChild(y); row.appendChild(n); box.appendChild(row);
-      });
-    });
+  // 1問ずつ：答えたものは出さない（手がかり → 適性 → どっち派）
+  var skipped = {};
+  function queue() {
+    var q = [];
+    CLUES.forEach(function (c) { if (S.clue[c[1]] == null) q.push({ t: "c", c: c }); });
+    for (var j = 0; j < 3; j++) TYPES.forEach(function (t) { if (S.apt[t.k + j] == null) q.push({ t: "a", id: t.k + j, text: t.q[j] }); });
+    PAIRS.forEach(function (p, i) { if (S.pick[i] == null) q.push({ t: "p", i: i, p: p }); });
+    return q;
   }
-  function setClue(c, v) {
-    var arr = S.lists[c[0]], i = arr.indexOf(c[2]);
-    if (v === 1 && i < 0) arr.push(c[2]);
-    if (v !== 1 && i >= 0) arr.splice(i, 1);
-    if (v) S.clue[c[1]] = v; else delete S.clue[c[1]];
-    save(); drawClues(); drawList(); drawMap(); did("c");
+  var TOTAL = CLUES.length + 18 + PAIRS.length;
+  function drawQuiz() {
+    var all = queue(), q = all.filter(function (x) { return !skipped[key(x)]; }), body = $("qbody");
+    if (!q.length && all.length) { skipped = {}; q = all; }
+    $("qleft").textContent = all.length ? "のこり " + all.length : "";
+    $("qbar").style.width = ((TOTAL - all.length) / TOTAL * 100) + "%";
+    body.textContent = "";
+    if (!all.length) { body.appendChild(el("p", "note", "ぜんぶ答えました。結果は上の地図に出ています。")); return; }
+    var x = q[0], kind = { c: "AIが拾った手がかり・合ってる？", a: "適性チェック・あてはまる？", p: "どっち派？" }[x.t];
+    body.appendChild(el("p", "grp", kind));
+    var main = el("p", "ask", x.t === "c" ? x.c[2] : x.t === "a" ? x.text : x.p[0] + "　か　" + x.p[1]);
+    if (x.t === "c" && x.c[3]) { main.appendChild(document.createElement("br")); main.appendChild(el("small", "ev", x.c[3])); }
+    body.appendChild(main);
+    var opts = x.t === "c" ? [["✓ 合ってる", 1], ["✗ ちがう", -1]] : x.t === "a" ? ANS.map(function (a, v) { return [a, v]; }) : x.p.map(function (a, v) { return [a, v]; });
+    var seg = el("div", "seg" + (opts.length === 2 ? " two" : ""));
+    opts.forEach(function (o) { var b = el("button", null, o[0]); b.type = "button"; b.onclick = function () { answer(x, o[1]); }; seg.appendChild(b); });
+    body.appendChild(seg);
+    var sk = el("button", null, "あとで"); sk.type = "button"; sk.style.marginTop = "8px"; sk.style.fontSize = "13px";
+    sk.onclick = function () { skipped[key(x)] = 1; drawQuiz(); }; body.appendChild(sk);
   }
-
-  // 適性チェック
-  function drawApt() {
-    var box = $("aptq"); box.textContent = "";
-    var order = [];
-    for (var j = 0; j < 3; j++) TYPES.forEach(function (t) { order.push([t, j]); });
-    order.forEach(function (o) {
-      var id = o[0].k + o[1], d = el("div", "q");
-      d.appendChild(el("p", null, o[0].q[o[1]]));
-      var seg = el("div", "seg");
-      ANS.forEach(function (a, v) {
-        var b = el("button", S.apt[id] === v ? "on" : "", a); b.type = "button";
-        b.onclick = function () { if (S.apt[id] === v) delete S.apt[id]; else S.apt[id] = v; save(); drawApt(); drawMap(); drawRevisit(); };
-        seg.appendChild(b);
-      });
-      d.appendChild(seg); box.appendChild(d);
-    });
-    var n = Object.keys(S.apt).length;
-    $("aptn").textContent = n + " / 18"; if (!drawApt.once) { $("aptd").open = n < 18; drawApt.once = 1; } $("aptbar").style.width = (n / 18 * 100) + "%";
+  function key(x) { return x.t + (x.c ? x.c[1] : x.id != null ? x.id : x.i); }
+  function answer(x, v) {
+    if (x.t === "c") { S.clue[x.c[1]] = v; if (v === 1 && S.lists[x.c[0]].indexOf(x.c[2]) < 0) S.lists[x.c[0]].push(x.c[2]); save(); drawList(); did("c"); }
+    else if (x.t === "a") { S.apt[x.id] = v; if (Object.keys(S.apt).length === 18) snap(); save(); drawRevisit(); }
+    else { S.pick[x.i] = v; save(); did("p"); }
+    drawMap(); drawQuiz();
   }
-
-  // どっち派
-  function drawPairs() {
-    var box = $("pairs"); box.textContent = "";
-    PAIRS.forEach(function (p, i) {
-      var seg = el("div", "seg two"); seg.style.marginBottom = "6px";
-      p.forEach(function (x, v) {
-        var b = el("button", S.pick[i] === v ? "on" : "", x); b.type = "button";
-        b.onclick = function () { if (S.pick[i] === v) delete S.pick[i]; else S.pick[i] = v; save(); drawPairs(); drawMap(); did("p"); };
-        seg.appendChild(b);
-      });
-      box.appendChild(seg);
-    });
-  }
+  function snap() { var c = cur(), last = S.snaps[S.snaps.length - 1]; if (last && last.d === today()) S.snaps[S.snaps.length - 1] = { d: today(), s: c }; else S.snaps.push({ d: today(), s: c }); }
 
   // 大切なこと
   function drawVals() {
@@ -439,7 +406,7 @@
     var ul = $("items"); ul.textContent = "";
     S.lists[tab].forEach(function (x, i) {
       var li = el("li", null, x), b = el("button", null, "×"); b.type = "button"; b.setAttribute("aria-label", x + " を消す");
-      b.onclick = function () { S.lists[tab].splice(i, 1); CLUES.forEach(function (c) { if (c[2] === x) delete S.clue[c[1]]; }); save(); drawList(); drawClues(); drawMap(); };
+      b.onclick = function () { S.lists[tab].splice(i, 1); CLUES.forEach(function (c) { if (c[2] === x) delete S.clue[c[1]]; }); save(); drawList(); drawQuiz(); drawMap(); };
       li.appendChild(b); ul.appendChild(li);
     });
     if (!S.lists[tab].length) ul.appendChild(el("li", null, "まだありません")).style.background = "none";
@@ -505,7 +472,7 @@
     if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, function () { m.textContent = "コピーできませんでした。"; }); else m.textContent = "コピーできませんでした。";
   };
 
-  function all() { drawRevisit(); drawMap(); drawGame(); drawClues(); drawApt(); drawPairs(); drawVals(); drawList(); drawEnergy(); drawQ(); }
+  function all() { drawRevisit(); drawMap(); drawGame(); drawQuiz(); drawVals(); drawList(); drawEnergy(); drawQ(); }
   all();
   // ほかの端末で変わったら描き直す
   window.addEventListener("storage", function (e) { if (e.key === KEY) { S = load(); S.apt = S.apt || {}; S.clue = S.clue || {}; S.pick = S.pick || {}; S.vals = S.vals || []; S.lists = S.lists || {}; LISTS.forEach(function (l) { S.lists[l[0]] = S.lists[l[0]] || []; }); S.energy = S.energy || []; S.qa = S.qa || []; S.xp = S.xp || 0; S.did = S.did || {}; S.snaps = S.snaps || []; all(); } });
