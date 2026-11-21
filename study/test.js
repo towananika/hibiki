@@ -1,7 +1,9 @@
 // 講のおわりの「確認テスト」（学校の小テストの形）。書き方は notes/README.md の「テスト」。
 // ```test ブロックを HBTest.render(text) で HTML にし、HBTest.init(root) で順番をまぜる。
 // 大問ごとに形をかえる：穴うめ（文の中に {{正解|×|×|×}}）・4択（問いの最後に {{…}}、空らんは出ない）／○×（行頭が ○ か ×）／組み合わせ（A = B）／並べかえ（A → B → C）。
-// 1問1点、100点に直して「合格:」の点（ふつう70点）以上で合格。最高点は hibiki-study-test-v1 に残る。
+// 重要度：行の頭に ★★★（必ず覚える）・★★（大事）・★（知っておく）。書かないと ★★。配点は重要度に比例し、合計がちょうど100点になるよう配る。
+// 採点後は、まちがえた問題を重要度の高い順に「まず覚える」として正しい答えつきで出す。
+// 合格は「合格:」の点（ふつう70点）以上。最高点は hibiki-study-test-v1 に残る。
 (function () {
   var KEY = "hibiki-study-test-v1";
   var css = [
@@ -34,6 +36,11 @@
     ".test .res .stamp{display:inline-block;margin:4px 0;padding:2px 14px;border-radius:999px;font-weight:700;color:var(--surface)}",
     ".test .res.pass .stamp{background:var(--sage)}.test .res.fail .stamp{background:var(--red)}",
     ".test .res p{margin:6px 0 0;font-size:calc(14px*var(--k,1))}",
+    ".test .imp{font-size:calc(12px*var(--k,1));letter-spacing:-1px;margin-right:4px;color:var(--muted)}.test .imp.i3{color:var(--red)}.test .imp.i2{color:var(--wood)}",
+    ".test .pt{font-size:calc(11px*var(--k,1));color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:0 4px;margin-right:6px;vertical-align:2px}",
+    ".test .legend{font-size:calc(12px*var(--k,1));color:var(--muted);margin:4px 0 0}",
+    ".test .review{text-align:left;margin-top:10px}.test .review b{display:block;margin-top:8px;font-size:calc(14px*var(--k,1))}",
+    ".test .review ul{margin:4px 0 0;padding-left:1.2em}.test .review li{font-size:calc(14px*var(--k,1));line-height:1.7;margin:2px 0}",
     ".test [hidden]{display:none!important}"
   ].join("");
   var st = document.createElement("style"); st.textContent = css; document.head.appendChild(st);
@@ -45,32 +52,48 @@
   function save(d) { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) {} }
   function lec() { return new URLSearchParams(location.search).get("n") || "?"; }
 
+  var STARS = ["", "★", "★★", "★★★"], TIER = ["", "知っておく", "大事", "必ず覚える"];
+  // 重みに比例して、合計100点になるよう配る（あまりは端数の大きい順に1点ずつ）
+  function points(ws) {
+    var sum = ws.reduce(function (a, b) { return a + b; }, 0) || 1, raw = ws.map(function (w) { return w * 100 / sum; }),
+      p = raw.map(Math.floor), left = 100 - p.reduce(function (a, b) { return a + b; }, 0);
+    raw.map(function (r, i) { return [r - p[i], i]; }).sort(function (a, b) { return b[0] - a[0]; }).slice(0, left).forEach(function (x) { p[x[1]]++; });
+    return p;
+  }
+
   function render(t) {
-    var pass = 70, secs = [], cur = null, no = 0;
+    var pass = 70, secs = [], cur = null, no = 0, all = [];
     t.trim().split("\n").forEach(function (l) {
       l = l.trim(); if (!l) return;
       var m = l.match(/^合格[:：]\s*(\d+)/); if (m) { pass = +m[1]; return; }
       if (/^##\s/.test(l)) { cur = { title: l.replace(/^##\s*/, ""), items: [] }; secs.push(cur); return; }
       if (!cur) { cur = { title: "", items: [] }; secs.push(cur); }
-      cur.items.push(l);
+      var w = 2, sm = l.match(/^(★{1,3})\s*/); if (sm) { w = sm[1].length; l = l.slice(sm[0].length); }
+      // 形を見分ける：{{ }} があれば選ぶ問題（選択肢の中の → や = に引っぱられない）
+      var it = { l: l, w: w, k: /^[○×〇✕]/.test(l) ? "tf" : /\{\{.+?\}\}/.test(l) ? "pick" : / = /.test(l) ? "match" : / → /.test(l) ? "order" : "pick" };
+      cur.items.push(it); all.push(it);
     });
+    var pts = points(all.map(function (x) { return x.w; }));
+    all.forEach(function (x, i) { x.p = pts[i]; });
     var html = secs.map(function (s, si) {
       var h = s.title ? '<h4>' + "一二三四五六七八九十".charAt(si) + "　" + esc(s.title) + '</h4>' : "";
-      var rights = s.items.filter(function (l) { return / = /.test(l); }).map(function (l) { return l.split(" = ")[1].trim(); });
-      return h + s.items.map(function (l) {
-        no++; var n = '<span class="no">(' + no + ')</span>';
-        var tf = l.match(/^([○×〇✕])\s*(.+)$/);
-        if (tf) { var a = /[○〇]/.test(tf[1]) ? "○" : "×";
-          return '<div class="it tf" data-k="tf" data-a="' + a + '">' + n + esc(tf[2]) + '<span class="mark"></span><div class="opts">' + chips(["○", "×"]) + '</div></div>'; }
-        if (/ = /.test(l)) { var p = l.split(" = ");
-          return '<div class="it" data-k="match" data-a="' + esc(p[1].trim()) + '">' + n + '<b>' + esc(p[0].trim()) + '</b><span class="mark"></span><br><select><option value="">えらぶ…</option>' + rights.map(function (r) { return '<option>' + esc(r) + '</option>'; }).join("") + '</select></div>'; }
-        if (/ → /.test(l)) { var seq = l.split(" → ").map(function (x) { return x.trim(); });
-          return '<div class="it" data-k="order" data-a="' + esc(seq.join("→")) + '">' + n + '正しい順にならべる<span class="mark"></span><div class="ans"></div><div class="opts pool">' + chips(seq) + '</div></div>'; }
-        var o = [], tail = /\}\}[。]?$/.test(l), q = esc(l).replace(/\{\{(.+?)\}\}[。]?/, function (_, a) { o = a.split("|"); return tail ? "" : '<span class="slot">？</span>'; });
-        return '<div class="it" data-k="pick" data-a="' + o[0] + '">' + n + q + '<span class="mark"></span><div class="opts">' + o.map(function (x) { return '<button type="button" class="opt">' + x + '</button>'; }).join("") + '</div></div>';
+      var rights = s.items.filter(function (x) { return x.k === "match"; }).map(function (x) { return x.l.split(" = ")[1].trim(); });
+      return h + s.items.map(function (x) {
+        no++; var l = x.l, attr = ' data-w="' + x.w + '" data-p="' + x.p + '"',
+          n = '<span class="no">(' + no + ')</span><span class="imp i' + x.w + '" title="' + TIER[x.w] + '">' + STARS[x.w] + '</span><span class="pt">' + x.p + '点</span>';
+        if (x.k === "tf") { var tf = l.match(/^([○×〇✕])\s*(.+)$/), a = /[○〇]/.test(tf[1]) ? "○" : "×";
+          return '<div class="it tf" data-k="tf" data-a="' + a + '" data-q="' + esc(tf[2]) + '"' + attr + '>' + n + esc(tf[2]) + '<span class="mark"></span><div class="opts">' + chips(["○", "×"]) + '</div></div>'; }
+        if (x.k === "match") { var p = l.split(" = ");
+          return '<div class="it" data-k="match" data-a="' + esc(p[1].trim()) + '" data-q="' + esc(p[0].trim()) + '"' + attr + '>' + n + '<b>' + esc(p[0].trim()) + '</b><span class="mark"></span><br><select><option value="">えらぶ…</option>' + rights.map(function (r) { return '<option>' + esc(r) + '</option>'; }).join("") + '</select></div>'; }
+        if (x.k === "order") { var seq = l.split(" → ").map(function (y) { return y.trim(); });
+          return '<div class="it" data-k="order" data-a="' + esc(seq.join("→")) + '" data-q=""' + attr + '>' + n + '正しい順にならべる<span class="mark"></span><div class="ans"></div><div class="opts pool">' + chips(seq) + '</div></div>'; }
+        var o = [], tail = /\}\}[。]?$/.test(l), q = esc(l).replace(/\{\{(.+?)\}\}([。]?)/, function (_, a, dot) { o = a.split("|"); return tail ? dot : '<span class="slot">？</span>'; });
+        var full = esc(l).replace(/\{\{(.+?)\}\}/, function (_, a) { return tail ? " → " + a.split("|")[0] : "【" + a.split("|")[0] + "】"; });
+        return '<div class="it" data-k="pick" data-a="' + o[0] + '" data-q="' + full + '"' + attr + '>' + n + q + '<span class="mark"></span><div class="opts">' + o.map(function (y) { return '<button type="button" class="opt">' + y + '</button>'; }).join("") + '</div></div>';
       }).join("");
     }).join("");
-    return '<div class="test" data-pass="' + pass + '"><div class="th"><b>確認テスト</b><small>100点満点・' + pass + '点で合格<br><span class="best"></span></small></div><p class="how">本文を閉じて、全部答えてから「採点する」。</p>' + html +
+    return '<div class="test" data-pass="' + pass + '"><div class="th"><b>確認テスト</b><small>100点満点・' + pass + '点で合格<br><span class="best"></span></small></div><p class="how">本文を閉じて、全部答えてから「採点する」。</p>' +
+      '<p class="legend"><span class="imp i3">★★★</span>必ず覚える　<span class="imp i2">★★</span>大事　<span class="imp i1">★</span>知っておく（大事なものほど点が高い）</p>' + html +
       '<button type="button" class="go">採点する</button><div class="res" hidden></div></div>';
   }
 
@@ -91,21 +114,39 @@
     var s = it.querySelector(".opt.sel"); return s ? s.textContent : "";
   }
 
+  // まちがえた問題の「正しい形」を1行で
+  function fixText(it) {
+    var k = it.dataset.k, a = it.dataset.a, q = it.dataset.q;
+    if (k === "tf") return q + " → " + a;
+    if (k === "match") return q + " ＝ " + a;
+    if (k === "order") return a.replace(/→/g, " → ");
+    return q;
+  }
+
   function grade(box) {
-    var its = box.querySelectorAll(".it"), ok = 0;
-    its.forEach(function (it) {
-      var k = it.dataset.k, a = answer(it), good = a !== "" && a === it.dataset.a, m = it.querySelector(".mark");
-      if (good) ok++;
+    var its = box.querySelectorAll(".it"), ok = 0, got = 0, miss = { 1: [], 2: [], 3: [] }, top = [0, 0];
+    its.forEach(function (it, i) {
+      var k = it.dataset.k, a = answer(it), good = a !== "" && a === it.dataset.a, m = it.querySelector(".mark"), w = +it.dataset.w || 2;
+      if (good) { ok++; got += +it.dataset.p || 0; } else miss[w].push("(" + (i + 1) + ") " + esc(fixText(it)));
+      if (w === 3) { top[1]++; if (good) top[0]++; }
       it.querySelectorAll(".opt").forEach(function (x) { x.disabled = true; if (k !== "order") { if (x.textContent === it.dataset.a) x.classList.add("right"); else if (x.classList.contains("sel")) x.classList.add("wrong"); } });
       if (k === "match") { var s = it.querySelector("select"); s.disabled = true; s.className = good ? "right" : "wrong"; }
       m.className = "mark " + (good ? "ok" : "ng"); m.textContent = good ? "○" : a ? "✕" : "✕（答えていない）";
       if (!good && (k === "match" || k === "order")) { var f = document.createElement("span"); f.className = "fix"; f.textContent = "正しくは：" + it.dataset.a.replace(/→/g, " → "); it.appendChild(f); }
     });
-    var score = Math.round(ok / its.length * 100), pass = +box.dataset.pass, okp = score >= pass, d = load(), id = lec(), prev = d[id];
+    var score = got, pass = +box.dataset.pass, okp = score >= pass, d = load(), id = lec(), prev = d[id];
     d[id] = { best: Math.max(score, prev ? prev.best : 0), last: score, passed: okp || !!(prev && prev.passed), at: new Date().toISOString().slice(0, 10) }; save(d);
+    var rv = "";
+    [3, 2, 1].forEach(function (w) {
+      if (!miss[w].length) return;
+      rv += '<b><span class="imp i' + w + '">' + STARS[w] + '</span>' + (w === 3 ? "まず覚える（" + TIER[w] + "）" : w === 2 ? "次に覚える（" + TIER[w] + "）" : "余裕があれば（" + TIER[w] + "）") + '</b><ul>' +
+        miss[w].map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>";
+    });
     var r = box.querySelector(".res"); r.hidden = false; r.className = "res " + (okp ? "pass" : "fail");
-    r.innerHTML = '<strong>' + score + '点</strong><span class="stamp">' + (okp ? "合格" : "もう少し") + '</span><p>' + its.length + "問中 " + ok + "問 正解（合格は" + pass + "点）</p><p>" +
-      (okp ? (score === 100 ? "満点です。" : "✕の問題だけ本文で見直そう。") + "明日もう一度ためすと、記憶に残りやすい。" : "✕の問題の節を読み直してから、もう一度。") + "</p>";
+    r.innerHTML = '<strong>' + score + '点</strong><span class="stamp">' + (okp ? "合格" : "もう少し") + '</span><p>' + its.length + "問中 " + ok + "問 正解（合格は" + pass + "点）</p>" +
+      (top[1] ? "<p>★★★（必ず覚える）は " + top[1] + "問中 " + top[0] + "問 正解" + (top[0] === top[1] ? "。いちばん大事なところは押さえられた。" : "") + "</p>" : "") +
+      "<p>" + (okp ? (score === 100 ? "満点です。" : "下の問題だけ、★の多い順に見直そう。") + "明日もう一度ためすと、記憶に残りやすい。" : "下の問題を★の多い順に読み直してから、もう一度。") + "</p>" +
+      (rv ? '<div class="review">' + rv + "</div>" : "");
     box.querySelector(".best").textContent = "これまでの最高 " + d[id].best + "点";
     var go = box.querySelector(".go"); go.textContent = "もう一度"; box.dataset.done = 1;
   }
