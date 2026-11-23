@@ -20,7 +20,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { aiHandle, isOwnerToken, tokenClaims, OWNER } from "./ai-code.js";
 import { hikariHandle } from "./hikari.js";
-import { hiyokoHandle } from "./hiyoko.js";
+import { hiyokoHandle, HIYOKO_OWNER_EMAILS } from "./hiyoko.js";
 
 const ALLOWED = ["https://towananika.github.io", "http://localhost:8899", "http://127.0.0.1:8899"];
 const MAX_BODY = 512 * 1024;
@@ -164,7 +164,8 @@ async function hiyoko(action, request, env, origin) {
   if (text.length > 1024 * 1024) return json({ error: "too_big" }, 413, origin);
   let b = {}; try { b = text ? JSON.parse(text) : {}; } catch (e) { return json({ error: "bad_json" }, 400, origin); }
   const verified = claims.email_verified === true;
-  const user = { owner: verified && claims.sub === OWNER.uid, email: verified ? String(claims.email || "").toLowerCase() : "" };
+  const email = verified ? String(claims.email || "").toLowerCase() : "";
+  const user = { owner: verified && (claims.sub === OWNER.uid || HIYOKO_OWNER_EMAILS.includes(email)), email };
   const out = await env.BOX.get(env.BOX.idFromName("hiyoko")).hiyoko(action, b || {}, user);
   const status = out.error === "forbidden" ? 403 : out.error === "none" ? 404 : out.error ? 400 : 200;
   const res = json(out, status, origin);
