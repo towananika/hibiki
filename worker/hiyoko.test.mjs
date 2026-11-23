@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { hiyokoHandle, hiyokoEmail } from './hiyoko.js';
+import { hiyokoHandle, hiyokoEmail, HIYOKO_OWNER_EMAILS } from './hiyoko.js';
 
 function store() { const m = new Map(); return { m, get: async k => m.get(k), put: async (k, v) => { m.set(k, structuredClone(v)); }, delete: async k => { m.delete(k); } }; }
 const OWNER = { owner: true, email: 'owner@example.com' };
@@ -36,4 +36,10 @@ test('知らない資料・おかしなメール・大きすぎる資料は断�
   assert.deepEqual(await hiyokoHandle(s, 'put', { id: 'strategy', html: 'a'.repeat(1024 * 1024) }, OWNER), { error: 'too_big' });
   assert.equal(hiyokoEmail('A@B.co'), 'a@b.co');
   assert.deepEqual(await hiyokoHandle(s, 'doc', { id: 'strategy' }, OWNER), { error: 'none' });
+});
+
+test('オーナーのメールは小文字で正しい形', () => {
+  assert.ok(HIYOKO_OWNER_EMAILS.length > 0);
+  for (const e of HIYOKO_OWNER_EMAILS) assert.equal(hiyokoEmail(e), e);
+  assert.ok(HIYOKO_OWNER_EMAILS.includes('jaykim.can@gmail.com'));
 });

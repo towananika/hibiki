@@ -4,7 +4,9 @@
 //   POST /hiyoko/list                               → { members, docs }         オーナー
 //   POST /hiyoko/member  { email, on }              → { members }               オーナー
 //   POST /hiyoko/put     { id, html }               → { ok, at }                オーナー
-// 関係者はメール（Googleで確認ずみのもの）で決める。オーナーは ai-code.js の OWNER（uid）。
+// 関係者はメール（Googleで確認ずみのもの）で決める。オーナーは ai-code.js の OWNER（uid）と HIYOKO_OWNER_EMAILS。
+// オーナーのメール（Googleで確認ずみのとき）。ai-code.js の OWNER（uid）に加えて、ここの人もオーナー（2026-11-23）
+export const HIYOKO_OWNER_EMAILS = ["jaykim.can@gmail.com"];
 export const HIYOKO_DOCS = ["strategy", "review"];
 export const HIYOKO_MAX_HTML = 900 * 1024;
 const EMAIL = /^[^\s@<>"]{1,64}@[^\s@<>"]{1,190}$/;
