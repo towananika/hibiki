@@ -106,3 +106,16 @@ $('archive-search').addEventListener('input', renderArchive);
 $('archive-retry').addEventListener('click', loadArchive);
 loadArchive();
 
+
+$('open-dated').onclick = async () => {
+  const root = $('dated-content');
+  const data = await window.HibikiSync?.open('notes-20261124');
+  root.replaceChildren();
+  if (!data?.entries) { root.textContent = '本人のアカウントと、解錠済みの端末で開いてください。'; return; }
+  for (const entry of data.entries) {
+    const title = document.createElement('h3'), body = document.createElement('p');
+    title.textContent = entry.title;
+    body.textContent = [entry.text, entry.reason, entry.status, entry.check].filter(Boolean).join(' ');
+    root.append(title, body);
+  }
+};
