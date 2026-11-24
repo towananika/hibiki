@@ -23,6 +23,12 @@
   .row label { font-size:13px; color:var(--muted); white-space:nowrap; }
   input { font:inherit; padding:8px 10px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); }
   input[type=time] { width:112px; min-width:0; } #memo { width:100%; margin-top:12px; }
+  .field { margin-top:16px; } .field label { display:block; margin-bottom:6px; font-size:14px; font-weight:700; }
+  textarea { width:100%; min-height:110px; resize:vertical; font:inherit; line-height:1.6; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); }
+  .field small { display:block; margin-top:4px; color:var(--muted); font-size:12px; }
+  .history-item { padding:12px 0; border-top:1px solid var(--border); }
+  .history-item:first-child { border-top:0; } .history-date { color:var(--muted); font-size:12px; margin-bottom:4px; }
+  .history-item p { margin:4px 0; white-space:pre-wrap; overflow-wrap:anywhere; }
   .cnt { display:flex; align-items:center; gap:10px; }
   .cnt button { font:inherit; width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--sage-soft); color:var(--text); font-size:20px; cursor:pointer; }
   .cnt b { font-size:22px; min-width:24px; text-align:center; }
@@ -49,8 +55,20 @@
     </div>
     <div class="row"><label>寝た</label><input type="time" id="bed"><label>起きた</label><input type="time" id="wake"></div>
     <div class="row"><label>夜中に起きた</label><div class="cnt"><button id="m">−</button><b id="up">0</b><button id="p">＋</button></div></div>
-    <input id="memo" maxlength="60" placeholder="ひとこと（夢・体調など）">
+    <input id="memo" maxlength="60" placeholder="ひとこと（体調など）">
     <div class="row"><span class="muted" id="day"></span><span><span class="big" id="hrs">−</span> 時間</span></div>
+  </div>
+
+  <div class="card">
+    <b>見た夢を記録する</b>
+    <p class="muted">覚えているところだけで大丈夫。断片や、目覚めたときの感覚も残しておこう。</p>
+    <div class="field"><label for="dream">🌙 夢の内容</label><textarea id="dream" maxlength="3000" placeholder="どんな場所で、誰がいて、何が起きた？ 覚えている場面だけでも。"></textarea></div>
+    <div class="field"><label for="feeling">💭 目覚めたときの気持ち</label><textarea id="feeling" maxlength="1500" placeholder="うれしい、怖い、不思議、懐かしい、安心した……どんな気持ちだった？"></textarea><small>うまく言葉にできなくても、そのままの表現で大丈夫。</small></div>
+  </div>
+
+  <div class="card">
+    <b>これまでに見た夢</b>
+    <div id="dreamHistory" class="muted" style="margin-top:8px">まだ夢の記録はありません。</div>
   </div>
 
   <div class="card">
@@ -78,6 +96,7 @@ function hours(r) {
 function draw() {
   var r = S.days[today] || {};
   bed.value = r.bed || ""; wake.value = r.wake || ""; up.textContent = r.up || 0; memo.value = r.memo || "";
+  dream.value = r.dream || ""; feeling.value = r.feeling || "";
   var h = hours(r); hrs.textContent = h == null ? "−" : h;
   day.textContent = today.slice(5).replace("-", "/") + " の朝";
   var html = "", sum = 0, n = 0;
@@ -88,6 +107,22 @@ function draw() {
     html += '<div><span class="dot">' + (x && x.up ? "●".repeat(Math.min(x.up, 3)) : "") + '</span><i class="' + (v != null && v < 6 ? "short" : "") + '" style="height:' + (v == null ? 0 : Math.min(v, 10) * 10.8) + 'px"></i>' + (v == null ? "−" : v) + '<br>' + WK[d.getDay()] + '</div>';
   }
   bars.innerHTML = html; avg.textContent = n ? Math.round(sum / n * 10) / 10 : "−";
+  drawDreamHistory();
+}
+function drawDreamHistory() {
+  var entries = Object.keys(S.days || {}).filter(function (k) {
+    var r = S.days[k] || {}; return (r.dream || "").trim() || (r.feeling || "").trim();
+  }).sort().reverse().slice(0, 12);
+  dreamHistory.innerHTML = "";
+  if (!entries.length) { dreamHistory.textContent = "まだ夢の記録はありません。"; return; }
+  entries.forEach(function (k) {
+    var r = S.days[k], item = document.createElement("div"); item.className = "history-item";
+    var date = document.createElement("div"); date.className = "history-date"; date.textContent = k;
+    item.appendChild(date);
+    if ((r.dream || "").trim()) { var d = document.createElement("p"); d.textContent = "🌙 " + r.dream; item.appendChild(d); }
+    if ((r.feeling || "").trim()) { var f = document.createElement("p"); f.textContent = "💭 " + r.feeling; item.appendChild(f); }
+    dreamHistory.appendChild(item);
+  });
 }
 // 「寝る」は夜に押すので、翌朝の日付に入れる（夕方6時以降なら明日）
 tBed.onclick = function () {
@@ -101,6 +136,8 @@ wake.onchange = function () { cur().wake = wake.value; save(); draw(); };
 p.onclick = function () { cur().up = (cur().up || 0) + 1; save(); draw(); };
 m.onclick = function () { cur().up = Math.max(0, (cur().up || 0) - 1); save(); draw(); };
 memo.onchange = function () { cur().memo = memo.value; save(); };
+dream.onchange = function () { cur().dream = dream.value; save(); drawDreamHistory(); };
+feeling.onchange = function () { cur().feeling = feeling.value; save(); drawDreamHistory(); };
 window.addEventListener("storage", function () { S = load(); S.days = S.days || {}; draw(); });
 draw();
 </script>
