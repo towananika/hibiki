@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#93704b">
+<script src="../sync.js"></script>
+<title>トランプの波に乗る — とわなにか</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --bg: #f5f1e9;
+  --card: #fbf9f4;
+  --ink: #2b2924;
+  --muted: #776f62;
+  --line: #ded5c6;
+  --wood: #93704b;
+  --wood-soft: #ece1d0;
+  --sage: #74886d;
+  --sage-soft: #e2e8dd;
+  --blue: #5b7a99;
+  --blue-soft: #dde6ee;
+  --red: #b5583f;
+  --red-soft: #f3e2db;
+  --gold: #b38b2d;
+  --gold-soft: #fbf3d5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1a16;
+    --card: #242119;
+    --ink: #ede8dd;
+    --muted: #b2a89a;
+    --line: #453e33;
+    --wood: #c99f74;
+    --wood-soft: #382d20;
+    --sage: #9db394;
+    --sage-soft: #26301f;
+    --blue: #8fb0cf;
+    --blue-soft: #1f2a35;
+    --red: #e08b70;
+    --red-soft: #3a2520;
+    --gold: #d8af4b;
+    --gold-soft: #3e331c;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 15px/1.65 -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+main {
+  max-width: 600px;
+  margin: auto;
+  padding: 22px 16px 64px;
+}
+a { color: var(--wood); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a.back { font-size: 14px; display: inline-block; margin-bottom: 6px; }
+h1 { font-size: 26px; line-height: 1.3; margin: 8px 0 4px; }
+h2 { font-size: 17px; margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between; }
+p { margin: 6px 0; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .08em; color: var(--gold); }
+.muted, small { color: var(--muted); }
+.card {
+  margin: 14px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+}
+.banner {
+  background: linear-gradient(135deg, var(--gold-soft), var(--card));
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--gold);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 12px 0 16px;
+}
+.banner b { display: block; font-size: 16px; color: var(--ink); margin-bottom: 4px; }
+.banner p { margin: 0; font-size: 13px; line-height: 1.55; }
+
+/* 3本の矢（戦略カード） */
+.pillars { display: grid; gap: 10px; margin-top: 10px; }
+.pillar-card {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: var(--bg);
+}
+.pillar-card.active { border-color: var(--wood); }
+.pillar-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.pillar-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: #fff;
+}
+.badge-gold { background: var(--gold); }
+.badge-sage { background: var(--sage); }
+.badge-blue { background: var(--blue); }
+.badge-red { background: var(--red); }
+.pillar-title { font-weight: 700; font-size: 15px; margin: 0; }
+.pillar-body { font-size: 13px; margin: 0; }
+.pillar-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.tag.hot { background: var(--gold-soft); border-color: var(--gold); font-weight: 600; }
+
+/* タブ切り替え */
+.tabs { display: flex; gap: 6px; margin: 12px 0 14px; overflow-x: auto; padding-bottom: 2px; }
+.tab-btn {
+  flex: none;
+  padding: 7px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.tab-btn.active {
+  background: var(--wood);
+  color: #fff;
+  border-color: var(--wood);
+  font-weight: 600;
+}
+
+/* ポートフォリオ配分シミュレーター */
+.preset-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 14px; }
+.preset-btn {
+  padding: 8px 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+.preset-btn.active {
+  border-color: var(--gold);
+  background: var(--gold-soft);
+  color: var(--ink);
+}
+.alloc-bar {
+  display: flex;
+  height: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 12px 0;
+  border: 1px solid var(--line);
+}
+.alloc-seg {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  transition: width .25s ease;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.seg-btc { background: var(--gold); }
+.seg-energy { background: var(--red); }
+.seg-ind { background: var(--sage); }
+.seg-defense { background: var(--blue); }
+.seg-cash { background: #888; }
+.slider-group { display: grid; gap: 8px; margin-top: 10px; font-size: 13px; }
+.slider-row { display: grid; grid-template-columns: 86px 1fr 44px; gap: 8px; align-items: center; }
+.slider-row input[type=range] { accent-color: var(--wood); width: 100%; margin: 0; }
+.slider-row output { font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* チェックリスト */
+.checklist { display: grid; gap: 8px; margin-top: 10px; }
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+}
+.check-item input[type=checkbox] {
+  margin-top: 3px;
+  width: 17px;
+  height: 17px;
+  accent-color: var(--wood);
+  cursor: pointer;
+}
+.check-content { flex: 1; font-size: 13px; }
+.check-title { font-weight: 600; font-size: 14px; display: block; }
+.check-desc { color: var(--muted); margin-top: 2px; display: block; font-size: 12px; }
+.meter-wrap { margin-top: 10px; }
+.meter-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; color: var(--muted); }
+.meter-bg { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.meter-bar { height: 100%; width: 0%; background: var(--sage); border-radius: 4px; transition: width .3s ease; }
+
+/* メモ入力 */
+textarea {
+  width: 100%;
+  min-height: 84px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+.btn-save {
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--wood);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.btn-save:hover { opacity: .9; }
+.status-msg { font-size: 12px; color: var(--sage); margin-left: 10px; }
+
+/* リンクリスト */
+.links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.links a {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="../">← とわなにか</a>
+  <p class="eyebrow">STRATEGY · POLICY & WEALTH</p>
+  <h1>トランプの波に乗る</h1>
+  <p class="muted">大統領が持つ目標や行動のベクトルに従い、個人として確実に収益を享受する。</p>
+
+  <div class="banner">
+    <b>【核心の原則】国策に逆らわない・波の先に立つ</b>
+    <p>巨大な国家権力と政策が動く方向には、必然的に巨額の資金が流れます。批判や予測にとらわれず、「何を実行しているか」という事実の追い風に素直に乗り、個人資産の果実を受け取ることが目標です。</p>
+  </div>
+
+  <!-- 3つの大方針と収益享受セクター -->
+  <section class="card">
+    <h2>トランプの3大目標と収益の源泉</h2>
+    <div class="pillars">
+      <div class="pillar-card active">
+        <div class="pillar-head">
+          <span class="pillar-badge badge-gold">目標 1</span>
+          <h3 class="pillar-title">暗号資産の国家覇権・規制撤廃</h3>
+        </div>
+        <p class="pillar-body">米国を「世界の暗号資産の首都」にし、国家戦略ビットコイン準備金を構想。SECなどの締め付けを解き、機関投資家マネーの流入を加速。</p>
+        <div class="pillar-tags">
+          <span class="tag hot">ビットコイン (BTC)</span>
+          <span class="tag">暗号資産現物ETF</span>
+          <span class="tag">マイニング・決済株</span>
+          <span class="tag">DeFi規制緩和</span>
+        </div>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-head">
+          <span class="pillar-badge badge-red">目標 2</span>
+          <h3 class="pillar-title">エネルギー自給「掘って掘りまくれ」</h3>
+        </div>
+        <p class="pillar-body">環境規制を撤廃し、石油・天然ガスの増産を断行。さらにAIデータセンターの電力需要をまかなうため、原子力（SMR・ウラン）や送電インフラを最重視。</p>
+        <div class="pillar-tags">
+          <span class="tag hot">エネルギーETF (XLE等)</span>
+          <span class="tag">天然ガス・石油メジャー</span>
+          <span class="tag">原子力・ウラン</span>
+          <span class="tag">送電網・電力株</span>
+        </div>
+      </div>
+
+      <div class="pillar-card">
+        <div class="pillar-head">
+          <span class="pillar-badge badge-sage">目標 3</span>
+          <h3 class="pillar-title">米国製造業回帰・法人減税・関税の盾</h3>
+        </div>
+        <p class="pillar-body">法人税の引き下げ（米国内生産企業は優遇）と輸入関税による国内産業保護。海外流出を止め、米国内に工場・雇用を持つ企業を全力支援。</p>
+        <div class="pillar-tags">
+          <span class="tag hot">米国内需・小型株 (ラッセル2000)</span>
+          <span class="tag">米大手金融株 (規制緩和)</span>
+          <span class="tag">防衛・重工業</span>
+          <span class="tag">輸入代替メーカー</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 政策アクション早見表（追い風 vs 警戒） -->
+  <section class="card">
+    <h2>政策アクションと市場マップ</h2>
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab-btn active" data-tab="crypto">暗号資産</button>
+      <button type="button" class="tab-btn" data-tab="energy">エネルギー</button>
+      <button type="button" class="tab-btn" data-tab="tax">減税・規制</button>
+      <button type="button" class="tab-btn" data-tab="tariff">関税・防衛</button>
+    </div>
+
+    <div id="tab-content" style="font-size: 13px; line-height: 1.6;">
+      <!-- JSで動的レンダリング -->
+    </div>
+  </section>
+
+  <!-- ポートフォリオ配分シミュレーター -->
+  <section class="card">
+    <h2>トランプ・トレード配分シミュレーター</h2>
+    <p class="muted" style="font-size: 12px; margin-bottom: 12px;">自分のポートフォリオをトランプ政策の追い風に合わせて配分し、バランスを可視化します。</p>
+
+    <div class="preset-row">
+      <button type="button" class="preset-btn active" data-preset="aggressive">① 積極攻め<br><small>BTC+資源高成長</small></button>
+      <button type="button" class="preset-btn" data-preset="balanced">② 堅実バランス<br><small>内需株+BTC+金</small></button>
+      <button type="button" class="preset-btn" data-preset="income">③ 高配当インカム<br><small>エネルギー+金融</small></button>
+    </div>
+
+    <div class="alloc-bar" id="allocBar" aria-label="資産配分比率バー">
+      <div class="alloc-seg seg-btc" style="width: 30%">BTC 30%</div>
+      <div class="alloc-seg seg-energy" style="width: 25%">資源 25%</div>
+      <div class="alloc-seg seg-ind" style="width: 25%">内需 25%</div>
+      <div class="alloc-seg seg-defense" style="width: 20%">防衛 20%</div>
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-row">
+        <label for="sl-btc">暗号資産 (BTC)</label>
+        <input type="range" id="sl-btc" min="0" max="60" step="5" value="30">
+        <output id="out-btc">30%</output>
+      </div>
+      <div class="slider-row">
+        <label for="sl-energy">エネルギー/原発</label>
+        <input type="range" id="sl-energy" min="0" max="60" step="5" value="25">
+        <output id="out-energy">25%</output>
+      </div>
+      <div class="slider-row">
+        <label for="sl-ind">米国内需/金融株</label>
+        <input type="range" id="sl-ind" min="0" max="60" step="5" value="25">
+        <output id="out-ind">25%</output>
+      </div>
+      <div class="slider-row">
+        <label for="sl-defense">防衛/インフラ/金</label>
+        <input type="range" id="sl-defense" min="0" max="60" step="5" value="20">
+        <output id="out-defense">20%</output>
+      </div>
+    </div>
+    <p id="alloc-note" style="margin-top: 10px; font-size: 13px; color: var(--wood); font-weight: 600;"></p>
+  </section>
+
+  <!-- 収益享受のための行動チェックリスト -->
+  <section class="card">
+    <h2>
+      <span>今週の行動チェック</span>
+      <small id="check-ratio" style="font-weight: normal; font-size: 12px; color: var(--muted);">0 / 5 完了</small>
+    </h2>
+    <div class="meter-wrap">
+      <div class="meter-bg"><div class="meter-bar" id="meterBar"></div></div>
+    </div>
+
+    <div class="checklist" id="checklist">
+      <label class="check-item">
+        <input type="checkbox" data-idx="0">
+        <div class="check-content">
+          <span class="check-title">ビットコイン（BTC）の積立・保有比率を確認した</span>
+          <span class="check-desc">国家準備金構想や規制緩和の最大の受け皿。ポートフォリオの核として維持。</span>
+        </div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" data-idx="1">
+        <div class="check-content">
+          <span class="check-title">エネルギー・電力・原子力関連の恩恵を組み込んだ</span>
+          <span class="check-desc">掘削規制撤廃とAI電力需要によるウラン・天然ガスの追い風を点検。</span>
+        </div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" data-idx="2">
+        <div class="check-content">
+          <span class="check-title">米国内需型・中小型株（ラッセル2000）の動向を見た</span>
+          <span class="check-desc">法人減税と規制緩和、関税による恩恵を最も受けるのは米国内完結企業。</span>
+        </div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" data-idx="3">
+        <div class="check-content">
+          <span class="check-title">関税の直撃を受ける海外輸出依存銘柄を避けた</span>
+          <span class="check-desc">サプライチェーンが海外にある製品や輸入コスト高に苦しむ企業は慎重に。</span>
+        </div>
+      </label>
+      <label class="check-item">
+        <input type="checkbox" data-idx="4">
+        <div class="check-content">
+          <span class="check-title">ドル高・金利推移と生活通貨（円・ウォン）のバランスを点検した</span>
+          <span class="check-desc">ドル基軸の強さを活かしつつ、生活防衛資金との最適な比率を保つ。</span>
+        </div>
+      </label>
+    </div>
+  </section>
+
+  <!-- 観測メモ・気づきログ -->
+  <section class="card">
+    <h2>政策メモ・収益の気づき</h2>
+    <p class="muted" style="font-size: 12px; margin-bottom: 8px;">トランプの新しい発言、大統領令、市場の歪みを見て気づいた収益のヒントを記録します。</p>
+    <textarea id="memo" placeholder="例：大統領令でエネルギー規制が解除された。電力インフラ株とBTCマイナーの電力コスト低下に注目。次回の配分で比率を少し上げる。"></textarea>
+    <div style="display: flex; align-items: center; margin-top: 8px;">
+      <button type="button" class="btn-save" id="btnSaveMemo">メモを保存</button>
+      <span class="status-msg" id="memoStatus"></span>
+    </div>
+    <p class="muted" style="font-size: 11px; margin-top: 8px;">※ メモとチェックリストは `hibiki-*` として保存され、端末間で自動同期されます。</p>
+  </section>
+
+  <!-- 関連ページへのリンク -->
+  <section class="card">
+    <h2>つなぐ</h2>
+    <div class="links">
+      <a href="../money/">お金と自由</a>
+      <a href="../money/assets.html">預金と投資</a>
+      <a href="../money/sim.html">AIの疑似投資</a>
+      <a href="../money/yen.html">円とウォン</a>
+      <a href="../agi/">AGI観測所</a>
+      <a href="../productivity/">今日の一歩</a>
+    </div>
+  </section>
+</main>
+
+<script>
+(function() {
+  'use strict';
+
+  // 保存キー（sync.js 対応）
+  var KEY_ALLOC = 'hibiki-trump-alloc-v1';
+  var KEY_CHECKS = 'hibiki-trump-checks-v1';
+  var KEY_MEMO = 'hibiki-trump-memo-v1';
+
+  /* 1. タブデータ */
+  var TAB_DATA = {
+    crypto: {
+      title: '暗号資産・デジタル金融',
+      policy: '「ビットコイン国家戦略準備金」の推進、暗号資産に親和的なSEC新体制、DeFiやステーブルコインの法整備。',
+      tailwind: 'BTC現物、暗号資産マイニング（テラワット級電力の確保）、米認可取引所、コインベース等。',
+      headwind: '中央銀行デジタル通貨(CBDC)推進派プロジェクト、厳格な規制前提の既存フィンテック。',
+      action: '急激なボラティリティに動じず、基本は定期積立または急落時の押し目買い。国策の後ろ盾を信じる。'
+    },
+    energy: {
+      title: 'エネルギー・原子力・電力網',
+      policy: 'バイデン政権の環境規制を撤廃。「Drill, baby, drill（掘って掘りまくれ）」による石油・ガス増産。次世代原子力(SMR)の認可迅速化。',
+      tailwind: '米大手石油メジャー(XOM, CVX等)、天然ガス輸送パイプライン、ウラン採掘・原発関連、高圧送電設備。',
+      headwind: '補助金頼みの洋上風力・太陽光開発、EV義務化の縮小による低収益EV単体メーカー。',
+      action: 'エネルギーETF(XLE)やウラン現物ETF、電力インフラETFをポートフォリオのディフェンシブ兼収益源に。'
+    },
+    tax: {
+      title: '法人減税・国内回帰・規制緩和',
+      policy: '法人税率を21%からさらに15%へ引き下げ（米国内生産を条件）。金融・M&A審査の規制緩和。',
+      tailwind: '米国内向けビジネスの中小型株（ラッセル2000）、米大手銀行・投資銀行(JPM, GS等)、国内製造業。',
+      headwind: '海外オフショア製造に依存する企業、法人税優遇のない国外企業。',
+      action: '大型テックだけでなく、出遅れていた米国内需株・中小型株や金融株への分散を進める。'
+    },
+    tariff: {
+      title: '関税・防衛・AI覇権',
+      policy: '全輸入品への一律関税(10〜20%)、特定国への追加関税(60%超)。同盟国への防衛負担増要求と米製兵器購入促進。AI推進大統領令。',
+      tailwind: '米防衛・航空宇宙産業(LMT, RTX等)、国産AIインフラ（米データセンター・チップ）、輸入代替品メーカー。',
+      headwind: '高関税対象国からの輸入依存小売、グローバルサプライチェーンに依存する完成品輸出企業。',
+      action: '「関税の影響を受けにくい企業（国内完結型・知的財産・ソフトウェア）」または「関税で守られる企業」に絞る。'
+    }
+  };
+
+  function renderTab(key) {
+    var d = TAB_DATA[key];
+    if (!d) return;
+    var html = '<div style="background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:12px 14px;">' +
+      '<div style="font-weight:700; font-size:14px; color:var(--wood); margin-bottom:4px;">' + d.title + '</div>' +
+      '<p style="margin:4px 0 8px;"><b>大統領の方針・行動:</b> ' + d.policy + '</p>' +
+      '<div style="display:grid; gap:6px; margin-top:8px;">' +
+        '<div style="background:var(--sage-soft); color:var(--sage); padding:6px 10px; border-radius:8px;"><b>追い風（収益を狙う）:</b> ' + d.tailwind + '</div>' +
+        '<div style="background:var(--red-soft); color:var(--red); padding:6px 10px; border-radius:8px;"><b>逆風（警戒・避ける）:</b> ' + d.headwind + '</div>' +
+        '<div style="background:var(--gold-soft); color:var(--ink); padding:6px 10px; border-radius:8px;"><b>ひびきのアクション:</b> ' + d.action + '</div>' +
+      '</div>' +
+    '</div>';
+    document.getElementById('tab-content').innerHTML = html;
+  }
+
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  tabBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      tabBtns.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderTab(btn.dataset.tab);
+    });
+  });
+  renderTab('crypto');
+
+  /* 2. ポートフォリオ配分シミュレーター */
+  var PRESETS = {
+    aggressive: { btc: 35, energy: 25, ind: 25, defense: 15, note: '暗号資産と資源を強気に狙い、トランプトレードの上昇波を最大化する構成。' },
+    balanced:   { btc: 20, energy: 20, ind: 35, defense: 25, note: '米国内需株を土台に、BTCとエネルギーでリターンを加速、金・防衛で守る構成。' },
+    income:     { btc: 10, energy: 40, ind: 30, defense: 20, note: 'エネルギーと金融の高配当・キャッシュフローを重視し、安定インカムを享受する構成。' }
+  };
+
+  var allocData = { btc: 35, energy: 25, ind: 25, defense: 15 };
+  try {
+    var savedAlloc = JSON.parse(localStorage.getItem(KEY_ALLOC));
+    if (savedAlloc && typeof savedAlloc.btc === 'number') allocData = savedAlloc;
+  } catch(e) {}
+
+  var slBtc = document.getElementById('sl-btc');
+  var slEnergy = document.getElementById('sl-energy');
+  var slInd = document.getElementById('sl-ind');
+  var slDefense = document.getElementById('sl-defense');
+
+  var outBtc = document.getElementById('out-btc');
+  var outEnergy = document.getElementById('out-energy');
+  var outInd = document.getElementById('out-ind');
+  var outDefense = document.getElementById('out-defense');
+  var allocBar = document.getElementById('allocBar');
+  var allocNote = document.getElementById('alloc-note');
+
+  function updateAllocUI() {
+    slBtc.value = allocData.btc;
+    slEnergy.value = allocData.energy;
+    slInd.value = allocData.ind;
+    slDefense.value = allocData.defense;
+
+    outBtc.textContent = allocData.btc + '%';
+    outEnergy.textContent = allocData.energy + '%';
+    outInd.textContent = allocData.ind + '%';
+    outDefense.textContent = allocData.defense + '%';
+
+    var total = allocData.btc + allocData.energy + allocData.ind + allocData.defense;
+    var btcW = total > 0 ? (allocData.btc / total * 100).toFixed(1) : 0;
+    var energyW = total > 0 ? (allocData.energy / total * 100).toFixed(1) : 0;
+    var indW = total > 0 ? (allocData.ind / total * 100).toFixed(1) : 0;
+    var defW = total > 0 ? (allocData.defense / total * 100).toFixed(1) : 0;
+
+    allocBar.innerHTML = 
+      '<div class="alloc-seg seg-btc" style="width:' + btcW + '%">BTC ' + allocData.btc + '%</div>' +
+      '<div class="alloc-seg seg-energy" style="width:' + energyW + '%">資源 ' + allocData.energy + '%</div>' +
+      '<div class="alloc-seg seg-ind" style="width:' + indW + '%">内需 ' + allocData.ind + '%</div>' +
+      '<div class="alloc-seg seg-defense" style="width:' + defW + '%">防衛 ' + allocData.defense + '%</div>';
+
+    if (total !== 100) {
+      allocNote.textContent = '合計: ' + total + '%（配分の合計を100%に調整するとより正確です）';
+      allocNote.style.color = 'var(--red)';
+    } else {
+      allocNote.textContent = '合計: 100%（バランス良好。国策セクターの果実を狙える配分です）';
+      allocNote.style.color = 'var(--sage)';
+    }
+  }
+
+  function saveAlloc() {
+    try {
+      localStorage.setItem(KEY_ALLOC, JSON.stringify(allocData));
+    } catch(e) {}
+  }
+
+  [slBtc, slEnergy, slInd, slDefense].forEach(function(slider) {
+    slider.addEventListener('input', function() {
+      allocData.btc = Number(slBtc.value);
+      allocData.energy = Number(slEnergy.value);
+      allocData.ind = Number(slInd.value);
+      allocData.defense = Number(slDefense.value);
+      document.querySelectorAll('.preset-btn').forEach(function(b) { b.classList.remove('active'); });
+      updateAllocUI();
+      saveAlloc();
+    });
+  });
+
+  document.querySelectorAll('.preset-btn').forEach(function(b) {
+    b.addEventListener('click', function() {
+      document.querySelectorAll('.preset-btn').forEach(function(x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      var p = PRESETS[b.dataset.preset];
+      if (p) {
+        allocData.btc = p.btc;
+        allocData.energy = p.energy;
+        allocData.ind = p.ind;
+        allocData.defense = p.defense;
+        updateAllocUI();
+        saveAlloc();
+      }
+    });
+  });
+
+  updateAllocUI();
+
+  /* 3. チェックリスト */
+  var checkStates = [false, false, false, false, false];
+  try {
+    var savedChecks = JSON.parse(localStorage.getItem(KEY_CHECKS));
+    if (Array.isArray(savedChecks)) checkStates = savedChecks;
+  } catch(e) {}
+
+  var checkInputs = document.querySelectorAll('#checklist input[type=checkbox]');
+  var meterBar = document.getElementById('meterBar');
+  var checkRatio = document.getElementById('check-ratio');
+
+  function updateCheckUI() {
+    var done = 0;
+    checkInputs.forEach(function(inp, idx) {
+      inp.checked = !!checkStates[idx];
+      if (inp.checked) done++;
+    });
+    var pct = Math.round((done / checkInputs.length) * 100);
+    meterBar.style.width = pct + '%';
+    checkRatio.textContent = done + ' / ' + checkInputs.length + ' 完了 (' + pct + '%)';
+    if (pct === 100) {
+      meterBar.style.background = 'var(--gold)';
+    } else {
+      meterBar.style.background = 'var(--sage)';
+    }
+  }
+
+  checkInputs.forEach(function(inp) {
+    inp.addEventListener('change', function() {
+      var idx = Number(inp.dataset.idx);
+      checkStates[idx] = inp.checked;
+      try {
+        localStorage.setItem(KEY_CHECKS, JSON.stringify(checkStates));
+      } catch(e) {}
+      updateCheckUI();
+    });
+  });
+  updateCheckUI();
+
+  /* 4. メモ帳 */
+  var memoInput = document.getElementById('memo');
+  var btnSaveMemo = document.getElementById('btnSaveMemo');
+  var memoStatus = document.getElementById('memoStatus');
+
+  try {
+    var savedMemo = localStorage.getItem(KEY_MEMO);
+    if (savedMemo) memoInput.value = savedMemo;
+  } catch(e) {}
+
+  btnSaveMemo.addEventListener('click', function() {
+    try {
+      localStorage.setItem(KEY_MEMO, memoInput.value.trim());
+      memoStatus.textContent = '保存しました（端末間で同期されます）';
+      setTimeout(function() { memoStatus.textContent = ''; }, 3000);
+    } catch(e) {
+      memoStatus.textContent = '保存に失敗しました';
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
