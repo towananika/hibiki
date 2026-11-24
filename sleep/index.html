@@ -39,6 +39,26 @@
   .bars i { display:block; width:100%; border-radius:6px 6px 0 0; background:var(--sage); }
   .bars i.short { background:var(--red); }
   .bars .dot { color:var(--red); height:14px; }
+  .board { margin:0 0 18px; }
+  .board-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:8px 0 14px; }
+  .board-head h2 { font-size:20px; margin:0; }
+  .board-head p { margin:2px 0 0; }
+  .primary { border:0; border-radius:11px; padding:10px 14px; background:var(--wood); color:#fff; font:inherit; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .quiet { border:1px solid var(--border); border-radius:9px; padding:6px 10px; color:var(--muted); background:transparent; font:inherit; cursor:pointer; }
+  .editor[hidden] { display:none; }
+  .editor-top,.editor-actions { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .post-label { display:block; margin:14px 0 6px; font-size:13px; font-weight:700; }
+  #postTitle { width:100%; }
+  #postBody { min-height:220px; }
+  .editor-actions { margin-top:12px; flex-wrap:wrap; }
+  .post-list { display:grid; gap:10px; }
+  .post { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:14px; }
+  .post-meta { display:flex; align-items:center; justify-content:space-between; gap:8px; color:var(--muted); font-size:12px; }
+  .post h3 { font-size:17px; margin:7px 0; overflow-wrap:anywhere; }
+  .post-body { white-space:pre-wrap; overflow-wrap:anywhere; margin:0; font-size:14px; }
+  .post-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+  .post-actions button { border:1px solid var(--border); background:transparent; color:var(--text); border-radius:9px; padding:6px 10px; font:inherit; font-size:13px; cursor:pointer; }
+  .post-actions .delete { color:var(--red); }
   .goal { position:relative; }
   .goal:after { content:""; position:absolute; left:0; right:0; bottom:calc(35px + 75.6px); border-top:1px dashed var(--wood); }
 </style>
@@ -59,17 +79,18 @@
     <div class="row"><span class="muted" id="day"></span><span><span class="big" id="hrs">−</span> 時間</span></div>
   </div>
 
-  <div class="card">
-    <b>見た夢を記録する</b>
-    <p class="muted">覚えているところだけで大丈夫。断片や、目覚めたときの感覚も残しておこう。</p>
-    <div class="field"><label for="dream">🌙 夢の内容</label><textarea id="dream" maxlength="3000" placeholder="どんな場所で、誰がいて、何が起きた？ 覚えている場面だけでも。"></textarea></div>
-    <div class="field"><label for="feeling">💭 目覚めたときの気持ち</label><textarea id="feeling" maxlength="1500" placeholder="うれしい、怖い、不思議、懐かしい、安心した……どんな気持ちだった？"></textarea><small>うまく言葉にできなくても、そのままの表現で大丈夫。</small></div>
-  </div>
-
-  <div class="card">
-    <b>これまでに見た夢</b>
-    <div id="dreamHistory" class="muted" style="margin-top:8px">まだ夢の記録はありません。</div>
-  </div>
+  <section class="board">
+    <div class="board-head"><div><h2>🌙 夢の記録</h2><p class="muted">夢をひとつずつ、タイトルと本文で残す場所。</p></div><button class="primary" id="newPost">＋ 新しい記録</button></div>
+    <div class="editor card" id="postEditor" hidden>
+      <div class="editor-top"><b id="editorHeading">新しい夢を記録</b><button class="quiet" id="cancelPost" type="button">閉じる</button></div>
+      <label class="post-label" for="postTitle">タイトル</label>
+      <input id="postTitle" maxlength="100" placeholder="例：山登りと不思議なマートの夢">
+      <label class="post-label" for="postBody">本文</label>
+      <textarea id="postBody" maxlength="12000" placeholder="夢で見たことを、覚えている順番で自由に書こう。長文でも大丈夫。"></textarea>
+      <div class="editor-actions"><span class="muted" id="editorHint">あとから何度でも編集できます。</span><button class="primary" id="savePost" type="button">投稿を保存</button></div>
+    </div>
+    <div id="dreamHistory" class="post-list"><p class="muted">まだ夢の記録はありません。</p></div>
+  </section>
 
   <div class="card">
     <div class="row" style="margin-top:0"><b>この7日</b><span class="muted">平均 <b id="avg">−</b> 時間 ・ 点線＝7時間</span></div>
@@ -96,7 +117,6 @@ function hours(r) {
 function draw() {
   var r = S.days[today] || {};
   bed.value = r.bed || ""; wake.value = r.wake || ""; up.textContent = r.up || 0; memo.value = r.memo || "";
-  dream.value = r.dream || ""; feeling.value = r.feeling || "";
   var h = hours(r); hrs.textContent = h == null ? "−" : h;
   day.textContent = today.slice(5).replace("-", "/") + " の朝";
   var html = "", sum = 0, n = 0;
@@ -109,21 +129,67 @@ function draw() {
   bars.innerHTML = html; avg.textContent = n ? Math.round(sum / n * 10) / 10 : "−";
   drawDreamHistory();
 }
+// 旧形式（日付ごとの夢・気持ち）を投稿形式へ一度だけ引き継ぐ
+S.posts = Array.isArray(S.posts) ? S.posts : [];
+if (!S.legacyDreamsMigrated) {
+  Object.keys(S.days || {}).sort().forEach(function (k) {
+    var r = S.days[k] || {}, body = [];
+    if ((r.dream || "").trim()) body.push(r.dream.trim());
+    if ((r.feeling || "").trim()) body.push("【目覚めたときの気持ち】\\n" + r.feeling.trim());
+    if (body.length && !S.posts.some(function (p) { return p.id === "legacy-" + k; })) {
+      S.posts.push({ id:"legacy-" + k, title:"夢の記録 " + k, body:body.join("\\n\\n"), date:k, createdAt:k + "T00:00:00" });
+    }
+  });
+  S.legacyDreamsMigrated = true; save();
+}
+var editingPostId = null;
+function openEditor(post) {
+  editingPostId = post ? post.id : null;
+  editorHeading.textContent = post ? "夢の記録を編集" : "新しい夢を記録";
+  postTitle.value = post ? post.title : "";
+  postBody.value = post ? post.body : "";
+  savePost.textContent = post ? "変更を保存" : "投稿を保存";
+  postEditor.hidden = false;
+  postTitle.focus();
+  postEditor.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+function closeEditor() { postEditor.hidden = true; editingPostId = null; postTitle.value = ""; postBody.value = ""; }
 function drawDreamHistory() {
-  var entries = Object.keys(S.days || {}).filter(function (k) {
-    var r = S.days[k] || {}; return (r.dream || "").trim() || (r.feeling || "").trim();
-  }).sort().reverse().slice(0, 12);
   dreamHistory.innerHTML = "";
-  if (!entries.length) { dreamHistory.textContent = "まだ夢の記録はありません。"; return; }
-  entries.forEach(function (k) {
-    var r = S.days[k], item = document.createElement("div"); item.className = "history-item";
-    var date = document.createElement("div"); date.className = "history-date"; date.textContent = k;
-    item.appendChild(date);
-    if ((r.dream || "").trim()) { var d = document.createElement("p"); d.textContent = "🌙 " + r.dream; item.appendChild(d); }
-    if ((r.feeling || "").trim()) { var f = document.createElement("p"); f.textContent = "💭 " + r.feeling; item.appendChild(f); }
+  var posts = (S.posts || []).slice().sort(function(a,b) { return String(b.createdAt || b.date).localeCompare(String(a.createdAt || a.date)); });
+  if (!posts.length) { var empty = document.createElement("p"); empty.className = "muted"; empty.textContent = "まだ夢の記録はありません。「＋ 新しい記録」から書き始められます。"; dreamHistory.appendChild(empty); return; }
+  posts.forEach(function(p) {
+    var item = document.createElement("article"); item.className = "post";
+    var meta = document.createElement("div"); meta.className = "post-meta";
+    var date = document.createElement("span"); date.textContent = p.date || ""; meta.appendChild(date);
+    var tag = document.createElement("span"); tag.textContent = "夢の記録"; meta.appendChild(tag);
+    var title = document.createElement("h3"); title.textContent = p.title || "タイトルなし";
+    var body = document.createElement("p"); body.className = "post-body"; body.textContent = p.body || "";
+    var actions = document.createElement("div"); actions.className = "post-actions";
+    var edit = document.createElement("button"); edit.type = "button"; edit.textContent = "編集";
+    edit.onclick = function() { openEditor(p); };
+    var del = document.createElement("button"); del.type = "button"; del.className = "delete"; del.textContent = "削除";
+    del.onclick = function() { if (confirm("この夢の記録を削除しますか？")) { S.posts = S.posts.filter(function(x) { return x.id !== p.id; }); save(); drawDreamHistory(); if (editingPostId === p.id) closeEditor(); } };
+    actions.appendChild(edit); actions.appendChild(del);
+    item.appendChild(meta); item.appendChild(title); item.appendChild(body); item.appendChild(actions);
     dreamHistory.appendChild(item);
   });
 }
+newPost.onclick = function() { openEditor(null); };
+cancelPost.onclick = closeEditor;
+savePost.onclick = function() {
+  var title = postTitle.value.trim(), body = postBody.value.trim();
+  if (!title) { alert("タイトルを入力してください。"); postTitle.focus(); return; }
+  if (!body) { alert("本文を入力してください。"); postBody.focus(); return; }
+  var now = new Date(), date = ymd(now);
+  if (editingPostId) {
+    var target = S.posts.find(function(p) { return p.id === editingPostId; });
+    if (target) { target.title = title; target.body = body; target.updatedAt = now.toISOString(); }
+  } else {
+    S.posts.push({ id:"post-" + now.getTime() + "-" + Math.random().toString(36).slice(2,7), title:title, body:body, date:date, createdAt:now.toISOString() });
+  }
+  save(); closeEditor(); drawDreamHistory();
+};
 // 「寝る」は夜に押すので、翌朝の日付に入れる（夕方6時以降なら明日）
 tBed.onclick = function () {
   var now = new Date(), d = new Date(now); if (now.getHours() >= 18) d.setDate(d.getDate() + 1);
@@ -136,8 +202,6 @@ wake.onchange = function () { cur().wake = wake.value; save(); draw(); };
 p.onclick = function () { cur().up = (cur().up || 0) + 1; save(); draw(); };
 m.onclick = function () { cur().up = Math.max(0, (cur().up || 0) - 1); save(); draw(); };
 memo.onchange = function () { cur().memo = memo.value; save(); };
-dream.onchange = function () { cur().dream = dream.value; save(); drawDreamHistory(); };
-feeling.onchange = function () { cur().feeling = feeling.value; save(); drawDreamHistory(); };
 window.addEventListener("storage", function () { S = load(); S.days = S.days || {}; draw(); });
 draw();
 </script>
