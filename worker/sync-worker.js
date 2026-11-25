@@ -16,6 +16,7 @@
 // AI用の確認番号: /ai/issue /ai/read /ai/status /ai/revoke /ai/unlink /ai/forget（くわしくは ai-code.js、2026-11-13）
 //   GET /ai/read?code=1234&ai=名前 は URL を開くだけの AI 用（2026-11-17）
 // HIYOKO 社内資料: /hiyoko/doc /hiyoko/list /hiyoko/member /hiyoko/put（ログイン＋許可リスト。くわしくは hiyoko.js、2026-11-20）
+//   レポート掲示板: /hiyoko/me /join /reports /report /rput /rdel /invite /ai_off（招待コードで関係者・AI が自分で登録、2026-11-25）
 
 import { DurableObject } from "cloudflare:workers";
 import { aiHandle, isOwnerToken, tokenClaims, OWNER } from "./ai-code.js";
@@ -152,22 +153,32 @@ async function hikari(action, request, env, origin) {
 }
 
 // HIYOKO 社内資料。札で本人を確かめ、関係者（メール）かオーナーにだけ渡す。判定は hiyoko.js
+// レポート掲示板（2026-11-25）：読むのはログインなしでよい。AI は Origin なし（curl など）で X-Hiyoko-Key を使う。
+const HIYOKO_ACTIONS = ["doc", "list", "member", "put", "me", "join", "reports", "report", "rput", "rdel", "invite", "ai_off"];
+const HIYOKO_OPEN = ["me", "join", "reports", "report", "rput", "rdel"];
 async function hiyoko(action, request, env, origin) {
-  if (!["doc", "list", "member", "put"].includes(action)) return json({ error: "bad" }, 400, origin);
-  if (!ALLOWED.includes(origin)) return json({ error: "origin" }, 403, origin);
+  if (!HIYOKO_ACTIONS.includes(action)) return json({ error: "bad" }, 400, origin);
+  // ブラウザは必ず Origin をつける。よそのサイトからは断る。Origin なし（AI のコマンド）は通す
+  if (origin && !ALLOWED.includes(origin)) return json({ error: "origin" }, 403, origin);
+  if (!origin && !HIYOKO_OPEN.includes(action)) return json({ error: "origin" }, 403, origin);
   const guard = env.BOX.get(env.BOX.idFromName("guard"));
   const who = await sha(request.headers.get("CF-Connecting-IP") || "none");
   if (await guard.blocked(who)) return json({ error: "blocked" }, 429, origin);
-  const claims = await tokenClaims((request.headers.get("Authorization") || "").replace(/^Bearer /, ""));
-  if (!claims) { await guard.miss(who); return json({ error: "login" }, 401, origin); }
+  const auth = (request.headers.get("Authorization") || "").replace(/^Bearer /, "");
+  const claims = auth ? await tokenClaims(auth) : null;
+  if (auth && !claims) { await guard.miss(who); return json({ error: "login" }, 401, origin); }
+  if (!claims && !HIYOKO_OPEN.includes(action)) { await guard.miss(who); return json({ error: "login" }, 401, origin); }
   const text = await request.text();
   if (text.length > 1024 * 1024) return json({ error: "too_big" }, 413, origin);
   let b = {}; try { b = text ? JSON.parse(text) : {}; } catch (e) { return json({ error: "bad_json" }, 400, origin); }
-  const verified = claims.email_verified === true;
+  const verified = !!claims && claims.email_verified === true;
   const email = verified ? String(claims.email || "").toLowerCase() : "";
-  const user = { owner: verified && (claims.sub === OWNER.uid || HIYOKO_OWNER_EMAILS.includes(email)), email };
+  const user = { owner: verified && (claims.sub === OWNER.uid || HIYOKO_OWNER_EMAILS.includes(email)), email,
+    name: claims ? String(claims.name || "") : "", key: (request.headers.get("X-Hiyoko-Key") || "").slice(0, 100) };
   const out = await env.BOX.get(env.BOX.idFromName("hiyoko")).hiyoko(action, b || {}, user);
-  const status = out.error === "forbidden" ? 403 : out.error === "none" ? 404 : out.error ? 400 : 200;
+  // 招待コードのまちがい・止められた鍵は当てずっぽう扱い（1時間に10回で止める）
+  if (out.error === "code" || (user.key && out.error === "forbidden")) await guard.miss(who);
+  const status = out.error === "forbidden" ? 403 : out.error === "none" ? 404 : out.error === "login" ? 401 : out.error ? 400 : 200;
   const res = json(out, status, origin);
   res.headers.set("Cache-Control", "no-store");
   return res;
@@ -268,7 +279,7 @@ function cors(origin) {
   return {
     "Access-Control-Allow-Origin": ALLOWED.includes(origin) ? origin : ALLOWED[0],
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Hibiki-Code, X-Hibiki-Pass, X-Hibiki-AI",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Hibiki-Code, X-Hibiki-Pass, X-Hibiki-AI, X-Hiyoko-Key",
     "Vary": "Origin",
   };
 }
