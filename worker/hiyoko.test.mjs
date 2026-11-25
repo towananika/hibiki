@@ -43,3 +43,71 @@ test('オーナーのメールは小文字で正しい形', () => {
   for (const e of HIYOKO_OWNER_EMAILS) assert.equal(hiyokoEmail(e), e);
   assert.ok(HIYOKO_OWNER_EMAILS.includes('jaykim.can@gmail.com'));
 });
+
+// ---- レポート掲示板（2026-11-25）----
+test('招待コードがないと登録できず、まちがいは断る', async () => {
+  const s = store();
+  assert.deepEqual(await hiyokoHandle(s, 'join', { code: 'x', name: 'A', ai: true }, {}), { error: 'closed' });
+  const { invite } = await hiyokoHandle(s, 'invite', {}, OWNER);
+  assert.match(invite, /^HYK-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
+  assert.deepEqual(await hiyokoHandle(s, 'join', { code: 'HYK-0000-0000', name: 'A', ai: true }, {}), { error: 'code' });
+  assert.deepEqual(await hiyokoHandle(s, 'join', { code: invite, name: '花子' }, {}), { error: 'login' });
+  assert.deepEqual(await hiyokoHandle(s, 'invite', {}, { email: 'x@example.com' }), { error: 'forbidden' });
+});
+
+test('人はGoogleログイン＋招待コードで関係者になり、自分の名前で登録できる', async () => {
+  const s = store();
+  const { invite } = await hiyokoHandle(s, 'invite', {}, OWNER);
+  const who = { email: 'hana@example.com', name: 'Hana G' };
+  assert.equal((await hiyokoHandle(s, 'me', {}, who)).member, false);
+  assert.deepEqual(await hiyokoHandle(s, 'join', { code: invite.toLowerCase(), name: ' 花子 <b>' }, who), { ok: true, name: '花子 b' });
+  assert.equal((await hiyokoHandle(s, 'me', {}, who)).member, true);
+  const { item } = await hiyokoHandle(s, 'rput', { title: 'T', body: '本文' }, who, 100);
+  assert.equal(item.by, '花子 b'); assert.equal(item.ai, false); assert.equal(item.mine, true);
+  // 社内資料も読める（関係者になったので）
+  assert.deepEqual(await hiyokoHandle(s, 'doc', { id: 'strategy' }, who), { error: 'none' });
+});
+
+test('AIは自分の鍵で登録し、名前はAIの名前になる。止めると使えない', async () => {
+  const s = store();
+  const { invite } = await hiyokoHandle(s, 'invite', {}, OWNER);
+  const ai = await hiyokoHandle(s, 'join', { code: invite, name: 'Claude', ai: true }, {});
+  assert.match(ai.key, /^hyk_[0-9a-f]{48}$/);
+  const { item } = await hiyokoHandle(s, 'rput', { title: '分析', body: '- a' }, { key: ai.key }, 200);
+  assert.equal(item.by, 'Claude'); assert.equal(item.ai, true);
+  assert.equal((await hiyokoHandle(s, 'reports', {}, {})).items[0].by, 'Claude');
+  // AI の鍵では社内資料は読めない
+  assert.deepEqual(await hiyokoHandle(s, 'doc', { id: 'strategy' }, { key: ai.key }), { error: 'forbidden' });
+  assert.deepEqual(await hiyokoHandle(s, 'rput', { title: 'x', body: 'y' }, { key: 'hyk_wrong' }), { error: 'forbidden' });
+  await hiyokoHandle(s, 'ai_off', { id: ai.id }, OWNER);
+  assert.deepEqual(await hiyokoHandle(s, 'rput', { title: 'x', body: 'y' }, { key: ai.key }), { error: 'forbidden' });
+});
+
+test('🔒の物は関係者にだけ。直す・消すは本人かオーナーだけ', async () => {
+  const s = store();
+  const { invite } = await hiyokoHandle(s, 'invite', {}, OWNER);
+  const a = await hiyokoHandle(s, 'join', { code: invite, name: 'A', ai: true }, {});
+  const b = await hiyokoHandle(s, 'join', { code: invite, name: 'B', ai: true }, {});
+  const { item } = await hiyokoHandle(s, 'rput', { title: '秘', body: 'x', lock: true }, { key: a.key }, 1);
+  assert.equal((await hiyokoHandle(s, 'reports', {}, {})).items.length, 0);
+  assert.deepEqual(await hiyokoHandle(s, 'report', { id: item.id }, {}), { error: 'none' });
+  assert.equal((await hiyokoHandle(s, 'reports', {}, { key: b.key })).items.length, 1);
+  assert.deepEqual(await hiyokoHandle(s, 'rput', { id: item.id, title: 'z', body: 'z' }, { key: b.key }), { error: 'forbidden' });
+  assert.deepEqual(await hiyokoHandle(s, 'rdel', { id: item.id }, { key: b.key }), { error: 'forbidden' });
+  assert.equal((await hiyokoHandle(s, 'rput', { id: item.id, title: '直した', body: 'z' }, { key: a.key }, 5)).item.up, 5);
+  assert.deepEqual(await hiyokoHandle(s, 'rdel', { id: item.id }, OWNER), { ok: true });
+  assert.equal((await hiyokoHandle(s, 'reports', {}, OWNER)).items.length, 0);
+  assert.deepEqual(await hiyokoHandle(s, 'rput', { title: '', body: 'x' }, { key: a.key }), { error: 'empty' });
+  assert.deepEqual(await hiyokoHandle(s, 'rput', { title: 't', body: 'x' }, {}), { error: 'forbidden' });
+});
+
+test('招待コードを止めると新しい登録はできない（登録ずみの人はそのまま）', async () => {
+  const s = store();
+  const { invite } = await hiyokoHandle(s, 'invite', {}, OWNER);
+  const a = await hiyokoHandle(s, 'join', { code: invite, name: 'A', ai: true }, {});
+  await hiyokoHandle(s, 'invite', { off: true }, OWNER);
+  assert.deepEqual(await hiyokoHandle(s, 'join', { code: invite, name: 'C', ai: true }, {}), { error: 'closed' });
+  assert.ok((await hiyokoHandle(s, 'rput', { title: 't', body: 'b' }, { key: a.key })).item);
+  const l = await hiyokoHandle(s, 'list', {}, OWNER);
+  assert.equal(l.invite, ''); assert.equal(l.ais.length, 1);
+});
