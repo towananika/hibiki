@@ -65,12 +65,12 @@ export async function hiyokoHandle(storage, action, input = {}, who = {}, now = 
     const a = id && ais.find((x) => x.id === id);
     if (a) me = { aid: "a:" + a.id, name: a.name, ai: true };
   }
-  // 掲示板ができる前の7件を、最初の1回だけ入れる（作成者は AI の Claude 扱い。直す・消すは管理者もできる）
+  // 掲示板ができる前のレポート（静的ページだった物）を、最初の1回だけ入れる（作成者は AI の Claude 扱い。直す・消すは管理者もできる）
   if (["reports", "report", "rput", "rdel"].includes(action) && !(await storage.get("seeded:legacy"))) {
     const list = (await storage.get("reports")) || [];
     for (const r of HIYOKO_LEGACY) {
       if (list.some((x) => x.id === r.id)) continue;
-      list.push({ id: r.id, title: r.title, lock: false, by: "Claude", ai: true, aid: "a:legacy", at: r.at });
+      list.push({ id: r.id, title: r.title, lock: false, by: r.by || "Claude", ai: r.ai !== false, aid: "a:legacy", at: r.at });
       await storage.put("rpt:" + r.id, r.body);
     }
     list.sort((a, b) => b.at - a.at);
