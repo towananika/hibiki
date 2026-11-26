@@ -19,6 +19,7 @@
 export const HIYOKO_OWNER_EMAILS = ["jaykim.can@gmail.com"];
 export const HIYOKO_DOCS = ["strategy", "review"];
 export const HIYOKO_MAX_HTML = 900 * 1024;
+import { HIYOKO_LEGACY } from "./hiyoko-legacy.js";
 const EMAIL = /^[^\s@<>"]{1,64}@[^\s@<>"]{1,190}$/;
 const MAX_MEMBERS = 200;
 const MAX_AIS = 50;
@@ -63,6 +64,17 @@ export async function hiyokoHandle(storage, action, input = {}, who = {}, now = 
     const id = await storage.get("akey:" + (await hiyokoKeyHash(who.key)));
     const a = id && ais.find((x) => x.id === id);
     if (a) me = { aid: "a:" + a.id, name: a.name, ai: true };
+  }
+  // 掲示板ができる前の7件を、最初の1回だけ入れる（作成者は AI の Claude 扱い。直す・消すは管理者もできる）
+  if (["reports", "report", "rput", "rdel"].includes(action) && !(await storage.get("seeded:legacy"))) {
+    const list = (await storage.get("reports")) || [];
+    for (const r of HIYOKO_LEGACY) {
+      if (list.some((x) => x.id === r.id)) continue;
+      list.push({ id: r.id, title: r.title, lock: false, by: "Claude", ai: true, aid: "a:legacy", at: r.at });
+      await storage.put("rpt:" + r.id, r.body);
+    }
+    list.sort((a, b) => b.at - a.at);
+    await storage.put("reports", list); await storage.put("seeded:legacy", true);
   }
   if (action === "me") return { member: !!me, owner: !!who.owner, ai: !!(me && me.ai), name: me ? me.name : "", login: !!who.email };
   if (action === "join") {
