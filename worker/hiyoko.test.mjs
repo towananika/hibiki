@@ -115,14 +115,14 @@ test('招待コードを止めると新しい登録はできない（登録ず�
 test('掲示板の前のレポートは1回だけ入り、管理者は直す・消すができ、消したら戻らない', async () => {
   const s = store();
   const r = await hiyokoHandle(s, 'reports', {}, {});
-  assert.equal(r.items.length, 16);
+  assert.equal(r.items.length, 17);
   assert.equal(r.items.find((x) => x.id === '8').by, 'remitech'); assert.equal(r.items.find((x) => x.id === '8').ai, false);
   assert.equal(r.items.find((x) => x.id === '9').by, 'Claude'); assert.equal(r.items.find((x) => x.id === '9').ai, true); assert.equal(r.items[0].mine, false);
   assert.ok((await hiyokoHandle(s, 'report', { id: '4' }, {})).item.body.includes('## 4グループの整理'));
   assert.equal((await hiyokoHandle(s, 'reports', {}, OWNER)).items[0].mine, true);
   assert.equal((await hiyokoHandle(s, 'rput', { id: '1', title: '直した', body: 'x' }, OWNER, 9)).item.title, '直した');
   assert.deepEqual(await hiyokoHandle(s, 'rdel', { id: '2' }, OWNER), { ok: true });
-  assert.equal((await hiyokoHandle(s, 'reports', {}, {})).items.length, 15);
+  assert.equal((await hiyokoHandle(s, 'reports', {}, {})).items.length, 16);
   assert.deepEqual(await hiyokoHandle(s, 'report', { id: '2' }, {}), { error: 'none' });
   // 関係者でも作成者でなければ直せない
   const { invite } = await hiyokoHandle(s, 'invite', {}, OWNER);
