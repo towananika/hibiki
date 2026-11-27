@@ -129,3 +129,59 @@ test('掲示板の前のレポートは1回だけ入り、管理者は直す・�
   const ai = await hiyokoHandle(s, 'join', { code: invite, name: 'Other', ai: true }, {});
   assert.deepEqual(await hiyokoHandle(s, 'rdel', { id: '3' }, { key: ai.key }), { error: 'forbidden' });
 });
+
+// ---- 投稿の種類・下書き・画像（2026-11-27） ----
+async function setupMember() {
+  const s = store();
+  await hiyokoHandle(s, 'member', { email: 'm@example.com', on: true }, OWNER);
+  return s;
+}
+const M = { email: 'm@example.com', name: 'Mさん' };
+
+test('下書きは本人だけに見え、公開すると一覧に出る', async () => {
+  const s = await setupMember();
+  const d = await hiyokoHandle(s, 'rput', { title: '', body: '', kind: 'news', draft: true }, M, 10);
+  assert.equal(d.item.draft, true);
+  const id = d.item.id;
+  assert.equal((await hiyokoHandle(s, 'reports', { kind: 'news' }, {})).items.length, 0);
+  assert.deepEqual(await hiyokoHandle(s, 'report', { id }, {}), { error: 'none' });
+  assert.equal((await hiyokoHandle(s, 'mine', {}, M)).items.length, 1);
+  assert.deepEqual(await hiyokoHandle(s, 'rput', { id, title: '', body: 'x', kind: 'news' }, M, 20), { error: 'empty' });
+  const p = await hiyokoHandle(s, 'rput', { id, title: 'お知らせ', sum: 'ひとこと', body: '本文', kind: 'news' }, M, 30);
+  assert.equal(p.item.draft, false); assert.equal(p.item.at, 30);
+  const l = (await hiyokoHandle(s, 'reports', { kind: 'news' }, {})).items;
+  assert.equal(l.length, 1); assert.equal(l[0].sum, 'ひとこと');
+  assert.equal((await hiyokoHandle(s, 'reports', { kind: 'report' }, {})).items.filter((x) => x.id === id).length, 0);
+});
+
+test('公開中の物を下書きで直しても、公開するまで本番は変わらない', async () => {
+  const s = await setupMember();
+  const id = (await hiyokoHandle(s, 'rput', { title: 'A', body: '旧', kind: 'report' }, M, 10)).item.id;
+  const d = await hiyokoHandle(s, 'rput', { id, title: 'A2', body: '新', draft: true }, M, 20);
+  assert.equal(d.item.pend, true); assert.equal(d.item.pending.body, '新');
+  const pubView = await hiyokoHandle(s, 'report', { id }, {});
+  assert.equal(pubView.item.body, '旧'); assert.equal(pubView.item.title, 'A'); assert.equal(pubView.item.pending, undefined);
+  assert.equal((await hiyokoHandle(s, 'report', { id }, M)).item.pending.title, 'A2');
+  await hiyokoHandle(s, 'rput', { id, title: 'A2', body: '新' }, M, 30);
+  const v = await hiyokoHandle(s, 'report', { id }, {});
+  assert.equal(v.item.body, '新'); assert.equal(v.item.pend, false); assert.equal(v.item.at, 10);
+});
+
+test('社内資料は関係者だけが読める', async () => {
+  const s = await setupMember();
+  const id = (await hiyokoHandle(s, 'rput', { title: '戦略', body: '秘密', kind: 'internal' }, M, 10)).item.id;
+  assert.equal((await hiyokoHandle(s, 'reports', { kind: 'internal' }, {})).items.length, 0);
+  assert.deepEqual(await hiyokoHandle(s, 'report', { id }, { email: 'x@example.com' }), { error: 'none' });
+  assert.equal((await hiyokoHandle(s, 'reports', { kind: 'internal' }, M)).items.length, 1);
+  assert.equal((await hiyokoHandle(s, 'report', { id }, M)).item.lock, true);
+});
+
+test('ひとことは80字まで、画像は種類と大きさを確かめる', async () => {
+  const s = await setupMember();
+  assert.deepEqual(await hiyokoHandle(s, 'rput', { title: 't', body: 'b', sum: 'あ'.repeat(81) }, M), { error: 'sum_long' });
+  assert.deepEqual(await hiyokoHandle(s, 'img', { data: 'data:image/png;base64,AAAA' }, {}), { error: 'forbidden' });
+  assert.deepEqual(await hiyokoHandle(s, 'img', { data: 'data:image/svg+xml;base64,AAAA' }, M), { error: 'img_type' });
+  assert.deepEqual(await hiyokoHandle(s, 'img', { data: 'data:image/png;base64,' + 'A'.repeat(200000) }, M), { error: 'img_big' });
+  const { id } = await hiyokoHandle(s, 'img', { data: 'data:image/png;base64,iVBORw0K' }, M);
+  assert.deepEqual(await hiyokoHandle(s, 'imgget', { id }, {}), { type: 'image/png', b64: 'iVBORw0K' });
+});
