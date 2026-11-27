@@ -14,6 +14,14 @@
 //   POST /hiyoko/rdel    { id }                     → { ok }
 //   POST /hiyoko/invite  { make | off }             → { invite }  オーナー（招待コードを作る・止める）
 //   POST /hiyoko/ai_off  { id }                     → { ais }     オーナー（AI の鍵を止める）
+// 投稿の種類と下書き（2026-11-27）。レポート・ニュース・社内資料を同じ仕組みで書く。
+//   rput に kind（report|news|internal）、sum（ひとこと80字）、draft（true＝下書きに保存）を足した。
+//   internal は関係者だけが読める（lock と同じ）。下書きは書いた本人（とオーナー）だけに見える。
+//   公開中の物を draft で保存すると、本番は変えずに「直しかけ」（rdr:<id>）として残る。draft なしで保存すると公開。
+//   POST /hiyoko/reports { kind? }  → 公開済みだけ（kind でしぼれる）
+//   POST /hiyoko/mine               → { items }  自分の投稿（下書き・直しかけも）。オーナーは全部
+//   POST /hiyoko/img     { data }   → { id }     画像（webp/jpeg/png の data URL、120KB まで）。関係者・AI・オーナー
+//   GET  /hiyoko/img/<id>           → 画像そのもの（だれでも）
 // 関係者はメール（Googleで確認ずみのもの）で決める。オーナーは ai-code.js の OWNER（uid）と HIYOKO_OWNER_EMAILS。
 // オーナーのメール（Googleで確認ずみのとき）。ai-code.js の OWNER（uid）に加えて、ここの人もオーナー（2026-11-23）
 export const HIYOKO_OWNER_EMAILS = ["jaykim.can@gmail.com"];
@@ -26,6 +34,10 @@ const MAX_AIS = 50;
 const MAX_REPORTS = 500;
 export const HIYOKO_MAX_TITLE = 120;
 export const HIYOKO_MAX_BODY = 60000;
+export const HIYOKO_MAX_SUM = 80;
+export const HIYOKO_KINDS = ["report", "news", "internal"];
+export const HIYOKO_MAX_IMG = 120 * 1024;
+const MAX_IMGS = 2000;
 
 // 表示名：制御文字・山かっこを消して短くする
 export function hiyokoName(s) {
@@ -42,9 +54,14 @@ function makeCode() {
   const c = [...a].map((x) => A[x % A.length]).join("");
   return "HYK-" + c.slice(0, 4) + "-" + c.slice(4);
 }
+function kindOf(r) { return HIYOKO_KINDS.includes(r.kind) ? r.kind : "report"; }
+function mineOf(r, me) { return !!me && (me.owner || r.aid === me.aid); }
 function pub(r, me) {
-  return { id: r.id, title: r.title, by: r.by, ai: !!r.ai, at: r.at, up: r.up || r.at, lock: !!r.lock, mine: !!me && (me.owner || r.aid === me.aid) };
+  return { id: r.id, title: r.title, sum: r.sum || "", kind: kindOf(r), by: r.by, ai: !!r.ai, at: r.at, up: r.up || r.at, lock: !!r.lock,
+    draft: !!r.draft, pend: !!r.pend, mine: mineOf(r, me) };
 }
+// 読んでよいか：関係者だけの物は関係者に、下書きは本人とオーナーに
+function canSee(r, me) { return (!r.lock || !!me) && (!r.draft || mineOf(r, me)); }
 
 export function hiyokoEmail(s) {
   const e = String(s || "").trim().toLowerCase();
@@ -66,7 +83,7 @@ export async function hiyokoHandle(storage, action, input = {}, who = {}, now = 
     if (a) me = { aid: "a:" + a.id, name: a.name, ai: true };
   }
   // 掲示板ができる前のレポート（静的ページだった物）を、最初の1回だけ入れる（作成者は AI の Claude 扱い。直す・消すは管理者もできる）
-  if (["reports", "report", "rput", "rdel"].includes(action) && !(await storage.get("seeded:legacy"))) {
+  if (["reports", "report", "rput", "rdel", "mine"].includes(action) && !(await storage.get("seeded:legacy"))) {
     const list = (await storage.get("reports")) || [];
     for (const r of HIYOKO_LEGACY) {
       if (list.some((x) => x.id === r.id)) continue;
@@ -101,14 +118,37 @@ export async function hiyokoHandle(storage, action, input = {}, who = {}, now = 
   }
   if (action === "reports") {
     const list = (await storage.get("reports")) || [];
-    return { items: list.filter((r) => !r.lock || me).map((r) => pub(r, me)) };
+    const k = HIYOKO_KINDS.includes(input.kind) ? input.kind : "";
+    return { items: list.filter((r) => !r.draft && (!r.lock || me) && (!k || kindOf(r) === k)).map((r) => pub(r, me)) };
+  }
+  if (action === "mine") {
+    if (!me) return { error: "forbidden" };
+    const list = (await storage.get("reports")) || [];
+    return { items: list.filter((r) => mineOf(r, me)).map((r) => pub(r, me)) };
+  }
+  if (action === "img") {
+    if (!me) return { error: "forbidden" };
+    const m = String(input.data || "").match(/^data:(image\/(?:webp|jpeg|png));base64,([A-Za-z0-9+/=]+)$/);
+    if (!m) return { error: "img_type" };
+    if (Math.floor(m[2].length * 3 / 4) > HIYOKO_MAX_IMG) return { error: "img_big" };
+    const n = ((await storage.get("imgn")) || 0) + 1;
+    if (n > MAX_IMGS) return { error: "too_many" };
+    const id = hex(6);
+    await storage.put("img:" + id, { type: m[1], b64: m[2], by: me.aid, at: now }); await storage.put("imgn", n);
+    return { id };
+  }
+  if (action === "imgget") {
+    const d = await storage.get("img:" + String(input.id || "").replace(/[^0-9a-f]/g, ""));
+    return d ? { type: d.type, b64: d.b64 } : { error: "none" };
   }
   if (action === "report") {
     const list = (await storage.get("reports")) || [];
     const r = list.find((x) => x.id === String(input.id || ""));
-    if (!r || (r.lock && !me)) return { error: "none" };
+    if (!r || !canSee(r, me)) return { error: "none" };
     const b = await storage.get("rpt:" + r.id);
-    return { item: { ...pub(r, me), body: b || "" } };
+    const item = { ...pub(r, me), body: b || "" };
+    if (r.pend && mineOf(r, me)) item.pending = (await storage.get("rdr:" + r.id)) || null;
+    return { item };
   }
   if (action === "rput" || action === "rdel") {
     if (!me) return { error: "forbidden" };
@@ -118,18 +158,39 @@ export async function hiyokoHandle(storage, action, input = {}, who = {}, now = 
     if (id && i < 0) return { error: "none" };
     if (i >= 0 && !(me.owner || list[i].aid === me.aid)) return { error: "forbidden" };
     if (action === "rdel") {
-      list.splice(i, 1); await storage.put("reports", list); await storage.delete("rpt:" + id);
+      list.splice(i, 1); await storage.put("reports", list); await storage.delete("rpt:" + id); await storage.delete("rdr:" + id);
       return { ok: true };
     }
-    const title = clean(input.title, HIYOKO_MAX_TITLE).replace(/\n/g, " ").trim();
+    const rawTitle = clean(input.title, HIYOKO_MAX_TITLE + 1).replace(/\n/g, " ").trim();
     const body = clean(input.body, HIYOKO_MAX_BODY + 1);
-    if (!title || !body.trim()) return { error: "empty" };
+    const sum = clean(input.sum, HIYOKO_MAX_SUM + 1).replace(/\n/g, " ").trim();
+    const draft = !!input.draft;
+    if (rawTitle.length > HIYOKO_MAX_TITLE) return { error: "title_long" };
+    if (sum.length > HIYOKO_MAX_SUM) return { error: "sum_long" };
     if (body.length > HIYOKO_MAX_BODY) return { error: "too_big" };
+    // 下書きは空でも保存できる（自動保存）。公開するときはタイトルと本文が必要
+    if (!draft && (!rawTitle || !body.trim())) return { error: "empty" };
+    const title = rawTitle || "（無題）";
+    const kind = HIYOKO_KINDS.includes(input.kind) ? input.kind : (i >= 0 ? kindOf(list[i]) : "report");
+    const lock = kind === "internal" || !!input.lock;
     let r;
-    if (i >= 0) { r = { ...list[i], title, lock: !!input.lock, up: now }; list[i] = r; }
-    else {
+    if (i >= 0 && draft && !list[i].draft) {
+      // 公開中の物の直しかけ：本番はそのまま
+      r = { ...list[i], pend: now }; list[i] = r;
+      await storage.put("rdr:" + r.id, { title, sum, body, kind, lock, at: now });
+      await storage.put("reports", list);
+      return { item: { ...pub(r, me), body: (await storage.get("rpt:" + r.id)) || "", pending: { title, sum, body, kind, lock, at: now } } };
+    }
+    if (i >= 0) {
+      const wasDraft = !!list[i].draft;
+      r = { ...list[i], title, sum, kind, lock, draft, up: now };
+      if (wasDraft && !draft) r.at = now;   // はじめて公開した日時を投稿日時に
+      delete r.pend; if (!draft) delete r.draft;
+      list[i] = r; await storage.delete("rdr:" + r.id);
+    } else {
       if (list.length >= MAX_REPORTS) return { error: "too_many" };
-      r = { id: hex(4), title, lock: !!input.lock, by: me.name, ai: me.ai, aid: me.aid, at: now };
+      r = { id: hex(4), title, sum, kind, lock, by: me.name, ai: me.ai, aid: me.aid, at: now };
+      if (draft) r.draft = true;
       list.unshift(r);
     }
     await storage.put("reports", list); await storage.put("rpt:" + r.id, body);

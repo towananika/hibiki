@@ -53,6 +53,13 @@ export default {
         return json(out, out.error ? 403 : 200, origin);
       }
     }
+    // HIYOKO の投稿の画像（2026-11-27）：だれでも読める。長くキャッシュしてよい（id ごとに中身は変わらない）
+    if (url.pathname.startsWith("/hiyoko/img/") && request.method === "GET") {
+      const out = await env.BOX.get(env.BOX.idFromName("hiyoko")).hiyoko("imgget", { id: url.pathname.slice(12) }, {});
+      if (out.error) return new Response("not found", { status: 404 });
+      const bin = Uint8Array.from(atob(out.b64), (c) => c.charCodeAt(0));
+      return new Response(bin, { headers: { "Content-Type": out.type, "Cache-Control": "public, max-age=31536000, immutable", "Access-Control-Allow-Origin": "*", "X-Content-Type-Options": "nosniff" } });
+    }
     if (url.pathname.startsWith("/hiyoko/") && request.method === "POST") return hiyoko(url.pathname.slice(8), request, env, origin);
     if (url.pathname.startsWith("/hikari/") && request.method === "POST") return hikari(url.pathname.slice(8), request, env, origin);
     if (url.pathname === "/ai/read" && request.method === "GET") return aiReadGet(url, request, env);
@@ -154,8 +161,8 @@ async function hikari(action, request, env, origin) {
 
 // HIYOKO 社内資料。札で本人を確かめ、関係者（メール）かオーナーにだけ渡す。判定は hiyoko.js
 // レポート掲示板（2026-11-25）：読むのはログインなしでよい。AI は Origin なし（curl など）で X-Hiyoko-Key を使う。
-const HIYOKO_ACTIONS = ["doc", "list", "member", "put", "me", "join", "reports", "report", "rput", "rdel", "invite", "ai_off"];
-const HIYOKO_OPEN = ["me", "join", "reports", "report", "rput", "rdel"];
+const HIYOKO_ACTIONS = ["doc", "list", "member", "put", "me", "join", "reports", "report", "rput", "rdel", "invite", "ai_off", "mine", "img"];
+const HIYOKO_OPEN = ["me", "join", "reports", "report", "rput", "rdel", "mine", "img"];
 async function hiyoko(action, request, env, origin) {
   if (!HIYOKO_ACTIONS.includes(action)) return json({ error: "bad" }, 400, origin);
   // ブラウザは必ず Origin をつける。よそのサイトからは断る。Origin なし（AI のコマンド）は通す
