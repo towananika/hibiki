@@ -121,6 +121,7 @@
 
   <section class="gw" id="growth" aria-labelledby="gw-title">
   <div class="gw-head"><h2 id="gw-title">自分を育てる</h2><p class="muted">自己理解・習慣・健康・お金・人間関係を、毎日の小さな記録でつなぐ。</p></div>
+<section class="card" id="reflection-note"><h3>日常からの気づき</h3><p id="reflection-lock" class="muted">ログインした端末で記録を開けます。</p><pre id="reflection-markdown" style="white-space:pre-wrap;overflow-wrap:anywhere;font:inherit" hidden></pre></section>
 <section class="card"><h3>今日のチェックイン</h3><p class="muted" id="today"></p><div class="grid" id="scores"></div>
 <label for="good">今日、よかったこと</label><textarea id="good" maxlength="500" placeholder="小さなことでOK"></textarea>
 <label for="hard">今日、気になったこと</label><textarea id="hard" maxlength="500" placeholder="書かなくてもOK"></textarea>
@@ -141,6 +142,13 @@
 <section class="card"><h3>記録の管理</h3><p class="muted note">入力はこのブラウザのローカルストレージに保存されます。サーバーへの送信やAI分析は行いません。端末・ブラウザを変えると自動同期されません。</p><div class="actions"><button class="action secondary" id="export">JSONでバックアップ</button><button class="action secondary" id="clear">記録をすべて削除</button></div></section>
   </section>
 </main>
+<script>
+if (window.HibikiSync) HibikiSync.open("reflection-20261128").then(function (data) {
+  if (!data || typeof data.markdown !== "string") { document.getElementById("reflection-lock").textContent = "🔒 この端末では記録を開けません。"; return; }
+  document.getElementById("reflection-lock").hidden = true;
+  var note = document.getElementById("reflection-markdown"); note.textContent = data.markdown; note.hidden = false;
+}).catch(function () { document.getElementById("reflection-lock").textContent = "🔒 この端末では記録を開けません。"; });
+</script>
 <script>
 var KEY = "hibiki-grow-v1";
 var ACTS = [
@@ -252,3 +260,4 @@ render();
 </script>
 </body>
 </html>
+
