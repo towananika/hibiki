@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>ことばの街 — とわなにか</title><script src="../sync.js"></script>
+<style>
+:root{color-scheme:light dark;--bg:#f5f1e9;--card:#fbf9f4;--ink:#2b2924;--muted:#675e50;--line:#ded4c1;--accent:#80603f;--soft:#e9dfd0}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a16;--card:#29251e;--ink:#f4eee4;--muted:#c5b9a6;--line:#504839;--accent:#d5ae85;--soft:#3a3024}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,sans-serif}main{max-width:560px;margin:auto;padding:24px 18px 64px}a{color:var(--accent)}h1{font-size:28px;margin:12px 0 2px}h2{margin:0 0 8px;font-size:20px}p{margin:8px 0}.muted{color:var(--muted);font-size:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;margin:16px 0}.scene{background:var(--soft);text-align:center;padding:22px;border-radius:16px}.art{font-size:56px;line-height:1.3}.progress{color:var(--muted);font-size:14px}.actions{display:grid;gap:10px;margin-top:16px}button{font:inherit;cursor:pointer;border:1px solid var(--line);border-radius:14px;padding:12px 16px;min-height:48px;background:var(--card);color:var(--ink);text-align:left}button.primary{background:var(--accent);color:var(--bg);border-color:var(--accent);font-weight:700}button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #5c85a1;outline-offset:3px}.languages{display:flex;gap:8px;flex-wrap:wrap}.languages button[aria-pressed=true]{border:2px solid var(--accent);font-weight:700}.sound{margin-top:10px}.feedback{padding:12px;border-radius:12px;background:var(--soft);margin-top:12px}details{margin-top:12px}summary{cursor:pointer;color:var(--muted)}[hidden]{display:none!important}@media(min-width:700px){body{zoom:1!important}main{max-width:700px;padding-top:48px}}
+</style>
+</head>
+<body><main>
+<a href="../">← とわなにか</a>
+<h1>🌱 ことばの街</h1><p class="muted">見て、聞いて、やってみる。小さな冒険から始めよう。</p>
+<section class="card" aria-labelledby="select-title"><h2 id="select-title">ことばを選ぶ</h2><div class="languages" id="languages"></div><p class="muted">いつでも切り替えられます。進み具合は言語ごとに記録します。</p></section>
+<section class="card" id="play" aria-live="polite"></section>
+<section class="card"><h2>🌿 できるようになったこと</h2><p id="progress" class="muted"></p><p class="muted">記録はこの端末に保存します。</p></section>
+</main>
+<script>
+// 講座追加：scenes に同じ形式で場面を追加。言語ごとに speech・translation・options を用意する。
+// correct は options の正解の番号（0から）。音声と訳は自然さを確認してから追加する。
+const course={title:"☕ カフェでひと休み",goal:"店員さんとあいさつして、飲み物を注文しよう。",languages:{fr:{name:"🇫🇷 フランス語",locale:"fr-FR"},de:{name:"🇩🇪 ドイツ語",locale:"de-DE"}},scenes:[
+{emoji:"🚪 ☕ 🧑‍🍳",situation:"カフェに入ると、店員さんが声をかけました。",fr:{speech:"Bonjour !",translation:"こんにちは！",question:"店員さんは何と言った？",options:["こんにちは","ありがとう","さようなら"],correct:0},de:{speech:"Guten Tag!",translation:"こんにちは！",question:"店員さんは何と言った？",options:["こんにちは","ありがとう","さようなら"],correct:0}},
+{emoji:"🧑‍🍳 ☕ 🫖",situation:"飲み物を聞かれました。コーヒーを注文しよう。",fr:{speech:"Un café, s'il vous plaît.",translation:"コーヒーを一つお願いします。",question:"コーヒーを頼む言葉は？",options:["Un café, s'il vous plaît.","Merci !","Bonjour !"],correct:0},de:{speech:"Einen Kaffee, bitte.",translation:"コーヒーを一つお願いします。",question:"コーヒーを頼む言葉は？",options:["Einen Kaffee, bitte.","Danke!","Guten Tag!"],correct:0}},
+{emoji:"🧑‍🍳 ☕ 😊",situation:"飲み物を受け取りました。お礼を伝えよう。",fr:{speech:"Merci !",translation:"ありがとう！",question:"お礼を伝える言葉は？",options:["Bonjour !","Merci !","Un café, s'il vous plaît."],correct:1},de:{speech:"Danke!",translation:"ありがとう！",question:"お礼を伝える言葉は？",options:["Guten Tag!","Danke!","Einen Kaffee, bitte."],correct:1}}
+]};
+const key="hibiki-language-adventure-v1";let saved={};try{saved=JSON.parse(localStorage.getItem(key)||"{}")||{}}catch(e){}let lang="fr",step=0,answered=false;
+const langs=document.getElementById("languages"),play=document.getElementById("play"),progress=document.getElementById("progress");
+function el(tag,text,cls){const n=document.createElement(tag);if(text!=null)n.textContent=text;if(cls)n.className=cls;return n}
+function renderLang(){langs.replaceChildren();Object.entries(course.languages).forEach(([id,l])=>{const b=el("button",l.name);b.setAttribute("aria-pressed",String(id===lang));b.onclick=()=>{if("speechSynthesis"in window)speechSynthesis.cancel();lang=id;step=0;answered=false;render()};langs.append(b)})}
+function speak(text){if(!("speechSynthesis"in window)){document.getElementById("sound-status").textContent="この端末では音声を再生できません。文字と訳をご覧ください。";return}const voice=speechSynthesis.getVoices().find(v=>v.lang.toLowerCase().startsWith(lang));if(!voice){document.getElementById("sound-status").textContent="この言語の音声が見つかりません。文字と訳をご覧ください。";return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=course.languages[lang].locale;u.voice=voice;u.onerror=()=>document.getElementById("sound-status").textContent="音声を再生できませんでした。文字と訳をご覧ください。";speechSynthesis.speak(u)}
+function render(){renderLang();play.replaceChildren();progress.textContent=Object.keys(course.languages).map(id=>course.languages[id].name+"："+(saved[id]?"カフェを体験済み":"これから")).join("　／　");play.append(el("h2",course.title));if(step>=course.scenes.length){play.append(el("div","🎉 ☕","art"),el("h2","カフェでの会話を体験しました"),el("p","あいさつ・注文・お礼にふれました。もう一度遊んで、音を聞いてみよう。"));const b=el("button","もう一度遊ぶ","primary");b.onclick=()=>{step=0;answered=false;render()};play.append(b);return}
+const s=course.scenes[step],d=s[lang];play.append(el("p","場面 "+(step+1)+" / "+course.scenes.length,"progress"));const scene=el("div",null,"scene");scene.append(el("div",s.emoji,"art"),el("p",s.situation));play.append(scene);const sound=el("button","🔊 音声を聞く","sound");sound.onclick=()=>speak(d.speech);play.append(sound);const status=el("p","","muted");status.id="sound-status";status.setAttribute("role","status");play.append(status);
+const hint=el("details"),summary=el("summary","文字と日本語のヒントを見る");hint.append(summary,el("p",d.speech+" — "+d.translation));play.append(hint,el("p",d.question));
+const actions=el("div",null,"actions"),feedback=el("div",null,"feedback");feedback.hidden=true;feedback.setAttribute("role","status");d.options.forEach((o,i)=>{const b=el("button",o);b.onclick=()=>{if(answered)return;feedback.hidden=false;if(i!==d.correct){feedback.textContent="もう一度試してみよう。ヒントも見られます。";return}answered=true;feedback.replaceChildren(el("strong","🌟 その通り！"),el("p",d.speech+" — "+d.translation));const next=el("button",step===course.scenes.length-1?"冒険を終える":"次の場面へ","primary");next.onclick=()=>{step++;answered=false;if(step===course.scenes.length){saved[lang]=true;try{localStorage.setItem(key,JSON.stringify(saved))}catch(e){}}render()};feedback.append(next)};actions.append(b)});play.append(actions,feedback)}
+render();
+</script></body></html>
